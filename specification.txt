@@ -1,0 +1,3 @@
+Kit should provide utilities for:
+    - Ryujinx installation and setup
+    - Ryujinx save-state management
