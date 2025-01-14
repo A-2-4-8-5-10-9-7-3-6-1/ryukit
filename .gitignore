@@ -1,0 +1,5 @@
+# configurations
+**/.vscode/
+
+# generated
+**/__pycache__/
