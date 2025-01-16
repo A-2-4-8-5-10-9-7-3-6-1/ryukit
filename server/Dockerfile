@@ -9,7 +9,7 @@ RUN pipx install poetry
 
 # -----------------------------------------------------------------------------
 
-FROM poetry
+FROM poetry AS dev
 WORKDIR /workdir
 
 COPY . .

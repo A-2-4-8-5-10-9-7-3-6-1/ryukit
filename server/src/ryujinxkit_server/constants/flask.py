@@ -1,0 +1,43 @@
+"""
+Flask related constants.
+
+Dependency level: 1.
+"""
+
+from base64 import b64encode
+from typing import Any
+
+from flask import Flask
+
+from .configs import CONTENT_PATH
+
+# =============================================================================
+
+APP = Flask(import_name="Ryujinxkit Server")
+
+# -----------------------------------------------------------------------------
+
+
+@APP.route(rule="/")
+def _source() -> list[dict[str, Any]]:
+    return [
+        {
+            "usage": usage,
+            "data": b64encode(s=data).decode(),
+        }
+        for usage, data in zip(
+            ("app-files", "system-keys", "system-registered", "meta-file"),
+            (
+                (CONTENT_PATH / archive).read_bytes()
+                for archive in (
+                    "app.tar",
+                    "keys.tar",
+                    "registered.tar",
+                    "app-meta.json",
+                )
+            ),
+        )
+    ]
+
+
+# =============================================================================

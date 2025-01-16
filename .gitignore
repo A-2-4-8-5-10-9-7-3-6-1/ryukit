@@ -4,3 +4,10 @@
 
 # generated
 **/__pycache__/
+*/logs/
+
+# temporary
+*/temp
+
+# external
+*/vendor/

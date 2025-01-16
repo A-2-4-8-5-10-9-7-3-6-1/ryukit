@@ -1,0 +1,20 @@
+networks:
+  network:
+
+    # -----------------------------------------------------------------------------
+
+services:
+  cmd:
+    build: cmd
+    networks:
+      - network
+    stdin_open: true
+    volumes:
+      - ./cmd:/workdir
+  server:
+    build: server
+    networks:
+      - network
+    stdin_open: true
+    volumes:
+      - ./server:/workdir
