@@ -122,7 +122,7 @@ optional = false
 python-versions = ">=3.13"
 groups = ["main"]
 files = [
-    {file = "hrchypth_resolver-0.1.0.tar.gz", hash = "sha256:0c2032a79d4513fdc6d3e442b9e7c9b62f93c5f30bd6618022cad1b065f2e093"},
+    {file = "hrchypth_resolver-0.1.0.tar.gz", hash = "sha256:ffef0ab5d8ec32924f0572066339378eef447a02b4c70b08747a99ff85a5834f"},
 ]
 
 [package.source]
@@ -180,6 +180,21 @@ files = [
     {file = "mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8"},
     {file = "mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba"},
 ]
+
+[[package]]
+name = "parser-generator"
+version = "0.1.0"
+description = "Package for ArgumentParser instance-generation."
+optional = false
+python-versions = ">=3.13"
+groups = ["main"]
+files = [
+    {file = "parser_generator-0.1.0.tar.gz", hash = "sha256:800aac4fe9c1625718f917f0b8d28f5ab0e9b31fd750859820bc0f90155b7fb0"},
+]
+
+[package.source]
+type = "file"
+url = "vendor/parser_generator-0.1.0.tar.gz"
 
 [[package]]
 name = "platformdirs"
@@ -275,4 +290,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13"
-content-hash = "3abe2e48e8be1186ba204472edf68f81d52b40789a63dde7d46877439e1ca96c"
+content-hash = "5504c6e6ff2cb4169e1ae4cb4ba525de24dff2451b41b1babe757bc70c2bf244"

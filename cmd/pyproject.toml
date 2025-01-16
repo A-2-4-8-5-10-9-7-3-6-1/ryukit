@@ -11,6 +11,7 @@ dependencies = [
     "requests (>=2.32.3,<3.0.0)",
     "platformdirs (>=4.3.6,<5.0.0)",
     "rich (>=13.9.4,<14.0.0)",
+    "parser-generator @ file:///workdir/vendor/parser_generator-0.1.0.tar.gz",
     "hrchypth-resolver @ file:///workdir/vendor/hrchypth_resolver-0.1.0.tar.gz",
 ]
 

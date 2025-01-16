@@ -174,14 +174,14 @@ async def _consume_sourced(
     await gather(
         *[
             (
-                lambda task=task, iterable=iter(job): _async(
+                lambda task=task, iterable=job: _async(
                     function=lambda total=next(iterable): (
                         lambda id_=progress.add_task(
                             description=f"[dim]Unpacking: {task}[/dim]",
                             total=total,
                         ): (
                             [
-                                (
+                                [
                                     progress.update(task_id=id_, advance=size),
                                     progress.update(
                                         task_id=unpack_task_id,
@@ -192,7 +192,7 @@ async def _consume_sourced(
                                             task.replace(" ", "-").lower()
                                         ]
                                     ),
-                                )
+                                ]
                                 for size in iterable
                             ],
                             progress.update(task_id=id_, visible=False),
@@ -256,10 +256,10 @@ def source(server_url: str) -> None:
         )
 
         [
-            (
+            [
                 buffer.write(chunk),
                 progress.update(task_id=download_task_id, advance=len(chunk)),
-            )
+            ]
             for chunk in response.iter_content(chunk_size=SETUP_CHUNK_SIZE)
         ]
 
