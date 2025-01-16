@@ -28,8 +28,8 @@ def _source() -> list[dict[str, Any]]:
         for usage, data in zip(
             ("app-files", "system-keys", "system-registered", "meta-file"),
             (
-                (CONTENT_PATH / archive).read_bytes()
-                for archive in (
+                (CONTENT_PATH / file).read_bytes()
+                for file in (
                     "app.tar",
                     "keys.tar",
                     "registered.tar",
