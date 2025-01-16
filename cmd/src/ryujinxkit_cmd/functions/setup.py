@@ -27,12 +27,12 @@ from requests import HTTPError, get
 from rich.progress import Progress
 
 from ..constants.configs import (
-    RESOLVER,
     SETUP_CHUNK_SIZE,
     SETUP_CONNECTION_ERROR_MESSAGE,
     UNPACK_SLOWDOWN,
 )
 from ..enums import FileNode
+from ..session import Session
 
 # =============================================================================
 
@@ -116,26 +116,32 @@ def _process_app_data(
 
     meta: Mapping[str, Any] = loads(s=meta_data)
 
-    with RESOLVER.cache_only(
+    with Session.RESOLVER.cache_only(
         (
             FileNode.RYUJINX_APP,
             "-".join(map(meta.__getitem__, ("name", "version", "system"))),
         )
     ):
-        if RESOLVER(id_=FileNode.RYUJINX_APP).exists():
-            rmtree(path=RESOLVER(id_=FileNode.RYUJINX_APP))
+        if Session.RESOLVER(id_=FileNode.RYUJINX_APP).exists():
+            rmtree(path=Session.RESOLVER(id_=FileNode.RYUJINX_APP))
 
-        RESOLVER(id_=FileNode.RYUJINX_APP).mkdir(parents=True, exist_ok=True)
+        Session.RESOLVER(id_=FileNode.RYUJINX_APP).mkdir(
+            parents=True, exist_ok=True
+        )
 
-        slack = RESOLVER(id_=FileNode.APP_STATE).write_text(
+        slack = Session.RESOLVER(id_=FileNode.APP_STATE).write_text(
             data=dumps(
-                {"app-path": RESOLVER(id_=FileNode.RYUJINX_APP).as_uri()}
+                {
+                    "app-path": Session.RESOLVER(
+                        id_=FileNode.RYUJINX_APP
+                    ).as_uri()
+                }
             )
         )
         iterable = iter(
             _extract_tar(
                 tar_bytes=app_files,
-                path=RESOLVER(id_=FileNode.RYUJINX_APP),
+                path=Session.RESOLVER(id_=FileNode.RYUJINX_APP),
             )
         )
 
@@ -208,14 +214,14 @@ async def _consume_sourced(
                     "System Keys",
                     _extract_tar(
                         tar_bytes=sourced["system-keys"],
-                        path=RESOLVER(id_=FileNode.RYUJINX_SYSTEM),
+                        path=Session.RESOLVER(id_=FileNode.RYUJINX_SYSTEM),
                     ),
                 ),
                 (
                     "System Registered",
                     _extract_tar(
                         tar_bytes=sourced["system-registered"],
-                        path=RESOLVER(id_=FileNode.RYUJINX_REGISTERED),
+                        path=Session.RESOLVER(id_=FileNode.RYUJINX_REGISTERED),
                     ),
                 ),
             ]

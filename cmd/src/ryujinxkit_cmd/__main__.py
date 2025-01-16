@@ -1,9 +1,7 @@
-from os import getenv
-
-from ryujinxkit_cmd.functions.setup import source
+from ryujinxkit_cmd.functions.entrypoint import entrypoint
 
 # =============================================================================
 
-source(server_url=getenv(key="DOWNLOAD_LINK"))
+entrypoint()
 
 # =============================================================================

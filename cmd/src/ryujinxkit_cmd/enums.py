@@ -18,6 +18,12 @@ class FileNode(Enum):
     RYUJINX_REGISTERED = 5
     APP_DATA = 6
     APP_STATE = 7
+    DATABASE = 8
+    SAVE_FOLDER = 9
+    SAVE_COLLECTION = 10
+    SYSTEM_SAVE = 11
+    USER_SAVE = 12
+    USER_SAVE_META = 13
 
 
 # =============================================================================
