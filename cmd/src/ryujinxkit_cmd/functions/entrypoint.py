@@ -1,13 +1,19 @@
 """
 Application entrypoint.
+
+Dependency level: 2.
 """
 
 from parser_generator import Command as ParserCommand
 from parser_generator import generate
+from rich.box import Box
 from rich.console import Console
+from rich.table import Table
 
-from ..enums import Command, FileNode
+from ..constants.configs2 import COLOR_MAP
+from ..enums import Command, CustomColor, FileNode
 from ..session import Session
+from .save_states import create_save
 from .setup import source
 
 # =============================================================================
@@ -25,12 +31,28 @@ def entrypoint() -> None:
     """
 
     console = Console(color_system="truecolor", width=79)
+    table = Table(
+        "ID",
+        "TAG",
+        "CREATED",
+        box=Box(
+            box="    \n"
+            "    \n"
+            " -  \n"
+            "    \n"
+            "    \n"
+            "    \n"
+            "    \n"
+            "    \n",
+            ascii=True,
+        ),
+    )
 
     with Session:
         generate(
             function_attr="func",
             commands={
-                Command.NULL: ParserCommand(
+                Command.ROOT: ParserCommand(
                     parser_args={
                         "prog": "ryujinxkit",
                         "description": "Ryujinx-management toolkit.",
@@ -40,7 +62,19 @@ def entrypoint() -> None:
                         "description": "The command to execute.",
                         "required": True,
                     },
-                    parent=Command.NULL,
+                    parent=Command.ROOT,
+                ),
+                Command.SAVE: ParserCommand(
+                    parser_args={
+                        "name": "save",
+                        "description": "Save-state management tools.",
+                    },
+                    subparsers_args={
+                        "title": "operation",
+                        "description": "Save operation.",
+                        "required": True,
+                    },
+                    parent=Command.ROOT,
                 ),
                 Command.SOURCE_RYUJINX: ParserCommand(
                     parser_args={
@@ -58,7 +92,31 @@ def entrypoint() -> None:
                             },
                         )
                     ],
-                    parent=Command.NULL,
+                    parent=Command.ROOT,
+                ),
+                Command.CREATE_SAVE: ParserCommand(
+                    parser_args={
+                        "name": "create",
+                        "description": "Create new save state.",
+                    },
+                    params=[
+                        (
+                            ["-t", "--tag"],
+                            {
+                                "help": "A tag for your save state.",
+                                "type": str,
+                            },
+                        )
+                    ],
+                    parent=Command.SAVE,
+                ),
+                Command.LIST_SAVES: ParserCommand(
+                    parser_args={
+                        "name": "list",
+                        "description": "List save states.",
+                        "aliases": ["ls"],
+                    },
+                    parent=Command.SAVE,
                 ),
             },
             defaults={
@@ -66,10 +124,31 @@ def entrypoint() -> None:
                     "func": lambda args: [
                         source(server_url=args.server_url),
                         console.print(
-                            "\nInstalled to: "
-                            f"{Session.RESOLVER(id_=FileNode.RYUJINX_APP)}.",
+                            f"[{COLOR_MAP[CustomColor.CREAM]}]App installed "
+                            "to: "
+                            f"{Session.RESOLVER(id_=FileNode.RYUJINX_APP)}."
+                            f"[/{COLOR_MAP[CustomColor.CREAM]}]",
                             highlight=False,
                         ),
+                    ]
+                },
+                Command.CREATE_SAVE: {
+                    "func": lambda args: console.print(
+                        f"[{COLOR_MAP[CustomColor.CREAM]}]Save ID: "
+                        f"{create_save(tag=args.tag)}."
+                        f"[/{COLOR_MAP[CustomColor.CREAM]}]"
+                    ),
+                    "tag": "untagged",
+                },
+                Command.LIST_SAVES: {
+                    "func": lambda _: [
+                        [
+                            table.add_row(*map(str, row))
+                            for row in Session.database_cursor.execute(
+                                "SELECT * FROM saves"
+                            ).fetchall()
+                        ],
+                        console.print(table),
                     ]
                 },
             },

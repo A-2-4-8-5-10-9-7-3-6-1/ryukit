@@ -1,10 +1,9 @@
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS saves (
-    id INTEGER,
-    description VARCHAR(50),
-    creation_date TIMESTAMP,
-    PRIMARY KEY (id)
-)
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tag VARCHAR(20) DEFAULT untagged,
+    created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 -- ============================================================================

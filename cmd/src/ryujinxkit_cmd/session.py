@@ -130,7 +130,11 @@ class Session(metaclass=_Meta):
                 ),
                 (
                     FileNode.SAVE_FOLDER,
-                    Node(parent=FileNode.APP_DATA, cache=True, tail="saves"),
+                    Node(
+                        parent=FileNode.APP_DATA,
+                        cache=True,
+                        tail="save-states",
+                    ),
                 ),
                 (FileNode.SAVE_COLLECTION, Node(parent=FileNode.SAVE_FOLDER)),
                 (

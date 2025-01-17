@@ -30,8 +30,18 @@ class FileNode(Enum):
 
 
 class Command(Enum):
-    NULL = 0
+    ROOT = 0
     SOURCE_RYUJINX = 1
+    CREATE_SAVE = 2
+    LIST_SAVES = 3
+    SAVE = 4
+
+
+# -----------------------------------------------------------------------------
+
+
+class CustomColor(Enum):
+    CREAM = 0
 
 
 # =============================================================================

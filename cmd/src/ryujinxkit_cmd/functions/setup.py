@@ -12,7 +12,6 @@ from json import dumps, load, loads
 from pathlib import Path
 from shutil import rmtree
 from tarfile import TarFile
-from time import sleep
 from typing import (
     Any,
     Awaitable,
@@ -29,7 +28,6 @@ from rich.progress import Progress
 from ..constants.configs import (
     SETUP_CHUNK_SIZE,
     SETUP_CONNECTION_ERROR_MESSAGE,
-    UNPACK_SLOWDOWN,
 )
 from ..enums import FileNode
 from ..session import Session
@@ -187,11 +185,6 @@ async def _consume_sourced(
                                         task_id=unpack_task_id,
                                         advance=size / total,
                                     ),
-                                    sleep(
-                                        UNPACK_SLOWDOWN[
-                                            task.replace(" ", "-").lower()
-                                        ]
-                                    ),
                                 ]
                                 for size in iterable
                             ],
@@ -249,7 +242,7 @@ def source(server_url: str) -> None:
     if response.status_code != 200:
         raise HTTPError(SETUP_CONNECTION_ERROR_MESSAGE, response=response)
 
-    with BytesIO() as buffer, Progress() as progress:
+    with BytesIO() as buffer, Progress(transient=True) as progress:
         download_task_id = progress.add_task(
             description="[yellow]Downloading[/yellow]",
             total=float(response.headers.get("content-length", 0)),

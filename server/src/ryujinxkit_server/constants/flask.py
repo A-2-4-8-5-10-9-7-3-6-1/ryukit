@@ -19,7 +19,13 @@ APP = Flask(import_name="Ryujinxkit Server")
 
 
 @APP.route(rule="/")
-def _source() -> list[dict[str, Any]]:
+def _() -> list[dict[str, Any]]:
+    """
+    Content getter-route.
+
+    :returns: List of objects containing contents' data.
+    """
+
     return [
         {
             "usage": usage,
