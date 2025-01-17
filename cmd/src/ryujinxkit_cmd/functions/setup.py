@@ -4,24 +4,16 @@ Ryujinx setup-functions.
 Dependency level: 2.
 """
 
-from asyncio import gather, get_running_loop, run
+from asyncio import gather, run
 from base64 import b64decode
-from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 from json import dumps, load, loads
 from pathlib import Path
 from shutil import rmtree
 from tarfile import TarFile
-from typing import (
-    Any,
-    Awaitable,
-    Callable,
-    Generator,
-    Mapping,
-    ParamSpec,
-    TypeVar,
-)
+from typing import Any, Generator, Mapping
 
+from anyio.to_thread import run_sync
 from requests import HTTPError, get
 from rich.progress import Progress
 
@@ -33,11 +25,6 @@ from ..enums import FileNode
 from ..session import Session
 
 # =============================================================================
-
-_P = ParamSpec(name="P")
-_R = TypeVar(name="R")
-
-# -----------------------------------------------------------------------------
 
 
 def _extract_tar(
@@ -69,27 +56,6 @@ def _extract_tar(
             tar.extract(member=member, path=path)
 
             yield member.size
-
-
-# -----------------------------------------------------------------------------
-
-
-def _async(function: Callable[_P, _R]) -> Callable[_P, Awaitable[_R]]:
-    """
-    Turns a synchronous function asynchronous.
-
-    :param function: Function to convert.
-
-    :returns: Asynchronous version of `function`.
-    """
-
-    async def inner(*args: _P.args) -> _R:
-        loop = get_running_loop()
-
-        with ThreadPoolExecutor() as executor:
-            return await loop.run_in_executor(executor, function, *args)
-
-    return inner
 
 
 # -----------------------------------------------------------------------------
@@ -164,20 +130,43 @@ async def _consume_sourced(
     :param progress: Progress object for progression display.
     """
 
+    jobs: list[tuple[str, Generator[int, None, None]]] = [
+        (
+            "App Files",
+            _process_app_data(
+                app_files=sourced["app-files"],
+                meta_data=sourced["meta-file"],
+            ),
+        ),
+        (
+            "System Keys",
+            _extract_tar(
+                tar_bytes=sourced["system-keys"],
+                path=Session.RESOLVER(id_=FileNode.RYUJINX_SYSTEM),
+            ),
+        ),
+        (
+            "System Registered",
+            _extract_tar(
+                tar_bytes=sourced["system-registered"],
+                path=Session.RESOLVER(id_=FileNode.RYUJINX_REGISTERED),
+            ),
+        ),
+    ]
     unpack_task_id = progress.add_task(
         description="[yellow]Unpacking[/yellow]",
-        total=3,
+        total=len(jobs),
     )
 
     await gather(
-        *[
+        *(
             (
-                lambda task=task, iterable=job: _async(
-                    function=lambda total=next(iterable): (
+                lambda task=task, iterable=job: run_sync(
+                    lambda total: (
                         lambda id_=progress.add_task(
                             description=f"[dim]Unpacking: {task}[/dim]",
                             total=total,
-                        ): (
+                        ): [
                             [
                                 [
                                     progress.update(task_id=id_, advance=size),
@@ -189,41 +178,13 @@ async def _consume_sourced(
                                 for size in iterable
                             ],
                             progress.update(task_id=id_, visible=False),
-                        )[
-                            1
                         ]
-                    )()
-                )()
+                    )(),
+                    next(iterable),
+                )
             )()
-            for task, job in [
-                (
-                    "App Files",
-                    _process_app_data(
-                        app_files=sourced["app-files"],
-                        meta_data=sourced["meta-file"],
-                    ),
-                ),
-                (
-                    "System Keys",
-                    _extract_tar(
-                        tar_bytes=sourced["system-keys"],
-                        path=Session.RESOLVER(id_=FileNode.RYUJINX_SYSTEM),
-                    ),
-                ),
-                (
-                    "System Registered",
-                    _extract_tar(
-                        tar_bytes=sourced["system-registered"],
-                        path=Session.RESOLVER(id_=FileNode.RYUJINX_REGISTERED),
-                    ),
-                ),
-            ]
-        ]
-    )
-
-    return progress.update(
-        task_id=unpack_task_id,
-        description="[green]Unpacked[/green]",
+            for task, job in jobs
+        )
     )
 
 

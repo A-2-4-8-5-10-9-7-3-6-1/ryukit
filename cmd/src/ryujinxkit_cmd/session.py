@@ -41,6 +41,7 @@ class _Meta(type):
                 FileNode.APP_DATA,
                 FileNode.RYUJINX_DATA,
                 FileNode.SAVE_FOLDER,
+                FileNode.APP_CONFIGS,
             ]
         ]
 
@@ -88,73 +89,70 @@ class Session(metaclass=_Meta):
             appauthor="A-2-4-8-5-10-9-7-3-6-1",
             roaming=False,
         ): Resolver(
-            nodes=[
-                (
-                    FileNode.RYUJINX_APP,
-                    Node(parent=FileNode.USER_DATA, cache=True),
+            nodes={
+                FileNode.RYUJINX_APP: Node(
+                    parent=FileNode.USER_DATA,
+                    cache=True,
                 ),
-                (
-                    FileNode.RYUJINX_SYSTEM,
-                    Node(
-                        parent=FileNode.RYUJINX_DATA,
-                        cache=True,
-                        tail="system",
-                    ),
+                FileNode.RYUJINX_SYSTEM: Node(
+                    parent=FileNode.RYUJINX_DATA,
+                    cache=True,
+                    tail="system",
                 ),
-                (
-                    FileNode.RYUJINX_BIS,
-                    Node(parent=FileNode.RYUJINX_DATA, cache=True, tail="bis"),
+                FileNode.RYUJINX_REGISTERED: Node(
+                    parent=FileNode.RYUJINX_DATA,
+                    tail="bis/system/Contents/registered",
                 ),
-                (
-                    FileNode.RYUJINX_REGISTERED,
-                    Node(
-                        parent=FileNode.RYUJINX_BIS,
-                        tail="system/Contents/registered",
-                    ),
+                FileNode.APP_STATE: Node(
+                    parent=FileNode.APP_CONFIGS,
+                    cache=True,
+                    tail="state.json",
                 ),
-                (
-                    FileNode.APP_STATE,
-                    Node(
-                        parent=FileNode.APP_DATA,
-                        cache=True,
-                        tail="state.json",
-                    ),
+                FileNode.DATABASE: Node(
+                    parent=FileNode.APP_DATA,
+                    cache=True,
+                    tail="database.db",
                 ),
-                (
-                    FileNode.DATABASE,
-                    Node(
-                        parent=FileNode.APP_DATA,
-                        cache=True,
-                        tail="database.db",
-                    ),
+                FileNode.SAVE_FOLDER: Node(
+                    parent=FileNode.APP_DATA,
+                    cache=True,
+                    tail="save-states",
                 ),
-                (
-                    FileNode.SAVE_FOLDER,
-                    Node(
-                        parent=FileNode.APP_DATA,
-                        cache=True,
-                        tail="save-states",
-                    ),
+                FileNode.SAVE_COLLECTION: Node(parent=FileNode.SAVE_FOLDER),
+                FileNode.USER_SIDE_SYSTEM_SAVE: Node(
+                    parent=FileNode.SAVE_COLLECTION,
+                    tail="system",
                 ),
-                (FileNode.SAVE_COLLECTION, Node(parent=FileNode.SAVE_FOLDER)),
-                (
-                    FileNode.SYSTEM_SAVE,
-                    Node(parent=FileNode.SAVE_COLLECTION, tail="system"),
+                FileNode.USER_SIDE_SAVE: Node(
+                    parent=FileNode.SAVE_COLLECTION,
+                    tail="user",
                 ),
-                (
-                    FileNode.USER_SAVE,
-                    Node(parent=FileNode.SAVE_COLLECTION, tail="user"),
+                FileNode.USER_SIDE_SAVE_META: Node(
+                    parent=FileNode.SAVE_COLLECTION,
+                    tail="meta",
                 ),
-                (
-                    FileNode.USER_SAVE_META,
-                    Node(parent=FileNode.SAVE_COLLECTION, tail="meta"),
+                FileNode.SYSTEM_SAVE: Node(
+                    parent=FileNode.RYUJINX_DATA,
+                    cache=True,
+                    tail="bis/system/save",
                 ),
-            ],
-            primitives=[
-                (FileNode.USER_DATA, user_data_path(roaming=True)),
-                (FileNode.RYUJINX_DATA, ryujinx_pd.user_data_path),
-                (FileNode.APP_DATA, app_pd.user_data_path),
-            ],
+                FileNode.USER_SAVE: Node(
+                    parent=FileNode.RYUJINX_DATA,
+                    cache=True,
+                    tail="bis/user/save",
+                ),
+                FileNode.SAVE_META: Node(
+                    parent=FileNode.RYUJINX_DATA,
+                    cache=True,
+                    tail="bis/user/saveMeta",
+                ),
+            },
+            primitives={
+                FileNode.USER_DATA: user_data_path(roaming=True),
+                FileNode.RYUJINX_DATA: ryujinx_pd.user_data_path,
+                FileNode.APP_DATA: app_pd.user_data_path,
+                FileNode.APP_CONFIGS: app_pd.user_config_path,
+            },
         )
     )()
 
