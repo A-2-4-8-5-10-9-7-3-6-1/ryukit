@@ -11,6 +11,7 @@ from typing import Any
 from hrchypth_resolver import Node, Resolver
 from platformdirs import PlatformDirs, user_data_path
 
+from .constants.configs import APP_NAME, AUTHOR
 from .enums import FileNode
 
 # =============================================================================
@@ -43,6 +44,7 @@ class _Meta(type):
                 FileNode.APP_CONFIGS,
             ]
         ]
+
         cls.database_cursor = connect(
             database=cls.RESOLVER(id_=FileNode.DATABASE),
             autocommit=False,
@@ -76,15 +78,7 @@ class Session(metaclass=_Meta):
     """
 
     RESOLVER = (
-        lambda ryujinx_pd=PlatformDirs(
-            appname="Ryujinx",
-            appauthor=False,
-            roaming=True,
-        ), app_pd=PlatformDirs(
-            appname="RyujinxKit",
-            appauthor="A-2-4-8-5-10-9-7-3-6-1",
-            roaming=False,
-        ): Resolver(
+        lambda ryujinx_pd, app_pd: Resolver(
             nodes={
                 FileNode.RYUJINX_APP: Node(
                     parent=FileNode.USER_DATA,
@@ -107,12 +101,12 @@ class Session(metaclass=_Meta):
                 FileNode.DATABASE: Node(
                     parent=FileNode.APP_DATA,
                     cache=True,
-                    tail="database.db",
+                    tail="ryujinxkit.db",
                 ),
                 FileNode.SAVE_FOLDER: Node(
                     parent=FileNode.APP_DATA,
                     cache=True,
-                    tail="save-states",
+                    tail="states",
                 ),
                 FileNode.SAVE_COLLECTION: Node(parent=FileNode.SAVE_FOLDER),
                 FileNode.USER_SIDE_SYSTEM_SAVE: Node(
@@ -144,13 +138,16 @@ class Session(metaclass=_Meta):
                 ),
             },
             primitives={
-                FileNode.USER_DATA: user_data_path(roaming=True),
+                FileNode.USER_DATA: user_data_path(),
                 FileNode.RYUJINX_DATA: ryujinx_pd.user_data_path,
                 FileNode.APP_DATA: app_pd.user_data_path,
                 FileNode.APP_CONFIGS: app_pd.user_config_path,
             },
         )
-    )()
+    )(
+        PlatformDirs(appname="Ryujinx", appauthor=False, roaming=True),
+        PlatformDirs(appname=APP_NAME, appauthor=AUTHOR, roaming=False),
+    )
 
     # -------------------------------------------------------------------------
 

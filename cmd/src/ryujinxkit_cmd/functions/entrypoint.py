@@ -48,7 +48,9 @@ def entrypoint() -> None:
         ),
     )
     format_tag = lambda tag: (
-        tag.replace(" ", "-").lower() if tag.isalpha() else DEFAULT_TAG
+        tag.strip().replace(" ", "-").lower()
+        if tag != "" and tag[0].isalpha()
+        else DEFAULT_TAG
     )
 
     with Session:
@@ -160,7 +162,7 @@ def entrypoint() -> None:
                                             AS text
                                         ),
                                         CAST(
-                                            ROUND(size / 1000.0, 2)
+                                            ROUND(size / (1024.0 * 1024.0), 2)
                                             AS TEXT
                                         ) || "MB"
                                     FROM saves

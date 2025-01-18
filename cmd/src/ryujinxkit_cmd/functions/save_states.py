@@ -5,6 +5,7 @@ Dependency level: 2.
 """
 
 from pathlib import Path
+from shutil import rmtree
 from sqlite3 import connect
 from tarfile import TarFile
 from tempfile import TemporaryDirectory
@@ -29,8 +30,8 @@ def use_save(id_: str, operation: UseOperation) -> None:
     """
 
     total: int = 0
-    order: Callable[[Sequence], Sequence] = (
-        reversed if operation == UseOperation.RESTORE else lambda x: x
+    order: Callable[[Sequence[FileNode]], Sequence[FileNode]] = lambda x: (
+        x if operation == UseOperation.RESTORE else reversed
     )
 
     with (
@@ -52,12 +53,14 @@ def use_save(id_: str, operation: UseOperation) -> None:
             (FileNode.USER_SIDE_SAVE, FileNode.USER_SAVE),
         ]:
             source, dest = map(Session.RESOLVER, order(paths))
-            size = sum(
-                path.stat().st_size
-                for path in source.rglob(pattern="*")
-                if not path.is_dir()
-            )
+            members = [
+                path for path in source.rglob(pattern="*") if not path.is_dir()
+            ]
+            size = sum(path.stat().st_size for path in members)
             total += size
+
+            if dest.exists():
+                rmtree(path=dest)
 
             if size == 0:
                 progress.advance(task_id=task_id, advance=1)
@@ -66,19 +69,16 @@ def use_save(id_: str, operation: UseOperation) -> None:
 
             [
                 (
-                    lambda path=path, dest_path=dest / path.relative_to(
-                        source
-                    ): [
-                        dest_path.parent.mkdir(parents=True, exist_ok=True),
-                        dest_path.write_bytes(data=path.read_bytes()),
+                    lambda path, dest: [
+                        dest.parent.mkdir(parents=True, exist_ok=True),
+                        dest.write_bytes(data=path.read_bytes()),
                         progress.advance(
                             task_id=task_id,
                             advance=path.stat().st_size / size,
                         ),
                     ]
-                )()
-                for path in source.rglob(pattern="*")
-                if not path.is_dir()
+                )(path, dest / path.relative_to(source))
+                for path in members
             ]
 
     match operation:
@@ -138,13 +138,6 @@ def create_save(tag: str) -> str:
                 FileNode.USER_SIDE_SAVE,
                 FileNode.USER_SIDE_SAVE_META,
             ]
-        ]
-
-        [
-            (
-                Session.RESOLVER(id_=FileNode.USER_SIDE_SYSTEM_SAVE) / str(i)
-            ).write_text(data=str(i))
-            for i in range(100)
         ]
 
         return Session.database_cursor.lastrowid

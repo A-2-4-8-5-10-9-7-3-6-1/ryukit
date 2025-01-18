@@ -78,22 +78,25 @@ def _process_app_data(
     :returns: A generator for tracking task progression.
     """
 
-    meta: Mapping[str, Any] = loads(s=meta_data)
-
     with Session.RESOLVER.cache_only(
         (
             FileNode.RYUJINX_APP,
-            "-".join(map(meta.__getitem__, ("name", "version", "system"))),
+            "-".join(
+                map(
+                    loads(s=meta_data).__getitem__,
+                    ("name", "version", "system"),
+                )
+            ),
         )
     ):
         if Session.RESOLVER(id_=FileNode.RYUJINX_APP).exists():
             rmtree(path=Session.RESOLVER(id_=FileNode.RYUJINX_APP))
 
         Session.RESOLVER(id_=FileNode.RYUJINX_APP).mkdir(
-            parents=True, exist_ok=True
+            parents=True,
+            exist_ok=True,
         )
-
-        slack = Session.RESOLVER(id_=FileNode.APP_STATE).write_text(
+        Session.RESOLVER(id_=FileNode.APP_STATE).write_text(
             data=dumps(
                 {
                     "app-path": Session.RESOLVER(
@@ -102,18 +105,11 @@ def _process_app_data(
                 }
             )
         )
-        iterable = iter(
-            _extract_tar(
-                tar_bytes=app_files,
-                path=Session.RESOLVER(id_=FileNode.RYUJINX_APP),
-            )
+
+        return _extract_tar(
+            tar_bytes=app_files,
+            path=Session.RESOLVER(id_=FileNode.RYUJINX_APP),
         )
-
-        yield next(iterable) + slack
-        yield slack
-
-        for size in iterable:
-            yield size
 
 
 # -----------------------------------------------------------------------------
@@ -130,60 +126,59 @@ async def _consume_sourced(
     :param progress: Progress object for progression display.
     """
 
-    jobs: list[tuple[str, Generator[int, None, None]]] = [
-        (
-            "App Files",
-            _process_app_data(
-                app_files=sourced["app-files"],
-                meta_data=sourced["meta-file"],
-            ),
-        ),
-        (
-            "System Keys",
-            _extract_tar(
-                tar_bytes=sourced["system-keys"],
-                path=Session.RESOLVER(id_=FileNode.RYUJINX_SYSTEM),
-            ),
-        ),
-        (
-            "System Registered",
-            _extract_tar(
-                tar_bytes=sourced["system-registered"],
-                path=Session.RESOLVER(id_=FileNode.RYUJINX_REGISTERED),
-            ),
-        ),
-    ]
     unpack_task_id = progress.add_task(
         description="[yellow]Unpacking[/yellow]",
-        total=len(jobs),
+        total=3,
     )
 
     await gather(
-        *(
-            (
-                lambda task=task, iterable=job: run_sync(
-                    lambda total: (
-                        lambda id_=progress.add_task(
-                            description=f"[dim]Unpacking: {task}[/dim]",
-                            total=total,
-                        ): [
+        *map(
+            lambda task, iterable: run_sync(
+                lambda total: (
+                    lambda id_: [
+                        [
                             [
-                                [
-                                    progress.update(task_id=id_, advance=size),
-                                    progress.update(
-                                        task_id=unpack_task_id,
-                                        advance=size / total,
-                                    ),
-                                ]
-                                for size in iterable
-                            ],
-                            progress.update(task_id=id_, visible=False),
-                        ]
-                    )(),
-                    next(iterable),
-                )
-            )()
-            for task, job in jobs
+                                progress.update(task_id=id_, advance=size),
+                                progress.update(
+                                    task_id=unpack_task_id,
+                                    advance=size / total,
+                                ),
+                            ]
+                            for size in iterable
+                        ],
+                        progress.update(task_id=id_, visible=False),
+                    ]
+                )(
+                    progress.add_task(
+                        description=f"[dim]Unpacking: {task}[/dim]",
+                        total=total,
+                    )
+                ),
+                next(iterable),
+            ),
+            [
+                (
+                    "App Files",
+                    _process_app_data(
+                        app_files=sourced["app-files"],
+                        meta_data=sourced["meta-file"],
+                    ),
+                ),
+                (
+                    "System Keys",
+                    _extract_tar(
+                        tar_bytes=sourced["system-keys"],
+                        path=Session.RESOLVER(id_=FileNode.RYUJINX_SYSTEM),
+                    ),
+                ),
+                (
+                    "System Registered",
+                    _extract_tar(
+                        tar_bytes=sourced["system-registered"],
+                        path=Session.RESOLVER(id_=FileNode.RYUJINX_REGISTERED),
+                    ),
+                ),
+            ],
         )
     )
 
@@ -204,7 +199,7 @@ def source(server_url: str) -> None:
         raise HTTPError(SETUP_CONNECTION_ERROR_MESSAGE, response=response)
 
     with BytesIO() as buffer, Progress(transient=True) as progress:
-        download_task_id = progress.add_task(
+        task_id = progress.add_task(
             description="[yellow]Downloading[/yellow]",
             total=float(response.headers.get("content-length", 0)),
         )
@@ -212,13 +207,13 @@ def source(server_url: str) -> None:
         [
             [
                 buffer.write(chunk),
-                progress.update(task_id=download_task_id, advance=len(chunk)),
+                progress.update(task_id=task_id, advance=len(chunk)),
             ]
             for chunk in response.iter_content(chunk_size=SETUP_CHUNK_SIZE)
         ]
 
         progress.update(
-            task_id=download_task_id,
+            task_id=task_id,
             description="[green]Downloaded[/green]",
         )
 
