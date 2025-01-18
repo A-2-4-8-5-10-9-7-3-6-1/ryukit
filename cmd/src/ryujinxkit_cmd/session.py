@@ -5,7 +5,7 @@ Dependency level: 1.
 """
 
 from importlib.resources import files
-from sqlite3 import Connection, Cursor, connect
+from sqlite3 import Cursor, connect
 from typing import Any
 
 from hrchypth_resolver import Node, Resolver
@@ -26,7 +26,6 @@ class _Meta(type):
 
     RESOLVER: Resolver[FileNode]
     database_cursor: Cursor
-    _database_connection: Connection
 
     # -------------------------------------------------------------------------
 
@@ -44,12 +43,10 @@ class _Meta(type):
                 FileNode.APP_CONFIGS,
             ]
         ]
-
-        cls._database_connection = connect(
+        cls.database_cursor = connect(
             database=cls.RESOLVER(id_=FileNode.DATABASE),
-            autocommit=True,
-        )
-        cls.database_cursor = cls._database_connection.cursor()
+            autocommit=False,
+        ).cursor()
 
         cls.database_cursor.executescript(
             (
@@ -67,8 +64,7 @@ class _Meta(type):
         Closes session.
         """
 
-        cls._database_connection.commit()
-        cls._database_connection.close()
+        cls.database_cursor.connection.close()
 
 
 # -----------------------------------------------------------------------------

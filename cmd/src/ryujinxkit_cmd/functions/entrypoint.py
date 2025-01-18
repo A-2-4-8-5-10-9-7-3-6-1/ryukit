@@ -1,8 +1,10 @@
 """
 Application entrypoint.
 
-Dependency level: 2.
+Dependency level: 3.
 """
+
+from pathlib import Path
 
 from parser_generator import Command as ParserCommand
 from parser_generator import generate
@@ -14,16 +16,10 @@ from ..constants.configs import DEFAULT_TAG
 from ..constants.configs2 import COLOR_MAP
 from ..enums import Command, CustomColor, FileNode, UseOperation
 from ..session import Session
-from .save_states import create_save, use_save
-from .setup import source
+from .save_states import archive, create_save, read_archive, use_save
+from .source import source
 
 # =============================================================================
-
-# prog: str | None = None, usage: str | None = None, description: str | None = None, epilog: str | None = None, parents: Sequence[ArgumentParser] = [], formatter_class: _FormatterClass = ..., prefix_chars: str = "-", fromfile_prefix_chars: str | None = None, argument_default: Any = None, conflict_handler: str = "error", add_help: bool = True, allow_abbrev: bool = True, exit_on_error: bool = True
-
-# (name: str, *, deprecated: bool = False, help: str | None = ..., aliases: Sequence[str] = ..., prog: str | None = ..., usage: str | None = ..., description: str | None = ..., epilog: str | None = ..., parents: Sequence[ArgumentParser] = ..., formatter_class: _FormatterClass = ..., prefix_chars: str = ..., fromfile_prefix_chars: str | None = ..., argument_default: Any = ..., conflict_handler: str = ..., add_help: bool = ..., allow_abbrev: bool = ..., exit_on_error: bool = ..., **kwargs: Any)
-
-# (*name_or_flags: str, action: _ActionStr | type[Action] = ..., nargs: int | _NArgsStr | _SUPPRESS_T | None = None, const: Any = ..., default: Any = ..., type: _ActionType = ..., choices: Iterable[_T@add_argument] | None = ..., required: bool = ..., help: str | None = ..., metavar: str | tuple[str, ...] | None = ..., dest: str | None = ..., version: str = ..., **kwargs: Any)
 
 
 def entrypoint() -> None:
@@ -288,7 +284,7 @@ def entrypoint() -> None:
                     },
                     params=[
                         (
-                            ["-o", "-output"],
+                            ["-o", "--output"],
                             {
                                 "help": "Name of output file.",
                                 "type": str,
@@ -297,12 +293,42 @@ def entrypoint() -> None:
                     ],
                     parent=Command.SAVE,
                     defaults={
-                        "func": lambda _: print("comming soon..."),
-                        "output": "save-states.tar",
+                        "func": lambda args: archive(
+                            output=(
+                                args.output
+                                if args.output != ""
+                                else "save-archive.tar"
+                            )
+                        ),
+                        "output": "save-archive.tar",
+                    },
+                ),
+                Command.READ_ARCHIVE: ParserCommand(
+                    parser_args={
+                        "name": "read",
+                        "description": "Retrieve save states from your "
+                        "archive.",
+                        "help": "Read save states from archive.",
+                    },
+                    params=[
+                        (
+                            [],
+                            {
+                                "dest": "path",
+                                "help": "Path to your archive.",
+                                "type": Path,
+                            },
+                        )
+                    ],
+                    parent=Command.SAVE,
+                    defaults={
+                        "func": lambda args: read_archive(path=args.path)
                     },
                 ),
             },
         )[1]()
+
+        Session.database_cursor.connection.commit()
 
 
 # =============================================================================

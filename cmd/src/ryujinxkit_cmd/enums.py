@@ -42,6 +42,7 @@ class Command(Enum):
     USE_SAVE = 6
     RETAG = 7
     ARCHIVE = 8
+    READ_ARCHIVE = 9
 
 
 # -----------------------------------------------------------------------------

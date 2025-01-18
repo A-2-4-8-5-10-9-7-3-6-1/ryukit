@@ -1,3 +1,0 @@
-Kit should provide utilities for:
-    - Ryujinx installation and setup (args: ngrok-serverlink)
-    - Ryujinx save-state management

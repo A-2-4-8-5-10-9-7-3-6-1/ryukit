@@ -124,7 +124,7 @@ async def _consume_sourced(
     progress: Progress,
 ) -> None:
     """
-    Processes--asynchronously--data sourced from server.
+    Asynchronously processes the data sourced from server.
 
     :param sourced: Data sourced from server.
     :param progress: Progress object for progression display.
