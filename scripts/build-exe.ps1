@@ -1,11 +1,6 @@
 # =============================================================================
 
-FROM python:3.13-bullseye AS poetry
-WORKDIR /workdir
-
-RUN pip install pipx
-RUN pipx ensurepath
-
-RUN pipx install poetry
+docker build -f cmd\resources\docker\win.Dockerfile -t ryujinxkit:cmd cmd
+docker run -v ".\cmd:C:\workdir" -i ryujinxkit:cmd
 
 # =============================================================================

@@ -132,7 +132,7 @@ async def _consume_sourced(
     )
 
     await gather(
-        *map(
+        *(
             lambda task, iterable: run_sync(
                 lambda total: (
                     lambda id_: [
@@ -155,8 +155,8 @@ async def _consume_sourced(
                     )
                 ),
                 next(iterable),
-            ),
-            [
+            )(*pair)
+            for pair in [
                 (
                     "App Files",
                     _process_app_data(
@@ -178,7 +178,7 @@ async def _consume_sourced(
                         path=Session.RESOLVER(id_=FileNode.RYUJINX_REGISTERED),
                     ),
                 ),
-            ],
+            ]
         )
     )
 
