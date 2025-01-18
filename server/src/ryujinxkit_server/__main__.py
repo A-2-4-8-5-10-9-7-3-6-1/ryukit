@@ -1,7 +1,7 @@
-from ryujinxkit_server.constants.flask import APP
+from src.ryujinxkit_server.constants.server import APP
 
 # =============================================================================
 
-APP.run(host="0.0.0.0", debug=True)
+APP.run(debug=True)
 
 # =============================================================================

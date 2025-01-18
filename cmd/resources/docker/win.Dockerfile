@@ -7,12 +7,8 @@ RUN curl %PYTHON_URI% -o python-installer.exe
 RUN python-installer.exe /quiet
 
 RUN setx PATH "%PATH%;%LOCALAPPDATA%\Programs\Python\Python313"
-RUN setx PATH "%PATH%;%LOCALAPPDATA%\Programs\Python\Python313\Scripts"
 
-RUN pip install pipx
-RUN pipx ensurepath
-
-RUN pipx install poetry
+RUN pip install poetry
 
 # -----------------------------------------------------------------------------
 
@@ -21,7 +17,7 @@ WORKDIR /workdir
 
 COPY . .
 
-RUN poetry install
-RUN poetry run pyinstaller resources/configs/ryujinxkit.spec
+RUN python -m poetry install
+RUN python -m poetry run pyinstaller resources/configs/ryujinxkit.spec
 
 # =============================================================================

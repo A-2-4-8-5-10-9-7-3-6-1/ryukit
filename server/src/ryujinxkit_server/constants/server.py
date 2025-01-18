@@ -9,11 +9,11 @@ from typing import Any
 
 from flask import Flask
 
-from .configs import CONTENT_PATH
+from .configs import CONTENT_PATH, SERVER_NAME
 
 # =============================================================================
 
-APP = Flask(import_name="Ryujinxkit Server")
+APP = Flask(import_name=SERVER_NAME)
 
 # -----------------------------------------------------------------------------
 
