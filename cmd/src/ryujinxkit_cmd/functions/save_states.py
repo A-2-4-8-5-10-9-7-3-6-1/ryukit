@@ -150,7 +150,7 @@ def remove_save(id_: str) -> None:
                     if not path.is_dir()
                 ]
 
-            Session.RESOLVER(id_=FileNode.SAVE_COLLECTION).rmdir()
+            rmtree(path=Session.RESOLVER(id_=FileNode.SAVE_COLLECTION))
 
     Session.database_cursor.execute(
         """
