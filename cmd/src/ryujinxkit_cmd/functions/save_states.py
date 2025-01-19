@@ -124,35 +124,33 @@ def remove_save(id_: str) -> None:
     :param %id_%: ID of save state.
     """
 
-    with (
-        Session.RESOLVER.cache_only((FileNode.SAVE_COLLECTION, id_)),
-        Progress(transient=True) as progress,
-    ):
+    with (Session.RESOLVER.cache_only((FileNode.SAVE_COLLECTION, id_)),):
         if Session.RESOLVER(id_=FileNode.SAVE_COLLECTION).exists():
-            task_id = progress.add_task(
-                description="[yellow]Deleting[/yellow]",
-                total=Session.database_cursor.execute(
-                    """
-                    SELECT size
-                    FROM saves
-                    WHERE id = ?;
-                    """,
-                    [id_],
-                ).fetchone()[0],
-            )
+            with Progress(transient=True) as progress:
+                task_id = progress.add_task(
+                    description="[yellow]Deleting[/yellow]",
+                    total=Session.database_cursor.execute(
+                        """
+                        SELECT size
+                        FROM saves
+                        WHERE id = ?;
+                        """,
+                        [id_],
+                    ).fetchone()[0],
+                )
 
-            [
                 [
-                    path.unlink(),
-                    progress.advance(
-                        task_id=task_id, advance=path.stat().st_size
-                    ),
+                    [
+                        path.unlink(),
+                        progress.advance(
+                            task_id=task_id, advance=path.stat().st_size
+                        ),
+                    ]
+                    for path in Session.RESOLVER(
+                        id_=FileNode.SAVE_COLLECTION
+                    ).rglob(pattern="*")
+                    if not path.is_dir()
                 ]
-                for path in Session.RESOLVER(
-                    id_=FileNode.SAVE_COLLECTION
-                ).rglob(pattern="*")
-                if not path.is_dir()
-            ]
 
             Session.RESOLVER(id_=FileNode.SAVE_COLLECTION).rmdir()
 
