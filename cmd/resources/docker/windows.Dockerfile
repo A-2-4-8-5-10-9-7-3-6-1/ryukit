@@ -22,7 +22,7 @@ ENTRYPOINT [ \
     "powershell", \
     "-c", \
     "poetry install; if ($?) { \
-    poetry run pyinstaller resources\configs\pyinstaller.spec \
+    poetry run pyinstaller resources/configs/pyinstaller.spec \
     }" \
     ]
 
