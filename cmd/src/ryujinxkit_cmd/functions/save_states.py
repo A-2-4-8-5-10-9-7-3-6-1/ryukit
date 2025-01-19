@@ -137,7 +137,7 @@ def remove_save(id_: str) -> None:
                 WHERE id = ?;
                 """,
                 [id_],
-            ),
+            ).fetchone()[0],
         )
 
         [
