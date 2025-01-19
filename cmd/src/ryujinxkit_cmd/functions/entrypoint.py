@@ -75,6 +75,7 @@ def entrypoint() -> None:
                         "name": "save",
                         "description": "Save-state management tools.",
                         "help": "Tools for save-state management.",
+                        "aliases": ["sv"],
                     },
                     subparsers_args={
                         "title": "operation",
@@ -208,21 +209,13 @@ def entrypoint() -> None:
                     parent=Command.SAVE,
                     defaults={"func": lambda args: remove_save(id_=args.id)},
                 ),
-                Command.USE_SAVE: ParserCommand(
+                Command.UPDATE_SAVE: ParserCommand(
                     parser_args={
-                        "name": "use",
-                        "description": "Use your save state.",
-                        "help": "Use--includes update--a save state.",
+                        "name": "update",
+                        "description": "Update your save state.",
+                        "help": "Update a save state.",
                     },
                     params=[
-                        (
-                            ["-o", "--operation"],
-                            {
-                                "choices": ["restore", "update"],
-                                "help": "Operation to use on save.",
-                                "required": True,
-                            },
-                        ),
                         (
                             [],
                             {
@@ -236,11 +229,31 @@ def entrypoint() -> None:
                     defaults={
                         "func": lambda args: use_save(
                             id_=args.id,
-                            operation=(
-                                UseOperation.RESTORE
-                                if args.operation == "restore"
-                                else UseOperation.UPDATE
-                            ),
+                            operation=UseOperation.UPDATE,
+                        )
+                    },
+                ),
+                Command.RESTORE_SAVE: ParserCommand(
+                    parser_args={
+                        "name": "restore",
+                        "description": "Restore your save state.",
+                        "help": "Restore a save state.",
+                    },
+                    params=[
+                        (
+                            [],
+                            {
+                                "dest": "id",
+                                "help": "ID of save state.",
+                                "type": str,
+                            },
+                        ),
+                    ],
+                    parent=Command.SAVE,
+                    defaults={
+                        "func": lambda args: use_save(
+                            id_=args.id,
+                            operation=UseOperation.RESTORE,
                         )
                     },
                 ),

@@ -15,7 +15,7 @@ ENTRYPOINT [ \
     "/bin/bash", \
     "-c", \
     "python -m poetry install && \
-    python -m poetry run pyinstaller resources/configs/ryujinxkit.spec" \
+    python -m poetry run pyinstaller resources/configs/pyinstaller.spec" \
     ]
 
 # =============================================================================

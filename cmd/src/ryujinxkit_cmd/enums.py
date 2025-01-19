@@ -39,10 +39,11 @@ class Command(Enum):
     LIST_SAVES = 3
     SAVE = 4
     REMOVE_SAVE = 5
-    USE_SAVE = 6
+    UPDATE_SAVE = 6
     RETAG = 7
     ARCHIVE = 8
     READ_ARCHIVE = 9
+    RESTORE_SAVE = 10
 
 
 # -----------------------------------------------------------------------------
