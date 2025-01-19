@@ -133,28 +133,30 @@ async def _consume_sourced(
 
     await gather(
         *(
-            lambda task, iterable: run_sync(
-                lambda total: (
-                    lambda id_: [
-                        [
+            (
+                lambda task, iterable: run_sync(
+                    lambda total: (
+                        lambda id_: [
                             [
-                                progress.update(task_id=id_, advance=size),
-                                progress.update(
-                                    task_id=unpack_task_id,
-                                    advance=size / total,
-                                ),
-                            ]
-                            for size in iterable
-                        ],
-                        progress.update(task_id=id_, visible=False),
-                    ]
-                )(
-                    progress.add_task(
-                        description=f"[dim]Unpacking: {task}[/dim]",
-                        total=total,
-                    )
-                ),
-                next(iterable),
+                                [
+                                    progress.update(task_id=id_, advance=size),
+                                    progress.update(
+                                        task_id=unpack_task_id,
+                                        advance=size / total,
+                                    ),
+                                ]
+                                for size in iterable
+                            ],
+                            progress.update(task_id=id_, visible=False),
+                        ]
+                    )(
+                        progress.add_task(
+                            description=f"[dim]Unpacking: {task}[/dim]",
+                            total=total,
+                        )
+                    ),
+                    next(iterable),
+                )
             )(*pair)
             for pair in [
                 (
