@@ -5,6 +5,7 @@ Dependency level: 3.
 """
 
 from pathlib import Path
+from time import sleep
 
 from parser_generator import Command as ParserCommand
 from parser_generator import generate
@@ -12,11 +13,11 @@ from rich.box import Box
 from rich.console import Console
 from rich.table import Table
 
-from ..constants.configs import DEFAULT_TAG
+from ..constants.configs import DATABASE_INSERT_BUFFER, DEFAULT_TAG
 from ..constants.configs2 import COLOR_MAP
 from ..enums import Command, CustomColor, FileNode, UseOperation
 from ..session import Session
-from .save_states import archive, create_save, read_archive, use_save
+from .save_states import archive, read_archive, use_save
 from .source import source
 
 # =============================================================================
@@ -130,11 +131,21 @@ def entrypoint() -> None:
                     ],
                     parent=Command.SAVE,
                     defaults={
-                        "func": lambda args: console.print(
-                            f"[{COLOR_MAP[CustomColor.CREAM]}]Save ID: "
-                            f"{create_save(tag=format_tag(args.tag))}."
-                            f"[/{COLOR_MAP[CustomColor.CREAM]}]"
-                        ),
+                        "func": lambda args: [
+                            Session.database_cursor.execute(
+                                """
+                                    INSERT INTO saves (tag)
+                                    VALUES (?);
+                                """,
+                                [format_tag(args.tag)],
+                            ),
+                            sleep(DATABASE_INSERT_BUFFER),
+                            console.print(
+                                f"[{COLOR_MAP[CustomColor.CREAM]}]Save ID: "
+                                f"{Session.database_cursor.lastrowid}."
+                                f"[/{COLOR_MAP[CustomColor.CREAM]}]"
+                            ),
+                        ],
                         "tag": DEFAULT_TAG,
                     },
                 ),
@@ -149,7 +160,7 @@ def entrypoint() -> None:
                     defaults={
                         "func": lambda _: [
                             [
-                                table.add_row(*map(str, row))
+                                table.add_row(*row)
                                 for row in Session.database_cursor.execute(
                                     """
                                     SELECT 
@@ -162,7 +173,7 @@ def entrypoint() -> None:
                                             AS text
                                         ),
                                         CAST(
-                                            ROUND(size / (1024.0 * 1024.0), 2)
+                                            ROUND(size / (1024 * 1024.0), 2)
                                             AS TEXT
                                         ) || "MB"
                                     FROM saves

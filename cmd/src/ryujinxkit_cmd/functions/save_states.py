@@ -30,8 +30,8 @@ def use_save(id_: str, operation: UseOperation) -> None:
     """
 
     total: int = 0
-    order: Callable[[Sequence[FileNode]], Sequence[FileNode]] = lambda x: (
-        x if operation == UseOperation.RESTORE else reversed
+    order: Callable[[Sequence[FileNode]], Sequence[FileNode]] = (
+        (lambda x: x) if operation == UseOperation.RESTORE else reversed
     )
 
     with (
@@ -56,7 +56,18 @@ def use_save(id_: str, operation: UseOperation) -> None:
             members = [
                 path for path in source.rglob(pattern="*") if not path.is_dir()
             ]
-            size = sum(path.stat().st_size for path in members)
+            size = (
+                Session.database_cursor.execute(
+                    """
+                    SELECT size
+                    FROM saves
+                    WHERE id = ?;
+                    """,
+                    [id_],
+                ).fetchone()[0]
+                if operation == UseOperation.RESTORE
+                else sum(path.stat().st_size for path in members)
+            )
             total += size
 
             if dest.exists():
@@ -101,46 +112,6 @@ def use_save(id_: str, operation: UseOperation) -> None:
                 """,
                 [id_],
             )
-
-
-# -----------------------------------------------------------------------------
-
-
-def create_save(tag: str) -> str:
-    """
-    Create a new save state.
-
-    **Notes**:
-        - Format `tag` before passing it through.
-
-    :param tag: Save-state's tag.
-
-    :returns: ID of the save state.
-    """
-
-    Session.database_cursor.execute(
-        """
-            INSERT INTO saves (tag)
-            VALUES (?);
-        """,
-        [tag],
-    )
-
-    sleep(DATABASE_INSERT_BUFFER)
-
-    with Session.RESOLVER.cache_only(
-        (FileNode.SAVE_COLLECTION, str(Session.database_cursor.lastrowid))
-    ):
-        [
-            Session.RESOLVER(id_=id_).mkdir(parents=True)
-            for id_ in [
-                FileNode.USER_SIDE_SYSTEM_SAVE,
-                FileNode.USER_SIDE_SAVE,
-                FileNode.USER_SIDE_SAVE_META,
-            ]
-        ]
-
-        return Session.database_cursor.lastrowid
 
 
 # -----------------------------------------------------------------------------
