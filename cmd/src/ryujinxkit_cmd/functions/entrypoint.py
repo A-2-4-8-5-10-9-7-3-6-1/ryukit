@@ -17,7 +17,7 @@ from ..constants.configs import DATABASE_INSERT_BUFFER, DEFAULT_TAG
 from ..constants.configs2 import COLOR_MAP
 from ..enums import Command, CustomColor, FileNode, UseOperation
 from ..session import Session
-from .save_states import archive, read_archive, use_save
+from .save_states import archive, read_archive, remove_save, use_save
 from .source import source
 
 # =============================================================================
@@ -200,21 +200,13 @@ def entrypoint() -> None:
                             [],
                             {
                                 "help": "The save-state's ID.",
-                                "type": int,
+                                "type": str,
                                 "dest": "id",
                             },
                         )
                     ],
                     parent=Command.SAVE,
-                    defaults={
-                        "func": lambda args: Session.database_cursor.execute(
-                            """
-                            DELETE FROM saves
-                            WHERE id = ?;
-                            """,
-                            [args.id],
-                        )
-                    },
+                    defaults={"func": lambda args: remove_save(id_=args.id)},
                 ),
                 Command.USE_SAVE: ParserCommand(
                     parser_args={
