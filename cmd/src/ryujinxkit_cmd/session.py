@@ -101,7 +101,7 @@ class Session(metaclass=_Meta):
                 FileNode.DATABASE: Node(
                     parent=FileNode.APP_DATA,
                     cache=True,
-                    tail="ryujinxkit.db",
+                    tail="database-sqlite3.db",
                 ),
                 FileNode.SAVE_FOLDER: Node(
                     parent=FileNode.APP_DATA,

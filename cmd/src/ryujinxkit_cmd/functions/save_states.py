@@ -168,7 +168,7 @@ def archive(output: str) -> None:
     """
     Archive all save states into a tar file.
 
-    :param output: A title for the tar file.
+    :param output: Output-file path.
     """
 
     with (
@@ -192,8 +192,8 @@ def archive(output: str) -> None:
 
         for id_, size in Session.database_cursor.execute(
             """
-            SELECT CAST(id AS TEXT), size 
-            FROM saves
+            SELECT CAST(id AS TEXT), size
+            FROM saves;
             """
         ).fetchall():
             with Session.RESOLVER.cache_only((FileNode.SAVE_COLLECTION, id_)):
@@ -205,18 +205,15 @@ def archive(output: str) -> None:
                                 Session.RESOLVER(id_=FileNode.APP_DATA)
                             ),
                         ),
-                        (
-                            progress.advance(
-                                task_id=task_id,
-                                advance=path.stat().st_size / size,
-                            )
-                            if not path.is_dir()
-                            else None
+                        progress.advance(
+                            task_id=task_id,
+                            advance=path.stat().st_size / size,
                         ),
                     ]
                     for path in Session.RESOLVER(
                         id_=FileNode.SAVE_COLLECTION
                     ).rglob(pattern="*")
+                    if not path.is_dir()
                 ]
 
 
