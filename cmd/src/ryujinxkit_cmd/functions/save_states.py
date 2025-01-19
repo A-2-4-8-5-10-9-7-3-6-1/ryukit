@@ -140,12 +140,10 @@ def remove_save(id_: str) -> None:
                 )
 
                 [
-                    [
-                        path.unlink(),
-                        progress.advance(
-                            task_id=task_id, advance=path.stat().st_size
-                        ),
-                    ]
+                    progress.advance(
+                        task_id=task_id,
+                        advance=[path.stat().st_size, path.unlink()][0],
+                    )
                     for path in Session.RESOLVER(
                         id_=FileNode.SAVE_COLLECTION
                     ).rglob(pattern="*")
