@@ -10,7 +10,7 @@ from sqlite3 import connect
 from tarfile import TarFile
 from tempfile import TemporaryDirectory
 from time import sleep
-from typing import Callable, Sequence
+from typing import Any, Callable, Sequence
 
 from rich.progress import Progress
 
@@ -233,19 +233,20 @@ def read_archive(path: Path) -> int:
     """
 
     with (
-        TemporaryDirectory() as temp_dir,
+        TemporaryDirectory() as temp,
         TarFile(name=path, stream=True) as tar,
         Progress(transient=True) as progress,
     ):
-        temp_dir = Path(temp_dir)
+        temp = Path(temp)
         task_id = progress.add_task(
             description="[yellow]Extracting[/yellow]",
             total=0,
         )
+        states: list[Sequence[Any]]
 
         [
             [
-                tar.extract(member=member, path=temp_dir),
+                tar.extract(member=member, path=temp),
                 progress.advance(task_id=task_id, advance=member.size),
             ]
             for member in [
@@ -269,18 +270,23 @@ def read_archive(path: Path) -> int:
             description="[green]Extracted[/green]",
         )
 
-        cursor = connect(
-            database=temp_dir
+        with connect(
+            database=temp
             / Session.RESOLVER(id_=FileNode.DATABASE).relative_to(
                 Session.RESOLVER(id_=FileNode.APP_DATA)
             )
-        ).cursor()
-        states = cursor.execute(
-            """
-            SELECT CAST(id AS TEXT), tag, created, updated, used, size
-            FROM saves;
-            """
-        ).fetchall()
+        ) as connection:
+            states = (
+                connection.cursor()
+                .execute(
+                    """
+                SELECT CAST(id AS TEXT), tag, created, updated, used, size
+                FROM saves;
+                """
+                )
+                .fetchall()
+            )
+
         task_id = progress.add_task(
             description="[yellow]Reading[/yellow]",
             total=len(states),
@@ -288,9 +294,7 @@ def read_archive(path: Path) -> int:
 
         for id_, *attrs, size in states:
             save_dir = (
-                temp_dir
-                / Session.RESOLVER(id_=FileNode.SAVE_FOLDER).name
-                / id_
+                temp / Session.RESOLVER(id_=FileNode.SAVE_FOLDER).name / id_
             )
 
             Session.database_cursor.execute(
