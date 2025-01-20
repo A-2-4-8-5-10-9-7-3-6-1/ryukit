@@ -16,5 +16,9 @@ DATABASE_INSERT_BUFFER = 0.3
 DEFAULT_TAG = "untagged"
 APP_NAME = "RyujinxKit"
 AUTHOR = "A-2-4-8-5-10-9-7-3-6-1"
+SOURCE_META = "ryujinx.json"
+SOURCE_REGISTERED = "registered"
+SOURCE_APP = "app"
+SOURCE_KEYS = "keys"
 
 # =============================================================================

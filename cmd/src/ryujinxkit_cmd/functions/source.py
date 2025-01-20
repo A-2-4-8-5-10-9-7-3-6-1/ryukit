@@ -4,188 +4,26 @@ Ryujinx setup-functions.
 Dependency level: 2.
 """
 
-from asyncio import gather, run
-from base64 import b64decode
 from io import BytesIO
-from json import dumps, load, loads
-from pathlib import Path
+from json import load
 from shutil import rmtree
 from tarfile import TarFile
-from typing import Any, Generator, Mapping
 
-from anyio.to_thread import run_sync
 from requests import HTTPError, get
 from rich.progress import Progress
 
 from ..constants.configs import (
     SETUP_CHUNK_SIZE,
     SETUP_CONNECTION_ERROR_MESSAGE,
+    SOURCE_APP,
+    SOURCE_KEYS,
+    SOURCE_META,
+    SOURCE_REGISTERED,
 )
 from ..enums import FileNode
 from ..session import Session
 
 # =============================================================================
-
-
-def _extract_tar(
-    tar_bytes: bytes,
-    path: Path,
-) -> Generator[int, None, None]:
-    """
-    Extracts contents from tar file, and informs on progression.
-
-    **Notes**:
-        - Generator's first term is the task's *size*.
-        - Generator's successive terms are task's chunk-sizes.
-
-    :param tar_bytes: Contents of tar file as bytes.
-    :param path: Extraction path of tar file.
-
-    :returns: Generator for task-progression information.
-    """
-
-    with (
-        BytesIO(initial_bytes=tar_bytes) as buffer,
-        TarFile(fileobj=buffer) as tar,
-    ):
-        members = tar.getmembers()
-
-        yield sum(member.size for member in members)
-
-        for member in members:
-            tar.extract(member=member, path=path)
-
-            yield member.size
-
-
-# -----------------------------------------------------------------------------
-
-
-def _process_app_data(
-    app_files: bytes,
-    meta_data: bytes,
-) -> Generator[int, None, None]:
-    """
-    Handles setup of Ryujinx app directory and path.
-
-    **Notes**:
-        - Generator's first term is the task's *size*.
-        - Generator's successive terms are task's chunk-sizes.
-
-    :param app_files: Sourced data corresponding to Ryujinx app-files.
-    :param meta_data: Sourced data corresponding to Ryujinx app-meta.
-
-    :returns: A generator for tracking task progression.
-    """
-
-    with Session.RESOLVER.cache_only(
-        (
-            FileNode.RYUJINX_APP,
-            "-".join(
-                map(
-                    loads(s=meta_data).__getitem__,
-                    ("name", "version", "system"),
-                )
-            ),
-        )
-    ):
-        if Session.RESOLVER(id_=FileNode.RYUJINX_APP).exists():
-            rmtree(path=Session.RESOLVER(id_=FileNode.RYUJINX_APP))
-
-        Session.RESOLVER(id_=FileNode.RYUJINX_APP).mkdir(
-            parents=True,
-            exist_ok=True,
-        )
-        Session.RESOLVER(id_=FileNode.APP_STATE).write_text(
-            data=dumps(
-                {
-                    "app-path": Session.RESOLVER(
-                        id_=FileNode.RYUJINX_APP
-                    ).as_uri()
-                }
-            )
-        )
-
-        return _extract_tar(
-            tar_bytes=app_files,
-            path=Session.RESOLVER(id_=FileNode.RYUJINX_APP),
-        )
-
-
-# -----------------------------------------------------------------------------
-
-
-async def _consume_sourced(
-    sourced: Mapping[str, Any],
-    progress: Progress,
-) -> None:
-    """
-    Asynchronously processes the data sourced from server.
-
-    :param sourced: Data sourced from server.
-    :param progress: Progress object for progression display.
-    """
-
-    unpack_task_id = progress.add_task(
-        description="[yellow]Unpacking[/yellow]",
-        total=3,
-    )
-
-    await gather(
-        *(
-            (
-                lambda task, iterable: run_sync(
-                    lambda total: (
-                        lambda id_: [
-                            [
-                                [
-                                    progress.update(task_id=id_, advance=size),
-                                    progress.update(
-                                        task_id=unpack_task_id,
-                                        advance=size / total,
-                                    ),
-                                ]
-                                for size in iterable
-                            ],
-                            progress.update(task_id=id_, visible=False),
-                        ]
-                    )(
-                        progress.add_task(
-                            description=f"[dim]Unpacking: {task}[/dim]",
-                            total=total,
-                        )
-                    ),
-                    next(iterable),
-                )
-            )(*pair)
-            for pair in [
-                (
-                    "App Files",
-                    _process_app_data(
-                        app_files=sourced["app-files"],
-                        meta_data=sourced["meta-file"],
-                    ),
-                ),
-                (
-                    "System Keys",
-                    _extract_tar(
-                        tar_bytes=sourced["system-keys"],
-                        path=Session.RESOLVER(id_=FileNode.RYUJINX_SYSTEM),
-                    ),
-                ),
-                (
-                    "System Registered",
-                    _extract_tar(
-                        tar_bytes=sourced["system-registered"],
-                        path=Session.RESOLVER(id_=FileNode.RYUJINX_REGISTERED),
-                    ),
-                ),
-            ]
-        )
-    )
-
-
-# -----------------------------------------------------------------------------
 
 
 def source(server_url: str) -> None:
@@ -200,7 +38,7 @@ def source(server_url: str) -> None:
     if response.status_code != 200:
         raise HTTPError(SETUP_CONNECTION_ERROR_MESSAGE, response=response)
 
-    with BytesIO() as buffer, Progress(transient=True) as progress:
+    with Progress(transient=True) as progress, BytesIO() as buffer:
         task_id = progress.add_task(
             description="[yellow]Downloading[/yellow]",
             total=float(response.headers.get("content-length", 0)),
@@ -221,15 +59,68 @@ def source(server_url: str) -> None:
 
         buffer.seek(0)
 
-        run(
-            main=_consume_sourced(
-                sourced={
-                    packet["usage"]: b64decode(s=packet["data"])
-                    for packet in load(fp=buffer)
-                },
-                progress=progress,
+        with TarFile(fileobj=buffer) as tar:
+            task_id = progress.add_task(
+                description="[yellow]Unpacking[/yellow]",
+                total=sum(1 for _ in tar),
             )
-        )
+            routes: dict[str, FileNode] = {
+                SOURCE_APP: FileNode.RYUJINX_APP,
+                SOURCE_REGISTERED: FileNode.RYUJINX_REGISTERED,
+                SOURCE_KEYS: FileNode.RYUJINX_SYSTEM,
+            }
+
+            with (
+                tar.extractfile(member=SOURCE_META) as buffer,
+                Session.RESOLVER.cache_only(
+                    (
+                        FileNode.RYUJINX_APP,
+                        "-".join(
+                            map(
+                                load(fp=buffer).__getitem__,
+                                ("name", "version", "system"),
+                            )
+                        ),
+                    )
+                ),
+            ):
+                if Session.RESOLVER(id_=FileNode.RYUJINX_APP).exists():
+                    rmtree(path=Session.RESOLVER(id_=FileNode.RYUJINX_APP))
+
+            [
+                [
+                    (
+                        (
+                            lambda buffer, head, tail=None: [
+                                (
+                                    (
+                                        lambda path: [
+                                            path.parent.mkdir(
+                                                parents=True,
+                                                exist_ok=True,
+                                            ),
+                                            path.write_bytes(buffer.read()),
+                                        ]
+                                    )(
+                                        Session.RESOLVER(id_=routes[head])
+                                        / tail
+                                    )
+                                    if head in routes
+                                    else None
+                                ),
+                                buffer.close(),
+                            ]
+                        )(
+                            tar.extractfile(member=member),
+                            *member.name.split(sep="/", maxsplit=1),
+                        )
+                        if not member.isdir()
+                        else None
+                    ),
+                    progress.advance(task_id=task_id, advance=1),
+                ]
+                for member in tar
+            ]
 
 
 # =============================================================================

@@ -93,11 +93,6 @@ class Session(metaclass=_Meta):
                     parent=FileNode.RYUJINX_DATA,
                     tail="bis/system/Contents/registered",
                 ),
-                FileNode.APP_STATE: Node(
-                    parent=FileNode.APP_CONFIGS,
-                    cache=True,
-                    tail="state.json",
-                ),
                 FileNode.DATABASE: Node(
                     parent=FileNode.APP_DATA,
                     cache=True,

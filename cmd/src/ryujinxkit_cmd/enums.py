@@ -16,7 +16,6 @@ class FileNode(Enum):
     RYUJINX_SYSTEM = 3
     RYUJINX_REGISTERED = 5
     APP_DATA = 6
-    APP_STATE = 7
     APP_CONFIGS = 17
     DATABASE = 8
     SAVE_FOLDER = 9
@@ -34,7 +33,7 @@ class FileNode(Enum):
 
 class Command(Enum):
     ROOT = 0
-    SOURCE_RYUJINX = 1
+    SOURCE = 1
     CREATE_SAVE = 2
     LIST_SAVES = 3
     SAVE = 4

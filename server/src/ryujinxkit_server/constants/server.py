@@ -4,8 +4,7 @@ Flask related constants.
 Dependency level: 1.
 """
 
-from base64 import b64encode
-from typing import Any
+from pathlib import Path
 
 from flask import Flask
 
@@ -19,31 +18,14 @@ APP = Flask(import_name=SERVER_NAME)
 
 
 @APP.route(rule="/")
-def _() -> list[dict[str, Any]]:
+def _() -> bytes:
     """
-    Content getter-route.
+    Route to get server content.
 
-    :returns: List of objects containing contents' data.
+    :returns: Content pack as bytes.
     """
 
-    return [
-        {
-            "usage": usage,
-            "data": b64encode(s=data).decode(),
-        }
-        for usage, data in zip(
-            ("app-files", "system-keys", "system-registered", "meta-file"),
-            (
-                (CONTENT_PATH / file).read_bytes()
-                for file in (
-                    "app.tar",
-                    "keys.tar",
-                    "registered.tar",
-                    "app-meta.json",
-                )
-            ),
-        )
-    ]
+    return Path(CONTENT_PATH).read_bytes()
 
 
 # =============================================================================

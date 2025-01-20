@@ -84,7 +84,7 @@ def entrypoint() -> None:
                     },
                     parent=Command.ROOT,
                 ),
-                Command.SOURCE_RYUJINX: ParserCommand(
+                Command.SOURCE: ParserCommand(
                     parser_args={
                         "name": "install",
                         "description": "Install Ryujinx.",
@@ -106,10 +106,12 @@ def entrypoint() -> None:
                         "func": lambda args: [
                             source(server_url=args.server_url),
                             console.print(
-                                f"[{COLOR_MAP[CustomColor.CREAM]}]App "
-                                "installed to: "
-                                f"{Session.RESOLVER(id_=FileNode.RYUJINX_APP)}."
-                                f"[/{COLOR_MAP[CustomColor.CREAM]}]",
+                                f"[{COLOR_MAP[CustomColor.CREAM]}]"
+                                "Installed to: "
+                                + str(
+                                    Session.RESOLVER(id_=FileNode.RYUJINX_APP)
+                                )
+                                + f".[/{COLOR_MAP[CustomColor.CREAM]}]",
                                 highlight=False,
                             ),
                         ]
@@ -142,9 +144,10 @@ def entrypoint() -> None:
                             ),
                             sleep(DATABASE_INSERT_BUFFER),
                             console.print(
-                                f"[{COLOR_MAP[CustomColor.CREAM]}]Save ID: "
-                                f"{Session.database_cursor.lastrowid}."
-                                f"[/{COLOR_MAP[CustomColor.CREAM]}]"
+                                f"[{COLOR_MAP[CustomColor.CREAM]}]"
+                                "Save ID: "
+                                + str(Session.database_cursor.lastrowid)
+                                + f".[/{COLOR_MAP[CustomColor.CREAM]}]"
                             ),
                         ],
                         "tag": DEFAULT_TAG,
@@ -315,10 +318,10 @@ def entrypoint() -> None:
                             output=(
                                 args.output
                                 if args.output != ""
-                                else "save-archive.tar"
+                                else "saves.tar"
                             )
                         ),
-                        "output": "save-archive.tar",
+                        "output": "saves.tar",
                     },
                 ),
                 Command.READ_ARCHIVE: ParserCommand(
