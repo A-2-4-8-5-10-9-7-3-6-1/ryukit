@@ -6,7 +6,6 @@ Dependency level: 2.
 
 from io import BytesIO
 from json import load
-from shutil import rmtree
 from tarfile import TarFile
 
 from requests import HTTPError, get
@@ -71,56 +70,55 @@ def source(server_url: str) -> None:
             }
 
             with (
-                tar.extractfile(member=SOURCE_META) as buffer,
+                tar.extractfile(member=SOURCE_META) as meta,
                 Session.RESOLVER.cache_only(
                     (
                         FileNode.RYUJINX_APP,
                         "-".join(
                             map(
-                                load(fp=buffer).__getitem__,
+                                load(fp=meta).__getitem__,
                                 ("name", "version", "system"),
                             )
                         ),
                     )
                 ),
             ):
-                if Session.RESOLVER(id_=FileNode.RYUJINX_APP).exists():
-                    rmtree(path=Session.RESOLVER(id_=FileNode.RYUJINX_APP))
-
-            [
                 [
-                    (
+                    [
                         (
-                            lambda buffer, head, tail=None: [
-                                (
+                            (
+                                lambda buffer, head, tail=None: [
                                     (
-                                        lambda path: [
-                                            path.parent.mkdir(
-                                                parents=True,
-                                                exist_ok=True,
-                                            ),
-                                            path.write_bytes(buffer.read()),
-                                        ]
-                                    )(
-                                        Session.RESOLVER(id_=routes[head])
-                                        / tail
-                                    )
-                                    if head in routes
-                                    else None
-                                ),
-                                buffer.close(),
-                            ]
-                        )(
-                            tar.extractfile(member=member),
-                            *member.name.split(sep="/", maxsplit=1),
-                        )
-                        if not member.isdir()
-                        else None
-                    ),
-                    progress.advance(task_id=task_id, advance=1),
+                                        (
+                                            lambda path: [
+                                                path.parent.mkdir(
+                                                    parents=True,
+                                                    exist_ok=True,
+                                                ),
+                                                path.write_bytes(
+                                                    buffer.read()
+                                                ),
+                                            ]
+                                        )(
+                                            Session.RESOLVER(id_=routes[head])
+                                            / tail
+                                        )
+                                        if head in routes
+                                        else None
+                                    ),
+                                    buffer.close(),
+                                ]
+                            )(
+                                tar.extractfile(member=member),
+                                *member.name.split(sep="/", maxsplit=1),
+                            )
+                            if not member.isdir()
+                            else None
+                        ),
+                        progress.advance(task_id=task_id, advance=1),
+                    ]
+                    for member in tar
                 ]
-                for member in tar
-            ]
 
 
 # =============================================================================
