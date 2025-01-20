@@ -8,5 +8,4 @@ RUN pip install poetry
 
 FROM poetry
 COPY . .
-RUN poetry install
-ENTRYPOINT [ "poetry", "run", "pyinstaller", "resources/configs/pyinstaller.spec" ]
+ENTRYPOINT [ "powershell", "-c", "poetry install; if ($?) { poetry run pyinstaller pyinstaller.spec }" ]

@@ -2,11 +2,11 @@
 
 
 a = Analysis(
-    ['../../src/ryujinxkit_cmd/__main__.py'],
+    ['src/ryujinxkit_cmd/__main__.py'],
     pathex=[],
     binaries=[],
     datas=[
-        ('../../src/ryujinxkit_cmd/assets', 'ryujinxkit_cmd/assets')
+        ('src/ryujinxkit_cmd/assets', 'ryujinxkit_cmd/assets')
     ],
     hiddenimports=[],
     hookspath=[],
@@ -37,5 +37,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['../images/python.ico'],
+    icon=['resources/images/python.ico'],
 )
