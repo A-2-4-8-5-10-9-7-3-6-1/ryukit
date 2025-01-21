@@ -127,19 +127,19 @@ files = [
 ]
 
 [[package]]
-name = "hrchypth-resolver"
+name = "hyrchy-pthresolver"
 version = "0.1.0"
-description = "Filesystem-hierachy path-resoluion tool."
+description = "Hierachy path-resoluion tool."
 optional = false
 python-versions = ">=3.13"
 groups = ["main"]
 files = [
-    {file = "hrchypth_resolver-0.1.0.tar.gz", hash = "sha256:00359745e80cd8ffda198ceff71792c7b02648bff7aed56d1d01a1a578749f43"},
+    {file = "hyrchy_pthresolver-0.1.0.tar.gz", hash = "sha256:4efe23f28fe3ebce4239322fe33783528cf206339005f2f6dd1fd39e7436378f"},
 ]
 
 [package.source]
 type = "file"
-url = "vendor/hrchypth_resolver-0.1.0.tar.gz"
+url = "vendor/hyrchy_pthresolver-0.1.0.tar.gz"
 
 [[package]]
 name = "idna"
@@ -224,12 +224,12 @@ files = [
 [[package]]
 name = "parser-generator"
 version = "0.1.0"
-description = "Package for ArgumentParser instance-generation."
+description = "argparse.ArgumentParser instance-generation tools."
 optional = false
 python-versions = ">=3.13"
 groups = ["main"]
 files = [
-    {file = "parser_generator-0.1.0.tar.gz", hash = "sha256:9f09bc41a334bbfee10fc1e449947fa7669c8468a187b570ee92f8c072a9bbf8"},
+    {file = "parser_generator-0.1.0.tar.gz", hash = "sha256:8b946ebf74796966838d17a01d4312ef06f2d40771eead72deab5dfefdd5992f"},
 ]
 
 [package.source]
@@ -428,4 +428,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13,<3.14"
-content-hash = "753ccfad2db68182aaea9845999a9d68d52a9ec496e5aee4576c251bd6d47842"
+content-hash = "fe11840829eff5be83fa58c23fd05f84d0933dcf3a40df468af1140406d259f0"

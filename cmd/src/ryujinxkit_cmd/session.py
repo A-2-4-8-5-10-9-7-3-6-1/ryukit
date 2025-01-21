@@ -8,7 +8,7 @@ from importlib.resources import files
 from sqlite3 import Cursor, connect
 from typing import Any
 
-from hrchypth_resolver import Node, Resolver
+from hyrchy_pthresolver import Node, Resolver
 from platformdirs import PlatformDirs, user_data_path
 
 from .constants.configs import APP_NAME, AUTHOR
@@ -96,7 +96,7 @@ class Session(metaclass=_Meta):
                 FileNode.DATABASE: Node(
                     parent=FileNode.APP_DATA,
                     cache=True,
-                    tail="database-sqlite3.db",
+                    tail="metadata.db",
                 ),
                 FileNode.SAVE_FOLDER: Node(
                     parent=FileNode.APP_DATA,

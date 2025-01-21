@@ -1,7 +1,7 @@
 [project]
 name = "ryujinxkit-cmd"
 version = "0.1.0"
-description = "Ryujinx management package."
+description = "Ryujinxkit command-line package."
 authors = [
     {name = "A-2-4-8-5-10-9-7-3-6-1",email = "112730580+A-2-4-8-5-10-9-7-3-6-1@users.noreply.github.com"}
 ]
@@ -11,7 +11,7 @@ dependencies = [
     "requests (>=2.32.3,<3.0.0)",
     "platformdirs (>=4.3.6,<5.0.0)",
     "rich (>=13.9.4,<14.0.0)",
-    "hrchypth-resolver @ file:///workdir/vendor/hrchypth_resolver-0.1.0.tar.gz",
+    "hyrchy-pthresolver @ file:///workdir/vendor/hyrchy_pthresolver-0.1.0.tar.gz",
     "parser-generator @ file:///workdir/vendor/parser_generator-0.1.0.tar.gz",
     "pyinstaller (>=6.11.1,<7.0.0)",
 ]
