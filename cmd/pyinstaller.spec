@@ -37,5 +37,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['resources/images/python.ico'],
+    icon=['resources/images/hex.ico'],
 )
