@@ -1,12 +1,13 @@
 <!-- ====================================================================== -->
 
 # RyujinxKit
-In this repository is a package--executables are available--for a commandline
-toolkit, and its accompanying server, which enable the management of
-Ryujinx on the Windows platform.
+This repository delivers a (Python) package--along with executables--a
+toolkit for Ryujinx app-management. The functions of this package include:
 
-- Ryujinx installation
-- Ryujinx setup
-- Ryujinx save-state management
+- Installation and setup
+- Save-state management.
+
+***The tools provided in this repository are oriented towards Ryujinx on
+Windows systems.***
 
 <!-- ====================================================================== -->
