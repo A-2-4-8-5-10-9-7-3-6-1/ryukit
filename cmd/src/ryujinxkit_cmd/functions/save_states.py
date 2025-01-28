@@ -4,13 +4,14 @@ Save-state management functions.
 Dependency level: 2.
 """
 
+from io import BytesIO
+from json import dumps, loads
 from pathlib import Path
 from shutil import rmtree
-from sqlite3 import connect
-from tarfile import TarFile
+from tarfile import TarFile, TarInfo
 from tempfile import TemporaryDirectory
 from time import sleep
-from typing import Any, Callable, Sequence
+from typing import Any, Callable, Iterable, Sequence
 
 from rich.progress import Progress
 
@@ -124,7 +125,7 @@ def remove_save(id_: str) -> None:
     :param %id_%: ID of save state.
     """
 
-    with (Session.RESOLVER.cache_only((FileNode.SAVE_COLLECTION, id_)),):
+    with Session.RESOLVER.cache_only((FileNode.SAVE_COLLECTION, id_)):
         if Session.RESOLVER(id_=FileNode.SAVE_COLLECTION).exists():
             with Progress(transient=True) as progress:
                 task_id = progress.add_task(
@@ -174,6 +175,7 @@ def archive(output: str) -> None:
     with (
         TarFile(name=output, mode="w") as tar,
         Progress(transient=True) as progress,
+        BytesIO() as buffer,
     ):
         task_id = progress.add_task(
             description="[yellow]Archiving[/yellow]",
@@ -184,11 +186,36 @@ def archive(output: str) -> None:
                 """
             ).fetchone()[0],
         )
-
-        tar.add(
-            name=Session.RESOLVER(id_=FileNode.DATABASE),
-            arcname=Session.RESOLVER(id_=FileNode.DATABASE).name,
+        entities_info = TarInfo(name="entities.json")
+        entities_info.size = buffer.write(
+            dumps(
+                obj=[
+                    dict(
+                        zip(
+                            (
+                                "id",
+                                "tag",
+                                "created",
+                                "updated",
+                                "used",
+                                "size",
+                            ),
+                            record,
+                        )
+                    )
+                    for record in Session.database_cursor.execute(
+                        """
+                        SELECT id, tag, created, updated, used, size
+                        FROM saves;
+                        """
+                    ).fetchall()
+                ]
+            ).encode()
         )
+
+        buffer.seek(0)
+
+        tar.addfile(tarinfo=entities_info, fileobj=buffer)
 
         for id_, size in Session.database_cursor.execute(
             """
@@ -266,51 +293,32 @@ def read_archive(path: Path) -> int:
             description="[green]Extracted[/green]",
         )
 
-        states: list[Sequence[Any]] = (
-            lambda connection: [
-                connection.cursor()
-                .execute(
-                    """
-                    SELECT
-                        CAST(id AS TEXT),
-                        tag,
-                        created,
-                        updated,
-                        used,
-                        size
-                    FROM saves;
-                    """
-                )
-                .fetchall(),
-                connection.close(),
-            ][0]
-        )(
-            connect(
-                database=temp_dir
-                / Session.RESOLVER(id_=FileNode.DATABASE).relative_to(
-                    Session.RESOLVER(id_=FileNode.APP_DATA)
-                )
-            )
+        states: Iterable[dict[str, Any]] = loads(
+            s=(temp_dir / "entities.json").read_bytes()
         )
         task_id = progress.add_task(
             description="[yellow]Reading[/yellow]",
             total=len(states),
         )
 
-        for id_, *attrs, size in states:
+        for state in states:
             save_dir = (
                 temp_dir
                 / Session.RESOLVER(id_=FileNode.SAVE_FOLDER).name
-                / id_
+                / str(state["id"])
             )
 
             Session.database_cursor.execute(
                 """
-                INSERT INTO saves
-                    (tag, created, updated, used, size)
+                INSERT INTO saves (tag, created, updated, used, size)
                 VALUES (?, ?, ?, ?, ?);
                 """,
-                (*attrs, size),
+                list(
+                    map(
+                        state.__getitem__,
+                        ("tag", "created", "updated", "used", "size"),
+                    )
+                ),
             )
 
             sleep(DATABASE_INSERT_BUFFER)
@@ -328,7 +336,8 @@ def read_archive(path: Path) -> int:
                                 subpath.write_bytes(data=entry.read_bytes()),
                                 progress.advance(
                                     task_id=task_id,
-                                    advance=subpath.stat().st_size / size,
+                                    advance=subpath.stat().st_size
+                                    / state["size"],
                                 ),
                             ]
                             if not entry.is_dir()
@@ -341,7 +350,7 @@ def read_archive(path: Path) -> int:
                     for entry in save_dir.rglob(pattern="*")
                 ]
 
-                if size == 0:
+                if state["size"] == 0:
                     progress.advance(task_id=task_id, advance=1)
 
 

@@ -265,22 +265,22 @@ def entrypoint() -> None:
                         "name": "retag",
                         "description": "Change a save-state's tag.",
                         "help": "Update a save-state's tag.",
+                        "aliases": ["rt"],
                     },
                     params=[
                         (
-                            ["-t", "--tag"],
+                            ["-i", "--id"],
                             {
+                                "help": "Save-state's ID.",
                                 "type": str,
-                                "required": True,
-                                "help": "New tag for save state.",
                             },
                         ),
                         (
                             [],
                             {
-                                "dest": "id",
-                                "help": "Save-state's ID.",
+                                "dest": "tag",
                                 "type": str,
+                                "help": "New tag for save state.",
                             },
                         ),
                     ],

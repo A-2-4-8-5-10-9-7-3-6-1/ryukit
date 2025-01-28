@@ -11,9 +11,9 @@ dependencies = [
     "requests (>=2.32.3,<3.0.0)",
     "platformdirs (>=4.3.6,<5.0.0)",
     "rich (>=13.9.4,<14.0.0)",
-    "hyrchy-pthresolver @ file:///workdir/vendor/hyrchy_pthresolver-0.1.0.tar.gz",
-    "parser-generator @ file:///workdir/vendor/parser_generator-0.1.0.tar.gz",
     "pyinstaller (>=6.11.1,<7.0.0)",
+    "hyrchy-pthresolver @ git+https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git#subdirectory=hyrchy-pthresolver",
+    "parser-generator @ git+https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git#subdirectory=parser-generator",
 ]
 
 

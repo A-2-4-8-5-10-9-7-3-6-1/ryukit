@@ -133,13 +133,15 @@ description = "Hierachy path-resoluion tool."
 optional = false
 python-versions = ">=3.13"
 groups = ["main"]
-files = [
-    {file = "hyrchy_pthresolver-0.1.0.tar.gz", hash = "sha256:4efe23f28fe3ebce4239322fe33783528cf206339005f2f6dd1fd39e7436378f"},
-]
+files = []
+develop = false
 
 [package.source]
-type = "file"
-url = "vendor/hyrchy_pthresolver-0.1.0.tar.gz"
+type = "git"
+url = "https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git"
+reference = "HEAD"
+resolved_reference = "8ec370aeb7af6c55c9162b0128b8e673a75b7326"
+subdirectory = "hyrchy-pthresolver"
 
 [[package]]
 name = "idna"
@@ -228,13 +230,15 @@ description = "argparse.ArgumentParser instance-generation tools."
 optional = false
 python-versions = ">=3.13"
 groups = ["main"]
-files = [
-    {file = "parser_generator-0.1.0.tar.gz", hash = "sha256:8b946ebf74796966838d17a01d4312ef06f2d40771eead72deab5dfefdd5992f"},
-]
+files = []
+develop = false
 
 [package.source]
-type = "file"
-url = "vendor/parser_generator-0.1.0.tar.gz"
+type = "git"
+url = "https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git"
+reference = "HEAD"
+resolved_reference = "8ec370aeb7af6c55c9162b0128b8e673a75b7326"
+subdirectory = "parser-generator"
 
 [[package]]
 name = "pefile"
@@ -428,4 +432,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13,<3.14"
-content-hash = "fe11840829eff5be83fa58c23fd05f84d0933dcf3a40df468af1140406d259f0"
+content-hash = "4578adc0dbbdf099608608ed46d51f7a51364e3525a59065bf2cf9d956cd6498"
