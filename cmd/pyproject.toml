@@ -12,9 +12,11 @@ dependencies = [
     "platformdirs (>=4.3.6,<5.0.0)",
     "rich (>=13.9.4,<14.0.0)",
     "pyinstaller (>=6.11.1,<7.0.0)",
-    "hyrchy-pthresolver @ git+ssh://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git#subdirectory=hyrchy-pthresolver",
-    "parser-generator @ git+ssh://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git#subdirectory=parser-generator",
 ]
+
+[[tool.poetry.source]]
+name = "python-devkit"
+url = "https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
