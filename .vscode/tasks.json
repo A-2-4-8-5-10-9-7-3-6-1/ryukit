@@ -3,14 +3,14 @@
         {
             "command": [
                 "docker build -f ${DOCKERFILE} -t ${TAG} --secret ${SECRET} ${CONTEXT}",
-                "&& docker run --rm --mount ${DIST_MOUNT} --env-file ${ENV_FILE} ${TAG}"
+                "&& docker run --rm --mount ${DIST_MOUNT} --env-file ${ENV_FILE} ${TAG}",
             ],
             "group": "build",
-            "label": "Build: Linux",
+            "label": "Build: CMD",
             "options": {
                 "env": {
                     "CONTEXT": "cmd",
-                    "DIST_MOUNT": "type=bind,source=./cmd/dist,target=/workdir/dist",
+                    "DIST_MOUNT": "type=bind,source=./cmd/dist,target=/output",
                     "DOCKERFILE": "docker/cmd.Dockerfile",
                     "ENV_FILE": "./cmd/.env",
                     "TAG": "ryujinxkit:cmd",

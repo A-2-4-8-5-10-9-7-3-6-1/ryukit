@@ -1,10 +1,7 @@
-FROM python:3.13-bullseye AS poetry
-RUN pip install poetry
-
-FROM poetry
-ARG port=8000
+FROM python:3.13-bullseye
+ARG port
 EXPOSE ${port}
-ENV PORT=${port}
 WORKDIR /workdir
+RUN pip install poetry
 COPY . .
-ENTRYPOINT [ "/bin/bash", "-c", "poetry install && poetry run gunicorn -b 0.0.0.0:${PORT} ryujinxkit_server.constants.server:APP" ]
+ENTRYPOINT [ "/bin/bash", "-c", "poetry install && poetry run gunicorn -b 0.0.0.0:${port} ryujinxkit_server.constants.server:APP" ]
