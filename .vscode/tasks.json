@@ -2,26 +2,8 @@
     "tasks": [
         {
             "command": [
-                "docker build -f ${DOCKERFILE} -t ${TAG} ${CONTEXT}",
-                "&& docker run --rm --mount ${DIST_MOUNT} ${TAG}"
-            ],
-            "group": "build",
-            "label": "Build: Windows",
-            "options": {
-                "env": {
-                    "CONTEXT": "cmd",
-                    "DIST_MOUNT": "type=bind,source=./cmd/dist,target=/c/workdir/dist",
-                    "DOCKERFILE": "docker/cmd/windows.Dockerfile",
-                    "TAG": "ryujinxkit:cmd"
-                }
-            },
-            "problemMatcher": [],
-            "type": "shell"
-        },
-        {
-            "command": [
-                "docker build -f ${DOCKERFILE} -t ${TAG} ${CONTEXT}",
-                "&& docker run --rm --mount ${DIST_MOUNT} ${TAG}"
+                "docker build -f ${DOCKERFILE} -t ${TAG} --secret ${SECRET} ${CONTEXT}",
+                "&& docker run --rm --mount ${DIST_MOUNT} --env-file ${ENV_FILE} ${TAG}"
             ],
             "group": "build",
             "label": "Build: Linux",
@@ -29,8 +11,11 @@
                 "env": {
                     "CONTEXT": "cmd",
                     "DIST_MOUNT": "type=bind,source=./cmd/dist,target=/workdir/dist",
-                    "DOCKERFILE": "docker/cmd/windows.Dockerfile",
-                    "TAG": "ryujinxkit:cmd"
+                    "DOCKERFILE": "docker/cmd.Dockerfile",
+                    "ENV_FILE": "./cmd/.env",
+                    "TAG": "ryujinxkit:cmd",
+                    "DOCKER_BUILDKIT": "1",
+                    "SECRET": "id=env_file,source=./cmd/.env"
                 }
             },
             "problemMatcher": [],
