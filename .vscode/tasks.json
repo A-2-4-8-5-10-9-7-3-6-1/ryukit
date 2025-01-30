@@ -3,7 +3,7 @@
         {
             "command": [
                 "docker build -f ${DOCKERFILE} -t ${TAG} --secret ${SECRET} ${CONTEXT}",
-                "&& docker run --rm --mount ${DIST_MOUNT} --env-file ${ENV_FILE} ${TAG}",
+                "&& docker run --rm --mount ${DIST_MOUNT} --env-file ${ENV_FILE} ${TAG}"
             ],
             "group": "build",
             "label": "Build: CMD",
@@ -13,9 +13,8 @@
                     "DIST_MOUNT": "type=bind,source=./cmd/dist,target=/output",
                     "DOCKERFILE": "docker/cmd.Dockerfile",
                     "ENV_FILE": "./cmd/.env",
-                    "TAG": "ryujinxkit:cmd",
-                    "DOCKER_BUILDKIT": "1",
-                    "SECRET": "id=env_file,source=./cmd/.env"
+                    "SECRET": "id=env_file,source=./cmd/.env",
+                    "TAG": "ryujinxkit:cmd"
                 }
             },
             "problemMatcher": [],
@@ -35,6 +34,34 @@
                     "PORT_BIND": "8000:8000",
                     "TAG": "ryujinxkit:server",
                     "VOLUME": "ryujinxkit-server:/ryujinxkit-server:ro"
+                }
+            },
+            "problemMatcher": [],
+            "type": "shell"
+        },
+        {
+            "command": "docker build -f ${DOCKERFILE} -t ${TAG} ${CONTEXT}",
+            "group": "build",
+            "label": "Build: CMD (Dev)",
+            "options": {
+                "env": {
+                    "CONTEXT": "cmd",
+                    "DOCKERFILE": "docker/development/cmd.Dockerfile",
+                    "TAG": "ryujinxkit:Dcmd"
+                }
+            },
+            "problemMatcher": [],
+            "type": "shell"
+        },
+        {
+            "command": "docker build -f ${DOCKERFILE} -t ${TAG} ${CONTEXT}",
+            "group": "build",
+            "label": "Build: Server (Dev)",
+            "options": {
+                "env": {
+                    "CONTEXT": "server",
+                    "DOCKERFILE": "docker/development/server.Dockerfile",
+                    "TAG": "ryujinxkit:Dserver"
                 }
             },
             "problemMatcher": [],
