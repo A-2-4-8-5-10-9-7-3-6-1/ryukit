@@ -9,7 +9,7 @@
 */dist
 
 # temporary
-*/temp
+server/.content.tar
 
 # external
 */vendor/

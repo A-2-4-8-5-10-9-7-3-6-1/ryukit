@@ -9,7 +9,7 @@ from pathlib import Path
 
 # =============================================================================
 
-CONTENT_PATH = Path(getenv(key="CONTENT"))
+CONTENT_PATH = Path(getenv(key="RYUJINXKIT_CONTENT"))
 
 # -----------------------------------------------------------------------------
 

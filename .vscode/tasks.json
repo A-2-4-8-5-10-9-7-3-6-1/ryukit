@@ -23,17 +23,17 @@
         {
             "command": [
                 "docker build -f ${DOCKERFILE} -t ${TAG} ${CONTEXT}",
-                "&& docker run --rm -p ${PORT_BIND} --env ${ENV} -v ${VOLUME} ${TAG}"
+                "&& docker run --rm -p ${PORT_BIND} --env ${RYUJINXKIT_CONTENT} --mount ${CONTENT_MOUNT} ${TAG}"
             ],
-            "label": "Start Server",
+            "label": "Run: Server",
             "options": {
                 "env": {
+                    "CONTENT_MOUNT": "type=bind,source=./server/.content.tar,target=/.content.tar,readonly",
                     "CONTEXT": "server",
                     "DOCKERFILE": "docker/server.Dockerfile",
-                    "ENV": "CONTENT=/ryujinxkit-server/content.tar",
                     "PORT_BIND": "8000:8000",
-                    "TAG": "ryujinxkit:server",
-                    "VOLUME": "ryujinxkit-server:/ryujinxkit-server:ro"
+                    "RYUJINXKIT_CONTENT": "RYUJINXKIT_CONTENT=/.content.tar",
+                    "TAG": "ryujinxkit:server"
                 }
             },
             "problemMatcher": [],
