@@ -1,30 +1,28 @@
 """
-Flask related constants.
-
-Dependency level: 1.
+- dependency level 2.
 """
 
 from pathlib import Path
 
 from flask import Flask, Response, request
 
-from .configs import CONTENT_PATH, SERVER_NAME
-from .logging import LOGGER
+from ..session import Session
+from .configs import RYUJINX_CONTENT, RYUJINXKIT_SERVER_NAME
 
 # =============================================================================
 
-APP = Flask(import_name=SERVER_NAME)
+SERVER = Flask(import_name=RYUJINXKIT_SERVER_NAME)
 
 # -----------------------------------------------------------------------------
 
 
-@APP.before_request
+@SERVER.before_request
 def _() -> None:
     """
     Log request to console.
     """
 
-    LOGGER.info(
+    Session.LOGGER.info(
         msg=f"Client {request.remote_addr} requested {request.method} "
         f"{request.path} {request.remote_addr}."
     )
@@ -33,7 +31,7 @@ def _() -> None:
 # -----------------------------------------------------------------------------
 
 
-@APP.route(rule="/")
+@SERVER.route(rule="/")
 def _() -> bytes:
     """
     Route to get server content.
@@ -41,13 +39,13 @@ def _() -> bytes:
     :returns: Content pack as bytes.
     """
 
-    return Path(CONTENT_PATH).read_bytes()
+    return Path(RYUJINX_CONTENT).read_bytes()
 
 
 # -----------------------------------------------------------------------------
 
 
-@APP.after_request
+@SERVER.after_request
 def _(response: Response) -> Response:
     """
     Log connection completion.
@@ -57,7 +55,7 @@ def _(response: Response) -> Response:
     :returns: `response` unaltered.
     """
 
-    LOGGER.info(
+    Session.LOGGER.info(
         msg=f"Closed connection with {request.remote_addr}. "
         f"Status: {response.status_code}."
     )

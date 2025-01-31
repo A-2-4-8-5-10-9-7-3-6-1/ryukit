@@ -1,18 +1,13 @@
 """
-Configuration constants.
-
-Dependency level: 0.
+- dependency level 0.
 """
 
 from os import getenv
-from pathlib import Path
 
 # =============================================================================
 
-CONTENT_PATH = Path(getenv(key="RYUJINXKIT_CONTENT"))
+RYUJINX_CONTENT = getenv(key="RYUJINXKIT_CONTENT")
 
-# -----------------------------------------------------------------------------
-
-SERVER_NAME = "RyujinxKit Server"
+RYUJINXKIT_SERVER_NAME = "RyujinxKit Server"
 
 # =============================================================================

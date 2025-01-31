@@ -1,7 +1,9 @@
-from src.ryujinxkit_server.constants.server import APP
+from ryujinxkit_server.constants.server import SERVER
+from ryujinxkit_server.session import Session
 
 # =============================================================================
 
-APP.run(debug=True)
+with Session:
+    SERVER.run(debug=True)
 
 # =============================================================================

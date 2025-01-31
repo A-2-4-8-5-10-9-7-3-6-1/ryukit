@@ -25,9 +25,6 @@ from .enums import FileNode
 class _Meta(type):
     """
     Metaclass for `Session`.
-
-    :attr RESOLVER: Path resolver.
-    :attr database_cursor: Database cursor.
     """
 
     RESOLVER: Resolver[FileNode]
@@ -73,7 +70,7 @@ class _Meta(type):
 
     def __exit__(cls, *_: Any) -> None:
         """
-        Closes session.
+        Close session.
         """
 
         cls.database_cursor.connection.commit()
@@ -86,6 +83,9 @@ class _Meta(type):
 class Session(metaclass=_Meta):
     """
     Session-management class.
+
+    :attr RESOLVER: Path resolver.
+    :attr database_cursor: Database cursor.
     """
 
     RESOLVER = (
