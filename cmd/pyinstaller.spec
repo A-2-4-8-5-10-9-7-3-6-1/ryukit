@@ -5,9 +5,7 @@ a = Analysis(
     ['src/ryujinxkit_cmd/__main__.py'],
     pathex=[],
     binaries=[],
-    datas=[
-        ('src/ryujinxkit_cmd/assets', 'ryujinxkit_cmd/assets')
-    ],
+    datas=[],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
