@@ -84,9 +84,8 @@ begin = generate(
             },
             params=[
                 {
-                    "dest": "server_url",
-                    "help": "URL for a RyujinxKit server--get "
-                    "one from the developer.",
+                    "dest": "url",
+                    "help": "RyujinxKit-content download URL.",
                     "type": str,
                 }
             ],
@@ -95,7 +94,7 @@ begin = generate(
                 "func": sanitize(
                     command=Command.RYUJINXKIT_SOURCE,
                     function=lambda args: [
-                        source(server_url=args.server_url),
+                        source(url=args.url),
                         _CONSOLE.print(
                             f"[{COLOR_CREAM}]"
                             "Installed to: "

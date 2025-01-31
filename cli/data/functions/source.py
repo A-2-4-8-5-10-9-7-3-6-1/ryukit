@@ -22,14 +22,14 @@ from ...general import (
 # =============================================================================
 
 
-def source(server_url: str) -> None:
+def source(url: str) -> None:
     """
-    Source setup data from server.
+    Source setup data.
 
-    :param server_url: The server's url.
+    :param url: RyujinxKit-content download url.
     """
 
-    response = get(url=server_url, stream=True)
+    response = get(url=url, stream=True)
 
     if response.status_code != 200:
         raise HTTPError("Couldn't connect to server.", response=response)

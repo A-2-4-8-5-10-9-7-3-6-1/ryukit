@@ -3,37 +3,17 @@
         {
             "command": [
                 "docker build -f ${DOCKERFILE} -t ${TAG} --secret ${SECRET} ${CONTEXT}",
-                "&& docker run --rm --mount ${DIST_MOUNT} --env-file ${ENV_FILE} ${TAG}"
+                "&& docker run --rm --mount ${DIST_MOUNT} ${TAG}"
             ],
             "group": "build",
-            "label": "Build: CMD",
+            "label": "Build: CLI",
             "options": {
                 "env": {
-                    "CONTEXT": "cmd",
-                    "DIST_MOUNT": "type=bind,source=./cmd/dist,target=/output",
-                    "DOCKERFILE": "docker/cmd.Dockerfile",
-                    "ENV_FILE": "./cmd/.env",
-                    "SECRET": "id=env_file,source=./cmd/.env",
-                    "TAG": "ryujinxkit:cmd"
-                }
-            },
-            "problemMatcher": [],
-            "type": "shell"
-        },
-        {
-            "command": [
-                "docker build -f ${DOCKERFILE} -t ${TAG} ${CONTEXT}",
-                "&& docker run --rm -p ${PORT_BIND} --env ${RYUJINXKIT_CONTENT} --mount ${CONTENT_MOUNT} ${TAG}"
-            ],
-            "label": "Run: Server",
-            "options": {
-                "env": {
-                    "CONTENT_MOUNT": "type=bind,source=./server/.content.tar,target=/.content.tar,readonly",
-                    "CONTEXT": "server",
-                    "DOCKERFILE": "docker/server.Dockerfile",
-                    "PORT_BIND": "8000:8000",
-                    "RYUJINXKIT_CONTENT": "RYUJINXKIT_CONTENT=/.content.tar",
-                    "TAG": "ryujinxkit:server"
+                    "CONTEXT": ".",
+                    "DIST_MOUNT": "type=bind,source=./dist,target=/output",
+                    "DOCKERFILE": "docker/cli.Dockerfile",
+                    "SECRET": "id=env_file,source=./.env",
+                    "TAG": "ryujinxkit:cli"
                 }
             },
             "problemMatcher": [],
@@ -42,26 +22,12 @@
         {
             "command": "docker build -f ${DOCKERFILE} -t ${TAG} ${CONTEXT}",
             "group": "build",
-            "label": "Build: CMD (Dev)",
+            "label": "Build: CLI (Dev)",
             "options": {
                 "env": {
-                    "CONTEXT": "cmd",
-                    "DOCKERFILE": "docker/development/cmd.Dockerfile",
-                    "TAG": "ryujinxkit:Dcmd"
-                }
-            },
-            "problemMatcher": [],
-            "type": "shell"
-        },
-        {
-            "command": "docker build -f ${DOCKERFILE} -t ${TAG} ${CONTEXT}",
-            "group": "build",
-            "label": "Build: Server (Dev)",
-            "options": {
-                "env": {
-                    "CONTEXT": "server",
-                    "DOCKERFILE": "docker/development/server.Dockerfile",
-                    "TAG": "ryujinxkit:Dserver"
+                    "CONTEXT": ".",
+                    "DOCKERFILE": "docker/development/cli.Dockerfile",
+                    "TAG": "ryujinxkit:Dcli"
                 }
             },
             "problemMatcher": [],

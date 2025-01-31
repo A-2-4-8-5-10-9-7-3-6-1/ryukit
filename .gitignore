@@ -8,8 +8,5 @@
 */build/
 */dist/
 
-# temporary
-server/.content.tar
-
 # external
 */vendor/
