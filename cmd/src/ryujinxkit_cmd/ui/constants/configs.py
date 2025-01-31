@@ -1,15 +1,13 @@
 """
-Configuration constants.
-
-Dependency level: 1.
+- dependency level 0.
 """
-
-from ..enums import CustomColor
 
 # =============================================================================
 
-COLOR_MAP: dict[CustomColor, str] = {
-    CustomColor.CREAM: "#fffdd0",
-}
+COLOR_CREAM = "#fffdd0"
+
+DEFAULT_ARCHIVE_NAME = "saves.tar"
+
+RYUJINXKIT_PROG_NAME = "ryujinxkit"
 
 # =============================================================================

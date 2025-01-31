@@ -1,7 +1,5 @@
 """
-Ryujinx setup-functions.
-
-Dependency level: 2.
+- dependency level 0.
 """
 
 from io import BytesIO
@@ -11,16 +9,15 @@ from tarfile import TarFile
 from requests import HTTPError, get
 from rich.progress import Progress
 
-from ..constants.configs import (
-    SETUP_CHUNK_SIZE,
-    SETUP_CONNECTION_ERROR_MESSAGE,
+from ...general import (
     SOURCE_APP,
+    SOURCE_CHUNK_SIZE,
     SOURCE_KEYS,
     SOURCE_META,
     SOURCE_REGISTERED,
+    FileNode,
+    Session,
 )
-from ..enums import FileNode
-from ..session import Session
 
 # =============================================================================
 
@@ -35,7 +32,7 @@ def source(server_url: str) -> None:
     response = get(url=server_url, stream=True)
 
     if response.status_code != 200:
-        raise HTTPError(SETUP_CONNECTION_ERROR_MESSAGE, response=response)
+        raise HTTPError("Couldn't connect to server.", response=response)
 
     with Progress(transient=True) as progress, BytesIO() as buffer:
         task_id = progress.add_task(
@@ -48,7 +45,7 @@ def source(server_url: str) -> None:
                 buffer.write(chunk),
                 progress.update(task_id=task_id, advance=len(chunk)),
             ]
-            for chunk in response.iter_content(chunk_size=SETUP_CHUNK_SIZE)
+            for chunk in response.iter_content(chunk_size=SOURCE_CHUNK_SIZE)
         ]
 
         progress.update(

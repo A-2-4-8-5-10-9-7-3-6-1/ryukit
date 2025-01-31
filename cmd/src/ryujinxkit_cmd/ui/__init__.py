@@ -1,9 +1,11 @@
-from ryujinxkit_cmd.general import Session
-from ryujinxkit_cmd.ui import begin
+"""
+Interface systems.
+"""
+
+from .functions.begin import begin
 
 # =============================================================================
 
-with Session:
-    begin()
+__all__ = ["begin"]
 
 # =============================================================================

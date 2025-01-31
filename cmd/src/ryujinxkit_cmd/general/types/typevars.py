@@ -1,9 +1,11 @@
-from ryujinxkit_cmd.general import Session
-from ryujinxkit_cmd.ui import begin
+"""
+- dependency level 0.
+"""
+
+from typing import TypeVar
 
 # =============================================================================
 
-with Session:
-    begin()
+T = TypeVar(name="*")
 
 # =============================================================================

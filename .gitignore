@@ -5,8 +5,8 @@
 # generated
 **/__pycache__/
 */logs/
-*/build
-*/dist
+*/build/
+*/dist/
 
 # temporary
 server/.content.tar

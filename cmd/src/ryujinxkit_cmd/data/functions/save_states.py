@@ -1,7 +1,5 @@
 """
-Save-state management functions.
-
-Dependency level: 2.
+- dependency level 0.
 """
 
 from io import BytesIO
@@ -11,64 +9,93 @@ from shutil import rmtree
 from tarfile import TarFile, TarInfo
 from tempfile import TemporaryDirectory
 from time import sleep
-from typing import Any, Callable, Iterable, Sequence
+from typing import Any, Callable, Iterable, Literal, Sequence
 
 from rich.progress import Progress
 
-from ..constants.configs import DATABASE_INSERT_BUFFER
-from ..enums import FileNode, UseOperation
-from ..session import Session
+from ...general import DATABASE_INSERT_BUFFER, FileNode, Session
 
 # =============================================================================
 
 
-def use_save(id_: str, operation: UseOperation) -> None:
+def use_save(id_: str, operation: Literal["restore", "update"]) -> None:
     """
     Perform an operation on a save state.
 
     :param %id_%: Save-state's ID as a string.
-    :param operation: Operation to perform.
+    :param operation: Usage operation.
     """
 
     total: int = 0
-    order: Callable[[Sequence[FileNode]], Sequence[FileNode]] = (
-        (lambda x: x) if operation == UseOperation.RESTORE else reversed
-    )
+    initial_size = Session.database_cursor.execute(
+        """
+        SELECT size
+        FROM saves
+        WHERE id = ?;
+        """,
+        [id_],
+    ).fetchone()[0]
+    final_query: Callable[[int], tuple[str, list[Any]]]
+    order: Callable[[Sequence[FileNode]], Sequence[FileNode]]
+    size_logic: Callable[[Iterable[Path]], int]
+
+    match operation:
+        case "restore":
+            order = lambda x: x
+            size_logic = lambda _: initial_size
+            final_query = lambda _: (
+                """
+                UPDATE saves
+                SET used = datetime("now")
+                WHERE id = ?;
+                """,
+                [id_],
+            )
+
+        case "update":
+            order = reversed
+            size_logic = lambda members: sum(
+                path.stat().st_size for path in members
+            )
+            final_query = lambda total: (
+                """
+                UPDATE saves
+                SET updated = datetime("now"), size = ?
+                WHERE id = ?;
+                """,
+                [total, id_],
+            )
 
     with (
-        Session.RESOLVER.cache_only((FileNode.SAVE_COLLECTION, id_)),
+        Session.RESOLVER.cache_only(
+            (FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
+        ),
         Progress(transient=True) as progress,
     ):
         task_id = progress.add_task(
-            description=(
-                "[yellow]Restoring[/yellow]"
-                if operation == UseOperation.RESTORE
-                else "[yellow]Updating[/yellow]"
-            ),
+            description=(f"[yellow]{operation.title()[:-1]}ing[/yellow]"),
             total=3,
         )
 
         for paths in [
-            (FileNode.USER_SIDE_SYSTEM_SAVE, FileNode.SYSTEM_SAVE),
-            (FileNode.USER_SIDE_SAVE_META, FileNode.SAVE_META),
-            (FileNode.USER_SIDE_SAVE, FileNode.USER_SAVE),
+            (
+                FileNode.RYUJINXKIT_SAVE_INSTANCE_SYSTEM_SAVE,
+                FileNode.RYUJINX_SYSTEM_SAVE,
+            ),
+            (
+                FileNode.RYUJINXKIT_SAVE_INSTANCE_SAVE_META,
+                FileNode.RYUJINX_SAVE_META,
+            ),
+            (
+                FileNode.RYUJINXKIT_SAVE_INSTANCE_SAVE,
+                FileNode.RYUJINX_USER_SAVE,
+            ),
         ]:
             source, dest = map(Session.RESOLVER, order(paths))
             members = [
                 path for path in source.rglob(pattern="*") if not path.is_dir()
             ]
-            size = (
-                Session.database_cursor.execute(
-                    """
-                    SELECT size
-                    FROM saves
-                    WHERE id = ?;
-                    """,
-                    [id_],
-                ).fetchone()[0]
-                if operation == UseOperation.RESTORE
-                else sum(path.stat().st_size for path in members)
-            )
+            size = size_logic(members)
             total += size
 
             if dest.exists():
@@ -93,26 +120,7 @@ def use_save(id_: str, operation: UseOperation) -> None:
                 for path in members
             ]
 
-    match operation:
-        case UseOperation.UPDATE:
-            Session.database_cursor.execute(
-                """
-                UPDATE saves
-                SET updated = datetime("now"), size = ?
-                WHERE id = ?;
-                """,
-                [total, id_],
-            )
-
-        case UseOperation.RESTORE:
-            Session.database_cursor.execute(
-                """
-                UPDATE saves
-                SET used = datetime("now")
-                WHERE id = ?;
-                """,
-                [id_],
-            )
+    Session.database_cursor.execute(*final_query(total))
 
 
 # -----------------------------------------------------------------------------
@@ -125,8 +133,12 @@ def remove_save(id_: str) -> None:
     :param %id_%: ID of save state.
     """
 
-    with Session.RESOLVER.cache_only((FileNode.SAVE_COLLECTION, id_)):
-        if Session.RESOLVER(id_=FileNode.SAVE_COLLECTION).exists():
+    with Session.RESOLVER.cache_only(
+        (FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
+    ):
+        if Session.RESOLVER(
+            id_=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
+        ).exists():
             with Progress(transient=True) as progress:
                 task_id = progress.add_task(
                     description="[yellow]Deleting[/yellow]",
@@ -146,12 +158,16 @@ def remove_save(id_: str) -> None:
                         advance=[path.stat().st_size, path.unlink()][0],
                     )
                     for path in Session.RESOLVER(
-                        id_=FileNode.SAVE_COLLECTION
+                        id_=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
                     ).rglob(pattern="*")
                     if not path.is_dir()
                 ]
 
-            rmtree(path=Session.RESOLVER(id_=FileNode.SAVE_COLLECTION))
+            rmtree(
+                path=Session.RESOLVER(
+                    id_=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
+                )
+            )
 
     Session.database_cursor.execute(
         """
@@ -169,7 +185,7 @@ def archive(output: str) -> None:
     """
     Archive all save states into a tar file.
 
-    :param output: Output-file path.
+    :param output: Output's file-path.
     """
 
     with (
@@ -223,13 +239,15 @@ def archive(output: str) -> None:
             FROM saves;
             """
         ).fetchall():
-            with Session.RESOLVER.cache_only((FileNode.SAVE_COLLECTION, id_)):
+            with Session.RESOLVER.cache_only(
+                (FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
+            ):
                 [
                     [
                         tar.add(
                             name=path,
                             arcname=path.relative_to(
-                                Session.RESOLVER(id_=FileNode.APP_DATA)
+                                Session.RESOLVER(id_=FileNode.RYUJINXKIT_DATA)
                             ),
                         ),
                         progress.advance(
@@ -238,7 +256,7 @@ def archive(output: str) -> None:
                         ),
                     ]
                     for path in Session.RESOLVER(
-                        id_=FileNode.SAVE_COLLECTION
+                        id_=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
                     ).rglob(pattern="*")
                     if not path.is_dir()
                 ]
@@ -304,7 +322,7 @@ def read_archive(path: Path) -> int:
         for state in states:
             save_dir = (
                 temp_dir
-                / Session.RESOLVER(id_=FileNode.SAVE_FOLDER).name
+                / Session.RESOLVER(id_=FileNode.RYUJINXKIT_SAVE_FOLDER).name
                 / str(state["id"])
             )
 
@@ -325,7 +343,7 @@ def read_archive(path: Path) -> int:
 
             with Session.RESOLVER.cache_only(
                 (
-                    FileNode.SAVE_COLLECTION,
+                    FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER,
                     str(Session.database_cursor.lastrowid),
                 )
             ):
@@ -344,7 +362,9 @@ def read_archive(path: Path) -> int:
                             else subpath.mkdir(parents=True, exist_ok=True)
                         )
                     )(
-                        Session.RESOLVER(id_=FileNode.SAVE_COLLECTION)
+                        Session.RESOLVER(
+                            id_=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
+                        )
                         / entry.relative_to(save_dir)
                     )
                     for entry in save_dir.rglob(pattern="*")
