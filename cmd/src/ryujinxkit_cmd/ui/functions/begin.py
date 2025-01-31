@@ -129,9 +129,9 @@ begin = generate(
                     function=lambda args: [
                         Session.database_cursor.execute(
                             """
-                                    INSERT INTO saves (tag)
-                                    VALUES (?);
-                                    """,
+                            INSERT INTO saves (tag)
+                            VALUES (?);
+                            """,
                             [args.tag],
                         ),
                         sleep(DATABASE_INSERT_BUFFER),
@@ -161,25 +161,25 @@ begin = generate(
                             _TABLE.add_row(*row)
                             for row in Session.database_cursor.execute(
                                 """
-                                    SELECT 
-                                        CAST(id AS TEXT),
-                                        CAST(tag AS TEXT),
-                                        CAST(created AS TEXT),
-                                        CAST(updated AS TEXT),
-                                        CAST(
-                                            COALESCE(used, "Never")
-                                            AS text
-                                        ),
-                                        CAST(
-                                            ROUND(size / (1024 * 1024.0), 2)
-                                            AS TEXT
-                                        ) || "MB"
-                                    FROM saves
-                                    ORDER BY
-                                        used DESC,
-                                        updated DESC, 
-                                        created DESC;
-                                    """
+                                SELECT 
+                                    CAST(id AS TEXT),
+                                    CAST(tag AS TEXT),
+                                    CAST(created AS TEXT),
+                                    CAST(updated AS TEXT),
+                                    CAST(
+                                        COALESCE(used, "Never")
+                                        AS text
+                                    ),
+                                    CAST(
+                                        ROUND(size / (1024 * 1024.0), 2)
+                                        AS TEXT
+                                    ) || "MB"
+                                FROM saves
+                                ORDER BY
+                                    used DESC,
+                                    updated DESC, 
+                                    created DESC;
+                                """
                             ).fetchall()
                         ],
                         _CONSOLE.print(_TABLE),
@@ -282,10 +282,10 @@ begin = generate(
                     command=Command.RYUJINXKIT_SAVE_RETAG,
                     function=lambda args: Session.database_cursor.execute(
                         """
-                                UPDATE saves
-                                SET tag = ?, updated = datetime("now")
-                                WHERE id = ?;
-                                """,
+                        UPDATE saves
+                        SET tag = ?, updated = datetime("now")
+                        WHERE id = ?;
+                        """,
                         [args.tag, args.id],
                     ),
                 )
