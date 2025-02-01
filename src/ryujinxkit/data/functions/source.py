@@ -6,6 +6,7 @@ from io import BytesIO
 from json import load
 from tarfile import TarFile
 
+from platformdirs import PlatformDirs
 from requests import HTTPError, get
 from rich.progress import Progress
 
@@ -18,6 +19,7 @@ from ...general import (
     FileNode,
     Session,
 )
+from ...general.constants.configs import RYUJINX_AUTHOR, RYUJINX_NAME
 
 # =============================================================================
 
@@ -61,7 +63,7 @@ def source(url: str) -> None:
                 total=sum(1 for _ in tar),
             )
             routes: dict[str, FileNode] = {
-                SOURCE_APP: FileNode.RYUJINX_APP,
+                SOURCE_APP: FileNode.RYUJINX_LOCAL_DATA,
                 SOURCE_REGISTERED: FileNode.RYUJINX_REGISTERED,
                 SOURCE_KEYS: FileNode.RYUJINX_SYSTEM,
             }
@@ -70,12 +72,18 @@ def source(url: str) -> None:
                 tar.extractfile(member=SOURCE_META) as meta,
                 Session.RESOLVER.cache_only(
                     (
-                        FileNode.RYUJINX_APP,
-                        "-".join(
-                            map(
-                                load(fp=meta).__getitem__,
-                                ("name", "version", "system"),
-                            )
+                        FileNode.RYUJINX_LOCAL_DATA,
+                        str(
+                            PlatformDirs(
+                                appname=RYUJINX_NAME,
+                                appauthor=RYUJINX_AUTHOR,
+                                version="-".join(
+                                    map(
+                                        load(fp=meta).__getitem__,
+                                        ("version", "system"),
+                                    )
+                                ),
+                            ).user_data_path
                         ),
                     )
                 ),

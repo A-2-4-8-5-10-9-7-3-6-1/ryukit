@@ -48,8 +48,7 @@ _TABLE = Table(
         ascii=True,
     ),
 )
-
-begin = generate(
+_begin = generate(
     function_attr="func",
     commands={
         Command.RYUJINXKIT: ParserCommand(
@@ -98,7 +97,11 @@ begin = generate(
                         _CONSOLE.print(
                             f"[{COLOR_CREAM}]"
                             "Installed to: "
-                            + str(Session.RESOLVER(id_=FileNode.RYUJINX_APP))
+                            + str(
+                                Session.RESOLVER(
+                                    id_=FileNode.RYUJINX_LOCAL_DATA
+                                )
+                            )
                             + f".[/{COLOR_CREAM}]",
                             highlight=False,
                         ),
@@ -337,5 +340,22 @@ begin = generate(
         ),
     },
 )[1]
+
+# -----------------------------------------------------------------------------
+
+
+def main() -> None:
+    """
+    Entry point.
+    """
+
+    with Session:
+        _begin()
+
+
+# -----------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    main()
 
 # =============================================================================

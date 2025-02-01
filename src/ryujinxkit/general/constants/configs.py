@@ -16,10 +16,8 @@ SOURCE_KEYS = "keys"
 RYUJINXKIT_NAME = "RyujinxKit"
 RYUJINXKIT_AUTHOR = "A-2-4-8-5-10-9-7-3-6-1"
 RYUJINXKIT_VERSION = "0.1.0"
-RYUJINXKIT_ROAMING = True
 
 RYUJINX_NAME = "Ryujinx"
 RYUJINX_AUTHOR = False
-RYUJINX_ROAMING = True
 
 # =============================================================================

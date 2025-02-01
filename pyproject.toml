@@ -16,6 +16,9 @@ dependencies = [
     "parser-generator @ git+https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git#subdirectory=parser-generator",
 ]
 
+[tool.poetry.scripts]
+ryujinxkit = 'ryujinxkit.ui.functions.main:main'
+
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"

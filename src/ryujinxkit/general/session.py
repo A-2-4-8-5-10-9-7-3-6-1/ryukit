@@ -11,10 +11,8 @@ from platformdirs import PlatformDirs, user_data_path
 from .constants.configs import (
     RYUJINX_AUTHOR,
     RYUJINX_NAME,
-    RYUJINX_ROAMING,
     RYUJINXKIT_AUTHOR,
     RYUJINXKIT_NAME,
-    RYUJINXKIT_ROAMING,
     RYUJINXKIT_VERSION,
 )
 from .enums import FileNode
@@ -40,8 +38,8 @@ class _Meta(type):
         [
             cls.RESOLVER(id_=id_).mkdir(parents=True, exist_ok=True)
             for id_ in [
-                FileNode.RYUJINXKIT_DATA,
-                FileNode.RYUJINX_DATA,
+                FileNode.RYUJINXKIT_ROAMING_DATA,
+                FileNode.RYUJINX_ROAMING_DATA,
                 FileNode.RYUJINXKIT_SAVE_FOLDER,
                 FileNode.RYUJINXKIT_CONFIGS,
             ]
@@ -89,28 +87,28 @@ class Session(metaclass=_Meta):
     """
 
     RESOLVER = (
-        lambda ryujinx_pd, app_pd: Resolver(
+        lambda ryujinx_rpd, ryujinxkit_rpd: Resolver(
             nodes={
-                FileNode.RYUJINX_APP: Node(
+                FileNode.RYUJINX_LOCAL_DATA: Node(
                     parent=FileNode.USER_DATA,
                     cache=True,
                 ),
                 FileNode.RYUJINX_SYSTEM: Node(
-                    parent=FileNode.RYUJINX_DATA,
+                    parent=FileNode.RYUJINX_ROAMING_DATA,
                     cache=True,
                     tail="system",
                 ),
                 FileNode.RYUJINX_REGISTERED: Node(
-                    parent=FileNode.RYUJINX_DATA,
+                    parent=FileNode.RYUJINX_ROAMING_DATA,
                     tail="bis/system/Contents/registered",
                 ),
                 FileNode.RYUJINXKIT_DATABASE: Node(
-                    parent=FileNode.RYUJINXKIT_DATA,
+                    parent=FileNode.RYUJINXKIT_ROAMING_DATA,
                     cache=True,
                     tail="metadata.db",
                 ),
                 FileNode.RYUJINXKIT_SAVE_FOLDER: Node(
-                    parent=FileNode.RYUJINXKIT_DATA,
+                    parent=FileNode.RYUJINXKIT_ROAMING_DATA,
                     cache=True,
                     tail="states",
                 ),
@@ -130,38 +128,38 @@ class Session(metaclass=_Meta):
                     tail="meta",
                 ),
                 FileNode.RYUJINX_SYSTEM_SAVE: Node(
-                    parent=FileNode.RYUJINX_DATA,
+                    parent=FileNode.RYUJINX_ROAMING_DATA,
                     cache=True,
                     tail="bis/system/save",
                 ),
                 FileNode.RYUJINX_USER_SAVE: Node(
-                    parent=FileNode.RYUJINX_DATA,
+                    parent=FileNode.RYUJINX_ROAMING_DATA,
                     cache=True,
                     tail="bis/user/save",
                 ),
                 FileNode.RYUJINX_SAVE_META: Node(
-                    parent=FileNode.RYUJINX_DATA,
+                    parent=FileNode.RYUJINX_ROAMING_DATA,
                     cache=True,
                     tail="bis/user/saveMeta",
                 ),
             },
             primitives={
                 FileNode.USER_DATA: user_data_path(),
-                FileNode.RYUJINX_DATA: ryujinx_pd.user_data_path,
-                FileNode.RYUJINXKIT_DATA: app_pd.user_data_path,
-                FileNode.RYUJINXKIT_CONFIGS: app_pd.user_config_path,
+                FileNode.RYUJINX_ROAMING_DATA: ryujinx_rpd.user_data_path,
+                FileNode.RYUJINXKIT_ROAMING_DATA: ryujinxkit_rpd.user_data_path,
+                FileNode.RYUJINXKIT_CONFIGS: ryujinxkit_rpd.user_config_path,
             },
         )
     )(
         PlatformDirs(
             appname=RYUJINX_NAME,
             appauthor=RYUJINX_AUTHOR,
-            roaming=RYUJINX_ROAMING,
+            roaming=True,
         ),
         PlatformDirs(
             appname=RYUJINXKIT_NAME,
             appauthor=RYUJINXKIT_AUTHOR,
-            roaming=RYUJINXKIT_ROAMING,
+            roaming=True,
             version=RYUJINXKIT_VERSION,
         ),
     )

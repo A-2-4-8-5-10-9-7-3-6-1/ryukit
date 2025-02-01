@@ -13,7 +13,7 @@
                     "DIST_MOUNT": "type=bind,source=./dist,target=/output",
                     "DOCKERFILE": "docker/release.Dockerfile",
                     "SECRET": "id=env_file,source=./.env",
-                    "TAG": "ryujinxkit:R"
+                    "TAG": "ryujinxkit:RELEASE"
                 }
             },
             "problemMatcher": [],
@@ -27,7 +27,7 @@
                 "env": {
                     "CONTEXT": ".",
                     "DOCKERFILE": "docker/development.Dockerfile",
-                    "TAG": "ryujinxkit:D"
+                    "TAG": "ryujinxkit:DEV"
                 }
             },
             "problemMatcher": [],

@@ -2,10 +2,10 @@
 Interface systems.
 """
 
-from .functions.begin import begin
+from .functions.main import main
 
 # =============================================================================
 
-__all__ = ["begin"]
+__all__ = ["main"]
 
 # =============================================================================

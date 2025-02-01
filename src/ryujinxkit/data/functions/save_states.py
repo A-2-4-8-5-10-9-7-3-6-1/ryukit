@@ -247,7 +247,9 @@ def archive(output: str) -> None:
                         tar.add(
                             name=path,
                             arcname=path.relative_to(
-                                Session.RESOLVER(id_=FileNode.RYUJINXKIT_DATA)
+                                Session.RESOLVER(
+                                    id_=FileNode.RYUJINXKIT_ROAMING_DATA
+                                )
                             ),
                         ),
                         progress.advance(
