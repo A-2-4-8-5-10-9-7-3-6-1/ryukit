@@ -6,14 +6,14 @@
                 "&& docker run --rm --mount ${DIST_MOUNT} ${TAG}"
             ],
             "group": "build",
-            "label": "Build: CLI",
+            "label": "Build (Release)",
             "options": {
                 "env": {
                     "CONTEXT": ".",
                     "DIST_MOUNT": "type=bind,source=./dist,target=/output",
-                    "DOCKERFILE": "docker/cli.Dockerfile",
+                    "DOCKERFILE": "docker/release.Dockerfile",
                     "SECRET": "id=env_file,source=./.env",
-                    "TAG": "ryujinxkit:cli"
+                    "TAG": "ryujinxkit:R"
                 }
             },
             "problemMatcher": [],
@@ -22,12 +22,12 @@
         {
             "command": "docker build -f ${DOCKERFILE} -t ${TAG} ${CONTEXT}",
             "group": "build",
-            "label": "Build: CLI (Dev)",
+            "label": "Build (Dev)",
             "options": {
                 "env": {
                     "CONTEXT": ".",
-                    "DOCKERFILE": "docker/development/cli.Dockerfile",
-                    "TAG": "ryujinxkit:Dcli"
+                    "DOCKERFILE": "docker/development.Dockerfile",
+                    "TAG": "ryujinxkit:D"
                 }
             },
             "problemMatcher": [],

@@ -4,9 +4,9 @@
 
 # generated
 **/__pycache__/
-*/logs/
-*/build/
-*/dist/
+**/logs/
+**/build/
+**/dist/
 
 # external
-*/vendor/
+**/vendor/

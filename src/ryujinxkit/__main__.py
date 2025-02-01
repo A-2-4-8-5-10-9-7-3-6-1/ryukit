@@ -1,5 +1,5 @@
-from ryujinxkit_cmd.general import Session
-from ryujinxkit_cmd.ui import begin
+from ryujinxkit.general import Session
+from ryujinxkit.ui import begin
 
 # =============================================================================
 
