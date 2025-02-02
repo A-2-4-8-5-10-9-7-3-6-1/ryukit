@@ -2,7 +2,7 @@
     "tasks": [
         {
             "command": [
-                "docker build -f ${DOCKERFILE} -t ${TAG} --secret ${SECRET} ${CONTEXT}",
+                "docker build -f ${DOCKERFILE} -t ${TAG} --secret ${SECRET_GITHUB_USERNAME} --secret ${SECRET_GITHUB_TOKEN} ${CONTEXT}",
                 "&& docker run --rm --mount ${DIST_MOUNT} ${TAG}"
             ],
             "group": "build",
@@ -12,8 +12,9 @@
                     "CONTEXT": ".",
                     "DIST_MOUNT": "type=bind,source=./dist,target=/output",
                     "DOCKERFILE": "docker/release.Dockerfile",
-                    "SECRET": "id=env_file,source=./.env",
-                    "TAG": "ryujinxkit:RELEASE"
+                    "SECRET_GITHUB_TOKEN": "id=github_token,source=./secrets/github_token",
+                    "SECRET_GITHUB_USERNAME": "id=github_username,source=./secrets/github_username",
+                    "TAG": "ryujinxkit:release"
                 }
             },
             "problemMatcher": [],
@@ -27,7 +28,7 @@
                 "env": {
                     "CONTEXT": ".",
                     "DOCKERFILE": "docker/development.Dockerfile",
-                    "TAG": "ryujinxkit:DEV"
+                    "TAG": "ryujinxkit:dev"
                 }
             },
             "problemMatcher": [],

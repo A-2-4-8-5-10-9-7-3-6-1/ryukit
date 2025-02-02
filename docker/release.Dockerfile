@@ -1,34 +1,39 @@
 FROM python:3.13-bullseye AS build-linux
+ENV POETRY_REPOSITORIES_DEVKIT_URL=https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git
 WORKDIR /workdir
 RUN pip install poetry
 COPY . .
-RUN --mount=type=secret,id=env_file set -a \
-    && . /run/secrets/env_file \
-    && set +a \
-    && poetry config repositories.devkit https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git \
+RUN --mount=type=secret,id=github_token \
+    --mount=type=secret,id=github_username \
+    export POETRY_HTTP_BASIC_DEVKIT_PASSWORD=$(cat /run/secrets/github_token) \
+    && export POETRY_HTTP_BASIC_DEVKIT_USERNAME=$(cat /run/secrets/github_username) \
     && poetry install
 RUN poetry run pyinstaller pyinstaller.spec
 RUN poetry build
 
 FROM scottyhardy/docker-wine AS build-windows
-ENV PYTHON_FOLDER=%LOCALAPPDATA%\\Programs\\Python\\Python313
+ENV WIN_PATH="%PATH%%LOCALAPPDATA%\Programs\Python\Python313;%LOCALAPPDATA%\Programs\Python\Python313\Scripts" \
+    POETRY_REPOSITORIES_DEVKIT_URL=https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git
 WORKDIR /workdir
 RUN apt update \
     && apt install -y xvfb
 RUN wget -O python-3.13.1.exe https://www.python.org/ftp/python/3.13.1/python-3.13.1-amd64.exe
 RUN xvfb-run wine python-3.13.1.exe /quiet
-RUN wine cmd /c "${PYTHON_FOLDER}\python.exe" -m pip install poetry
+RUN wine cmd /c " \
+    set PATH=${WIN_PATH} \
+    && pip install poetry \
+    "
 COPY . .
-RUN --mount=type=secret,id=env_file set -a \
-    && . /run/secrets/env_file \
-    && set +a \
+RUN --mount=type=secret,id=github_token \
+    --mount=type=secret,id=github_username \
+    export POETRY_HTTP_BASIC_DEVKIT_PASSWORD=$(cat /run/secrets/github_token) \
+    && export POETRY_HTTP_BASIC_DEVKIT_USERNAME=$(cat /run/secrets/github_username) \
     && wine cmd /c " \
-    set PATH=%PATH%${PYTHON_FOLDER};${PYTHON_FOLDER}/Scripts; \
-    && poetry config repositories.devkit https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git \
+    set PATH=${WIN_PATH} \
     && poetry install \
     "
 RUN wine cmd /c " \
-    set PATH=%PATH%${PYTHON_FOLDER};${PYTHON_FOLDER}/Scripts; \
+    set PATH=${WIN_PATH} \
     && poetry run pyinstaller pyinstaller.spec \
     "
 

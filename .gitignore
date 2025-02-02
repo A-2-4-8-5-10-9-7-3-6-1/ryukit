@@ -1,6 +1,7 @@
 # configurations
 **/.env
 **/.vscode/settings.json
+secrets/
 
 # generated
 **/__pycache__/
