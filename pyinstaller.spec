@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['scripts/run_ryujinxkit.py'],
+    ['src/__main__.py'],
     pathex=[],
     binaries=[],
     datas=[],

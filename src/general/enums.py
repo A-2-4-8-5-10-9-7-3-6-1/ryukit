@@ -12,7 +12,7 @@ class FileNode(Enum):
     File-system nodes.
     """
 
-    USER_DATA = 0
+    LOCAL_USER_DATA = 0
 
     RYUJINX_ROAMING_DATA = 1
     RYUJINX_LOCAL_DATA = 2
@@ -44,6 +44,7 @@ class Command(Enum):
 
     RYUJINXKIT_SOURCE = 1
     RYUJINXKIT_SAVE = 4
+    RYUJINXKIT_VERSION = 11
 
     RYUJINXKIT_SAVE_CREATE = 2
     RYUJINXKIT_SAVE_LIST = 3

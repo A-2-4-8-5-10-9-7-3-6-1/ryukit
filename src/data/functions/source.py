@@ -10,7 +10,9 @@ from platformdirs import PlatformDirs
 from requests import HTTPError, get
 from rich.progress import Progress
 
-from ...general import (
+from src.general import (
+    RYUJINX_AUTHOR,
+    RYUJINX_NAME,
     SOURCE_APP,
     SOURCE_CHUNK_SIZE,
     SOURCE_KEYS,
@@ -19,7 +21,6 @@ from ...general import (
     FileNode,
     Session,
 )
-from ...general.constants.configs import RYUJINX_AUTHOR, RYUJINX_NAME
 
 # =============================================================================
 

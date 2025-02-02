@@ -89,7 +89,7 @@ class Session(metaclass=_Meta):
         lambda ryujinx_rpd, ryujinxkit_rpd: Resolver(
             nodes={
                 FileNode.RYUJINX_LOCAL_DATA: Node(
-                    parent=FileNode.USER_DATA,
+                    parent=FileNode.LOCAL_USER_DATA,
                     cache=True,
                 ),
                 FileNode.RYUJINX_SYSTEM: Node(
@@ -143,7 +143,7 @@ class Session(metaclass=_Meta):
                 ),
             },
             primitives={
-                FileNode.USER_DATA: user_data_path(),
+                FileNode.LOCAL_USER_DATA: user_data_path(),
                 FileNode.RYUJINX_ROAMING_DATA: ryujinx_rpd.user_data_path,
                 FileNode.RYUJINXKIT_ROAMING_DATA: ryujinxkit_rpd.user_data_path,
                 FileNode.RYUJINXKIT_CONFIGS: ryujinxkit_rpd.user_config_path,

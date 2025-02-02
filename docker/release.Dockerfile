@@ -9,7 +9,6 @@ RUN --mount=type=secret,id=github_token \
     && export POETRY_HTTP_BASIC_DEVKIT_USERNAME=$(cat /run/secrets/github_username) \
     && poetry install
 RUN poetry run pyinstaller pyinstaller.spec
-RUN poetry build
 
 FROM scottyhardy/docker-wine AS build-windows
 ENV WIN_PATH="%PATH%%LOCALAPPDATA%\Programs\Python\Python313;%LOCALAPPDATA%\Programs\Python\Python313\Scripts" \
@@ -39,6 +38,6 @@ RUN wine cmd /c " \
 
 FROM ubuntu
 WORKDIR /workdir
-COPY --from=build-linux /workdir/dist/ ./
-COPY --from=build-windows /workdir/dist/ ./
+COPY --from=build-linux /workdir/dist .
+COPY --from=build-windows /workdir/dist .
 ENTRYPOINT [ "cp", "-r", ".", "/output" ]

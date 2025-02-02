@@ -5,7 +5,8 @@
 from argparse import Namespace
 from typing import Callable
 
-from ...general import DATABASE_SAVE_TAG_DEFAULT, Command, T
+from src.general import DATABASE_SAVE_TAG_DEFAULT, Command, T
+
 from ..constants.configs import DEFAULT_ARCHIVE_NAME
 
 # =============================================================================

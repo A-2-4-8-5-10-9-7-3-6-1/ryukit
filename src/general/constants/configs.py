@@ -5,7 +5,7 @@
 # =============================================================================
 
 DATABASE_SAVE_TAG_DEFAULT = "untagged"
-DATABASE_INSERT_BUFFER = 0.2
+DATABASE_INSERT_BUFFER = 0
 
 SOURCE_CHUNK_SIZE = pow(2, 13)
 SOURCE_META = "ryujinx.json"
@@ -15,7 +15,7 @@ SOURCE_KEYS = "keys"
 
 RYUJINXKIT_NAME = "RyujinxKit"
 RYUJINXKIT_AUTHOR = "A-2-4-8-5-10-9-7-3-6-1"
-RYUJINXKIT_VERSION = "1.0.1"
+RYUJINXKIT_VERSION = "1.1.0"
 
 RYUJINX_NAME = "Ryujinx"
 RYUJINX_AUTHOR = False

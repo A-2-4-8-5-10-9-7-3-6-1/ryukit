@@ -1,13 +1,10 @@
 # configurations
 **/.env
 **/.vscode/settings.json
-secrets/
+secrets
 
 # generated
-**/__pycache__/
-**/logs/
-**/build/
-**/dist/
-
-# external
-**/vendor/
+**/__pycache__
+**/logs
+**/build
+**/dist

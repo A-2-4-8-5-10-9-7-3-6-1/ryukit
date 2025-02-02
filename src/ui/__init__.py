@@ -1,7 +1,11 @@
-from ryujinxkit.ui.functions.main import main
+"""
+Interface systems.
+"""
+
+from .functions.start import start
 
 # =============================================================================
 
-main()
+__all__ = ["start"]
 
 # =============================================================================
