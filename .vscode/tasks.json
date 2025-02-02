@@ -28,7 +28,7 @@
                 "env": {
                     "CONTEXT": ".",
                     "DOCKERFILE": "docker/development.Dockerfile",
-                    "TAG": "ryujinxkit:dev"
+                    "TAG": "ryujinxkit:development"
                 }
             },
             "problemMatcher": [],
