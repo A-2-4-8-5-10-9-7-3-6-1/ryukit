@@ -5,6 +5,7 @@ COPY . .
 RUN --mount=type=secret,id=env_file set -a \
     && . /run/secrets/env_file \
     && set +a \
+    && poetry config repositories.devkit https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git \
     && poetry install
 RUN poetry run pyinstaller pyinstaller.spec
 RUN poetry build
@@ -23,6 +24,7 @@ RUN --mount=type=secret,id=env_file set -a \
     && set +a \
     && wine cmd /c " \
     set PATH=%PATH%${PYTHON_FOLDER};${PYTHON_FOLDER}/Scripts; \
+    && poetry config repositories.devkit https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git \
     && poetry install \
     "
 RUN wine cmd /c " \

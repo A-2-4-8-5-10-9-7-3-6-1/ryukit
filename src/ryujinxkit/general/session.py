@@ -13,7 +13,6 @@ from .constants.configs import (
     RYUJINX_NAME,
     RYUJINXKIT_AUTHOR,
     RYUJINXKIT_NAME,
-    RYUJINXKIT_VERSION,
 )
 from .enums import FileNode
 
@@ -160,7 +159,6 @@ class Session(metaclass=_Meta):
             appname=RYUJINXKIT_NAME,
             appauthor=RYUJINXKIT_AUTHOR,
             roaming=True,
-            version=RYUJINXKIT_VERSION,
         ),
     )
 

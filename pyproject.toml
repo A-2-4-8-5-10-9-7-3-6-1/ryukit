@@ -1,6 +1,6 @@
 [project]
 name = "ryujinxkit"
-version = "0.1.0"
+version = "1.0.0"
 description = "RyujinxKit command-line interface."
 authors = [
     {name = "A-2-4-8-5-10-9-7-3-6-1",email = "112730580+A-2-4-8-5-10-9-7-3-6-1@users.noreply.github.com"}
@@ -12,8 +12,7 @@ dependencies = [
     "platformdirs (>=4.3.6,<5.0.0)",
     "rich (>=13.9.4,<14.0.0)",
     "pyinstaller (>=6.11.1,<7.0.0)",
-    "hyrchy-pthresolver @ git+https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git#subdirectory=hyrchy-pthresolver",
-    "parser-generator @ git+https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git#subdirectory=parser-generator",
+    "devkit @ git+https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git@v1.0.0",
 ]
 
 [tool.poetry.scripts]

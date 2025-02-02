@@ -19,6 +19,7 @@ from ...general import (
     FileNode,
     Session,
 )
+from ...general.constants.configs import RYUJINXKIT_NAME, RYUJINXKIT_VERSION
 from ..constants.configs import (
     COLOR_CREAM,
     DEFAULT_ARCHIVE_NAME,
@@ -57,20 +58,40 @@ _begin = generate(
                 "description": "Ryujinx-management toolkit.",
             },
             subparsers_args={
-                "title": "operation",
-                "required": True,
+                "title": "commands",
             },
+            params=[
+                (
+                    ["--version"],
+                    {
+                        "action": "store_true",
+                        "help": "Show version",
+                    },
+                )
+            ],
             parent=Command.RYUJINXKIT,
+            defaults={
+                "func": sanitize(
+                    command=Command.RYUJINXKIT,
+                    function=lambda args: (
+                        print(
+                            f"{RYUJINXKIT_NAME} version {RYUJINXKIT_VERSION}"
+                        )
+                        if args.version
+                        else None
+                    ),
+                )
+            },
         ),
         Command.RYUJINXKIT_SAVE: ParserCommand(
             parser_args={
                 "name": "save",
                 "description": "Save-state management tools.",
-                "help": "Tools for save-state management.",
+                "help": "Tools for save-state management",
                 "aliases": ["sv"],
             },
             subparsers_args={
-                "title": "operation",
+                "title": "commands",
                 "required": True,
             },
             parent=Command.RYUJINXKIT,
@@ -79,12 +100,12 @@ _begin = generate(
             parser_args={
                 "name": "install",
                 "description": "Install Ryujinx.",
-                "help": "Install and setup Ryujinx.",
+                "help": "Install and setup Ryujinx",
             },
             params=[
                 {
                     "dest": "url",
-                    "help": "RyujinxKit-content download URL.",
+                    "help": "RyujinxKit-content download URL",
                     "type": str,
                 }
             ],
@@ -113,13 +134,13 @@ _begin = generate(
             parser_args={
                 "name": "create",
                 "description": "Create new save state.",
-                "help": "Add to your collection of save states.",
+                "help": "Add to your collection of save states",
             },
             params=[
                 (
                     ["-t", "--tag"],
                     {
-                        "help": "A tag for your save state.",
+                        "help": "A tag for your save state",
                         "type": str,
                     },
                 )
@@ -152,7 +173,7 @@ _begin = generate(
                 "name": "list",
                 "description": "List save states.",
                 "aliases": ["ls"],
-                "help": "Show all of your save states.",
+                "help": "Show all of your save states",
             },
             parent=Command.RYUJINXKIT_SAVE,
             defaults={
@@ -194,11 +215,11 @@ _begin = generate(
                 "name": "remove",
                 "description": "Delete one of your save states.",
                 "aliases": ["rm"],
-                "help": "Remove a save state from your collection.",
+                "help": "Remove a save state from your collection",
             },
             params=[
                 {
-                    "help": "The save-state's ID.",
+                    "help": "The save-state's ID",
                     "type": str,
                     "dest": "id",
                 }
@@ -215,12 +236,12 @@ _begin = generate(
             parser_args={
                 "name": "update",
                 "description": "Update your save state.",
-                "help": "Update a save state.",
+                "help": "Update a save state",
             },
             params=[
                 {
                     "dest": "id",
-                    "help": "ID of save state.",
+                    "help": "ID of save state",
                     "type": str,
                 }
             ],
@@ -239,12 +260,12 @@ _begin = generate(
             parser_args={
                 "name": "restore",
                 "description": "Restore your save state.",
-                "help": "Restore a save state.",
+                "help": "Restore a save state",
             },
             params=[
                 {
                     "dest": "id",
-                    "help": "ID of save state.",
+                    "help": "ID of save state",
                     "type": str,
                 }
             ],
@@ -263,19 +284,19 @@ _begin = generate(
             parser_args={
                 "name": "retag",
                 "description": "Change a save-state's tag.",
-                "help": "Update a save-state's tag.",
+                "help": "Update a save-state's tag",
                 "aliases": ["rt"],
             },
             params=[
                 {
-                    "help": "Save-state's ID.",
+                    "help": "Save-state's ID",
                     "dest": "id",
                     "type": str,
                 },
                 {
                     "dest": "tag",
                     "type": str,
-                    "help": "New tag for save state.",
+                    "help": "New tag for save state",
                 },
             ],
             parent=Command.RYUJINXKIT_SAVE,
@@ -297,13 +318,13 @@ _begin = generate(
             parser_args={
                 "name": "archive",
                 "description": "Export your save states as a " "tar file.",
-                "help": "Archive your save states.",
+                "help": "Archive your save states",
             },
             params=[
                 (
                     ["-o", "--output"],
                     {
-                        "help": "Name of output file.",
+                        "help": "Name of output file",
                         "type": str,
                     },
                 )
@@ -321,12 +342,12 @@ _begin = generate(
             parser_args={
                 "name": "read",
                 "description": "Retrieve save states from your " "archive.",
-                "help": "Read save states from archive.",
+                "help": "Read save states from archive",
             },
             params=[
                 {
                     "dest": "path",
-                    "help": "Path to your archive.",
+                    "help": "Path to your archive",
                     "type": Path,
                 }
             ],
