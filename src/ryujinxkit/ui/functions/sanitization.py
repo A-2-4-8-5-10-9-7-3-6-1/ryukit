@@ -30,7 +30,7 @@ def _format_tag(tag: str) -> str:
 
 _INPUT_FORMATTERS: dict[Command, list[tuple[str, Callable[[T], T]]]] = {
     Command.RYUJINXKIT_SAVE_CREATE: [("tag", _format_tag)],
-    Command.RYUJINXKIT_SAVE_ARCHIVE: [
+    Command.RYUJINXKIT_SAVE_EXPORT: [
         ("output", lambda name: name if name != "" else DEFAULT_ARCHIVE_NAME)
     ],
     Command.RYUJINXKIT_SAVE_RETAG: [("tag", _format_tag)],
