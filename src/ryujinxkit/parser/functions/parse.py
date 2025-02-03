@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Callable, Concatenate
 
 from parser_generator import Command, generate
+from requests import ConnectionError
 from rich.box import Box
 from rich.table import Table
 
@@ -167,11 +168,24 @@ def _(_: Namespace) -> None:
     parent=RyujinxKitCommand.RYUJINXKIT,
 )
 def _(args: Namespace) -> None:
-    source(Session.console, url=args.url)
+    try:
+        source(Session.console, url=args.url)
 
-    Session.console.print(
-        f"Installed to {Session.resolver(id_=FileNode.RYUJINX_LOCAL_DATA)}."
-    )
+        Session.console.print(
+            f"Installed to ",
+            Session.resolver(id_=FileNode.RYUJINX_LOCAL_DATA),
+            ".",
+        )
+
+    except ConnectionError:
+        Session.console.print("Failed to connect to service.")
+
+    except Exception:
+        Session.console.print(
+            "URL locates an invalid service.",
+            "Contact an authority for a valid one.",
+            sep="\n",
+        )
 
 
 # -----------------------------------------------------------------------------
@@ -307,7 +321,11 @@ def _(args: Namespace) -> None:
     parent=RyujinxKitCommand.RYUJINXKIT_SAVE,
 )
 def _(args: Namespace) -> None:
-    use_save(Session.console, id_=args.id, operation="update")
+    try:
+        use_save(Session.console, id_=args.id, operation="update")
+
+    except Exception:
+        Session.console.print("Unknown ID.")
 
 
 # -----------------------------------------------------------------------------
@@ -329,7 +347,11 @@ def _(args: Namespace) -> None:
     parent=RyujinxKitCommand.RYUJINXKIT_SAVE,
 )
 def _(args: Namespace) -> None:
-    use_save(Session.console, id_=args.id, operation="restore")
+    try:
+        use_save(Session.console, id_=args.id, operation="restore")
+
+    except Exception:
+        Session.console.print("Unknown ID.")
 
 
 # -----------------------------------------------------------------------------
@@ -422,7 +444,14 @@ def _(args: Namespace) -> None:
     parent=RyujinxKitCommand.RYUJINXKIT_SAVE,
 )
 def _(args: Namespace) -> None:
-    read_archive(Session.console, path=args.path)
+    try:
+        read_archive(Session.console, path=args.path)  # use output
+
+    except FileNotFoundError:
+        Session.console.print("Path is for a non-existent file.")
+
+    except Exception:
+        Session.console.print("Located file was malformed.")
 
 
 # -----------------------------------------------------------------------------
@@ -461,7 +490,7 @@ def _(args: Namespace) -> None:
             },
         ),
     ]
-]
+]  # split into functions
 
 # -----------------------------------------------------------------------------
 
