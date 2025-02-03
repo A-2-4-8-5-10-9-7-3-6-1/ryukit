@@ -274,7 +274,8 @@ def _(_: Namespace) -> None:
         ).fetchall()
     ]
 
-    Session.console.print(table)
+    with Session.console.pager():
+        Session.console.print(table)
 
 
 # -----------------------------------------------------------------------------
