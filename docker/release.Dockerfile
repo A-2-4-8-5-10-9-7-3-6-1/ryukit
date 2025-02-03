@@ -9,4 +9,4 @@ RUN --mount=type=secret,id=github_token \
     && export POETRY_HTTP_BASIC_DEVKIT_USERNAME=$(cat /run/secrets/github_username) \
     && poetry install
 RUN poetry build
-ENTRYPOINT [ "cp", "-r", ".", "/output" ]
+ENTRYPOINT [ "cp", "-r", "dist/.", "/output" ]

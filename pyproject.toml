@@ -5,6 +5,7 @@ description = "Command-line tool for Ryujinx management."
 authors = [
     {name = "A-2-4-8-5-10-9-7-3-6-1",email = "112730580+A-2-4-8-5-10-9-7-3-6-1@users.noreply.github.com"}
 ]
+license = {text = "MIT"}
 requires-python = ">=3.13,<3.14"
 dependencies = [
     "requests (>=2.32.3,<3.0.0)",
