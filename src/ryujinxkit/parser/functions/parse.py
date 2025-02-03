@@ -456,41 +456,42 @@ def _(args: Namespace) -> None:
 
 # -----------------------------------------------------------------------------
 
-[
-    _command(*args, **kwargs)(lambda _: None)
-    for *args, kwargs in [
-        (
-            RyujinxKitCommand.RYUJINXKIT,
-            {
-                "parser_args": {
-                    "prog": RYUJINXKIT_NAME.lower(),
-                    "description": "A tool for Ryujinx (for Windows) "
-                    "management.",
-                },
-                "subparsers_args": {
-                    "title": "commands",
-                    "required": True,
-                },
-                "parent": RyujinxKitCommand.RYUJINXKIT,
-            },
-        ),
-        (
-            RyujinxKitCommand.RYUJINXKIT_SAVE,
-            {
-                "parser_args": {
-                    "name": "save",
-                    "help": "Save-state usage commands",
-                    "aliases": ["sv"],
-                },
-                "subparsers_args": {
-                    "title": "commands",
-                    "required": True,
-                },
-                "parent": RyujinxKitCommand.RYUJINXKIT,
-            },
-        ),
-    ]
-]  # split into functions
+
+@_command(
+    RyujinxKitCommand.RYUJINXKIT,
+    parser_args={
+        "prog": RYUJINXKIT_NAME.lower(),
+        "description": "A tool for Ryujinx (for Windows) " "management.",
+    },
+    subparsers_args={
+        "title": "commands",
+        "required": True,
+    },
+    parent=RyujinxKitCommand.RYUJINXKIT,
+)
+def _(_: Namespace) -> None:
+    pass
+
+
+# -----------------------------------------------------------------------------
+
+
+@_command(
+    RyujinxKitCommand.RYUJINXKIT_SAVE,
+    parser_args={
+        "name": "save",
+        "help": "Save-state usage commands",
+        "aliases": ["sv"],
+    },
+    subparsers_args={
+        "title": "commands",
+        "required": True,
+    },
+    parent=RyujinxKitCommand.RYUJINXKIT,
+)
+def _(_: Namespace) -> None:
+    pass
+
 
 # -----------------------------------------------------------------------------
 
