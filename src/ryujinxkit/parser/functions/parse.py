@@ -20,7 +20,6 @@ from ryujinxkit.data import (
     use_save,
 )
 from ryujinxkit.general import (
-    COLOR_CREAM,
     DATABASE_INSERT_BUFFER,
     DATABASE_SAVE_TAG_DEFAULT,
     RYUJINXKIT_NAME,
@@ -144,10 +143,7 @@ def _format_tag(tag: str) -> str:
     parent=Command.RYUJINXKIT,
 )
 def _(_: Namespace) -> None:
-    Session.console.print(
-        f"{RYUJINXKIT_NAME} version {RYUJINXKIT_VERSION}",
-        highlight=False,
-    )
+    Session.console.print(f"{RYUJINXKIT_NAME} version {RYUJINXKIT_VERSION}")
 
 
 # -----------------------------------------------------------------------------
@@ -173,10 +169,7 @@ def _(args: Namespace) -> None:
     source(Session.console, url=args.url)
 
     Session.console.print(
-        f"[{COLOR_CREAM}] Installed to "
-        + str(Session.resolver(id_=FileNode.RYUJINX_LOCAL_DATA))
-        + f".[/{COLOR_CREAM}]",
-        highlight=False,
+        f"Installed to {Session.resolver(id_=FileNode.RYUJINX_LOCAL_DATA)}."
     )
 
 
@@ -215,10 +208,7 @@ def _(args: Namespace) -> None:
 
     sleep(DATABASE_INSERT_BUFFER)
 
-    Session.console.print(
-        f"[{COLOR_CREAM}]Save ID: {Session.database_cursor.lastrowid}."
-        f"[/{COLOR_CREAM}]"
-    )
+    Session.console.print(f"ID is {Session.database_cursor.lastrowid}.")
 
 
 # -----------------------------------------------------------------------------
@@ -340,7 +330,7 @@ def _(args: Namespace) -> None:
     Command.RYUJINXKIT_SAVE_RESTORE,
     parser_args={
         "name": "restore",
-        "help": "Restore your Ryujinx environment " "from a save state",
+        "help": "Restore your Ryujinx environment from a save state",
     },
     params=[
         {

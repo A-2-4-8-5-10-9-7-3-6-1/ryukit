@@ -16,7 +16,6 @@ from .constants.configs import (
     SOURCE_META,
     SOURCE_REGISTERED,
 )
-from .constants.ui import COLOR_CREAM
 from .enums import Command, FileNode
 from .session import Session
 from .types.param_vars import P, T
@@ -37,7 +36,6 @@ __all__ = [
     "RYUJINXKIT_VERSION",
     "RYUJINX_AUTHOR",
     "RYUJINX_NAME",
-    "COLOR_CREAM",
     "FileNode",
     "Command",
     "Session",
