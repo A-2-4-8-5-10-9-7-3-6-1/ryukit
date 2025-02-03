@@ -251,25 +251,12 @@ def _(_: Namespace) -> None:
             SELECT 
                 CAST(id AS TEXT),
                 CAST(tag AS TEXT),
-                CAST(created AS TEXT),
-                CAST(updated AS TEXT),
-                CAST(
-                    COALESCE(used, "Never")
-                    AS text
-                ),
-                CAST(
-                    ROUND(
-                        size / (1024 * 1024.0),
-                        2
-                    )
-                    AS TEXT
-                )
-                || "MB"
+                CAST(strftime("%Y/%m/%d %H:%M", created) AS TEXT),
+                CAST(strftime("%Y/%m/%d %H:%M", updated) AS TEXT),
+                CAST(strftime("%Y/%m/%d %H:%M", updated) AS text),
+                CAST(ROUND(size / (1024 * 1024.0), 2) AS TEXT) || "MB"
             FROM saves
-            ORDER BY
-                used DESC,
-                updated DESC, 
-                created DESC;
+            ORDER BY used DESC, updated DESC, created DESC;
             """
         ).fetchall()
     ]
