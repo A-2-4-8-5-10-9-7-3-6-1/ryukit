@@ -8,6 +8,7 @@ from tarfile import TarFile
 
 from platformdirs import PlatformDirs
 from requests import HTTPError, get
+from rich.console import Console
 from rich.progress import Progress
 
 from ryujinxkit.general import (
@@ -25,11 +26,12 @@ from ryujinxkit.general import (
 # =============================================================================
 
 
-def source(url: str) -> None:
+def source(console: Console, url: str) -> None:
     """
     Source setup data.
 
     :param url: RyujinxKit-content download url.
+    :parma console: A console for documenting progress.
     """
 
     response = get(url=url, stream=True)
@@ -37,7 +39,10 @@ def source(url: str) -> None:
     if response.status_code != 200:
         raise HTTPError("Couldn't connect to server.", response=response)
 
-    with Progress(transient=True) as progress, BytesIO() as buffer:
+    with (
+        Progress(transient=True, console=console) as progress,
+        BytesIO() as buffer,
+    ):
         task_id = progress.add_task(
             description="[yellow]Downloading[/yellow]",
             total=float(response.headers.get("content-length", 0)),
@@ -71,7 +76,7 @@ def source(url: str) -> None:
 
             with (
                 tar.extractfile(member=SOURCE_META) as meta,
-                Session.RESOLVER.cache_only(
+                Session.resolver.cache_only(
                     (
                         FileNode.RYUJINX_LOCAL_DATA,
                         str(
@@ -106,7 +111,7 @@ def source(url: str) -> None:
                                                 ),
                                             ]
                                         )(
-                                            Session.RESOLVER(id_=routes[head])
+                                            Session.resolver(id_=routes[head])
                                             / tail
                                         )
                                         if head in routes

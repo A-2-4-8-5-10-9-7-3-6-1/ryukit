@@ -2,11 +2,13 @@
 - dependency level 1.
 """
 
+from io import StringIO
 from sqlite3 import Cursor, connect
 from typing import Any
 
 from hyrchy_pthresolver import Node, Resolver
 from platformdirs import PlatformDirs, user_data_path
+from rich.console import Console
 
 from .constants.configs import (
     RYUJINX_AUTHOR,
@@ -24,8 +26,9 @@ class _Meta(type):
     Metaclass for `Session`.
     """
 
-    RESOLVER: Resolver[FileNode]
+    resolver: Resolver[FileNode]
     database_cursor: Cursor
+    null_buffer: StringIO
 
     # -------------------------------------------------------------------------
 
@@ -34,8 +37,14 @@ class _Meta(type):
         Initialize session.
         """
 
+        cls.database_cursor = connect(
+            database=cls.resolver(id_=FileNode.RYUJINXKIT_DATABASE),
+            autocommit=False,
+        ).cursor()
+        cls.null_buffer = StringIO()
+
         [
-            cls.RESOLVER(id_=id_).mkdir(parents=True, exist_ok=True)
+            cls.resolver(id_=id_).mkdir(parents=True, exist_ok=True)
             for id_ in [
                 FileNode.RYUJINXKIT_ROAMING_DATA,
                 FileNode.RYUJINX_ROAMING_DATA,
@@ -43,11 +52,6 @@ class _Meta(type):
                 FileNode.RYUJINXKIT_CONFIGS,
             ]
         ]
-
-        cls.database_cursor = connect(
-            database=cls.RESOLVER(id_=FileNode.RYUJINXKIT_DATABASE),
-            autocommit=False,
-        ).cursor()
 
         cls.database_cursor.executescript(
             """
@@ -72,6 +76,7 @@ class _Meta(type):
 
         cls.database_cursor.connection.commit()
         cls.database_cursor.connection.close()
+        cls.null_buffer.close()
 
 
 # -----------------------------------------------------------------------------
@@ -81,11 +86,14 @@ class Session(metaclass=_Meta):
     """
     Session-management class.
 
-    :attr RESOLVER: Path resolver.
+    :attr resolver: Path resolver.
     :attr database_cursor: Database cursor.
+    :attr console: Main console.
+    :attr null_buffer: Buffer for hidden output.
     """
 
-    RESOLVER = (
+    console = Console()
+    resolver = (
         lambda ryujinx_rpd, ryujinxkit_rpd: Resolver(
             nodes={
                 FileNode.RYUJINX_LOCAL_DATA: Node(

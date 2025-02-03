@@ -11,6 +11,7 @@ from tempfile import TemporaryDirectory
 from time import sleep
 from typing import Any, Callable, Iterable, Literal, Sequence
 
+from rich.console import Console
 from rich.progress import Progress
 
 from ryujinxkit.general import DATABASE_INSERT_BUFFER, FileNode, Session
@@ -18,10 +19,15 @@ from ryujinxkit.general import DATABASE_INSERT_BUFFER, FileNode, Session
 # =============================================================================
 
 
-def use_save(id_: str, operation: Literal["restore", "update"]) -> None:
+def use_save(
+    console: Console,
+    id_: str,
+    operation: Literal["restore", "update"],
+) -> None:
     """
     Perform an operation on a save state.
 
+    :param console: A console to track progress on.
     :param %id_%: Save-state's ID as a string.
     :param operation: Usage operation.
     """
@@ -67,10 +73,10 @@ def use_save(id_: str, operation: Literal["restore", "update"]) -> None:
             )
 
     with (
-        Session.RESOLVER.cache_only(
+        Session.resolver.cache_only(
             (FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
         ),
-        Progress(transient=True) as progress,
+        Progress(transient=True, console=console) as progress,
     ):
         task_id = progress.add_task(
             description=(f"[yellow]{operation.title()[:-1]}ing[/yellow]"),
@@ -91,7 +97,7 @@ def use_save(id_: str, operation: Literal["restore", "update"]) -> None:
                 FileNode.RYUJINX_USER_SAVE,
             ),
         ]:
-            source, dest = map(Session.RESOLVER, order(paths))
+            source, dest = map(Session.resolver, order(paths))
             members = [
                 path for path in source.rglob(pattern="*") if not path.is_dir()
             ]
@@ -126,20 +132,21 @@ def use_save(id_: str, operation: Literal["restore", "update"]) -> None:
 # -----------------------------------------------------------------------------
 
 
-def remove_save(id_: str) -> None:
+def remove_save(console: Console, id_: str) -> None:
     """
     Removes a save state.
 
     :param %id_%: ID of save state.
+    :param console: A console to track progress on.
     """
 
-    with Session.RESOLVER.cache_only(
+    with Session.resolver.cache_only(
         (FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
     ):
-        if Session.RESOLVER(
+        if Session.resolver(
             id_=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
         ).exists():
-            with Progress(transient=True) as progress:
+            with Progress(transient=True, console=console) as progress:
                 task_id = progress.add_task(
                     description="[yellow]Deleting[/yellow]",
                     total=Session.database_cursor.execute(
@@ -157,14 +164,14 @@ def remove_save(id_: str) -> None:
                         task_id=task_id,
                         advance=[path.stat().st_size, path.unlink()][0],
                     )
-                    for path in Session.RESOLVER(
+                    for path in Session.resolver(
                         id_=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
                     ).rglob(pattern="*")
                     if not path.is_dir()
                 ]
 
             rmtree(
-                path=Session.RESOLVER(
+                path=Session.resolver(
                     id_=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
                 )
             )
@@ -181,16 +188,17 @@ def remove_save(id_: str) -> None:
 # -----------------------------------------------------------------------------
 
 
-def archive(output: str) -> None:
+def archive(console: Console, output: str) -> None:
     """
     Archive all save states into a tar file.
 
     :param output: Output's file-path.
+    :param console: A console to track progress on.
     """
 
     with (
         TarFile(name=output, mode="w") as tar,
-        Progress(transient=True) as progress,
+        Progress(transient=True, console=console) as progress,
         BytesIO() as buffer,
     ):
         task_id = progress.add_task(
@@ -239,7 +247,7 @@ def archive(output: str) -> None:
             FROM saves;
             """
         ).fetchall():
-            with Session.RESOLVER.cache_only(
+            with Session.resolver.cache_only(
                 (FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
             ):
                 [
@@ -247,7 +255,7 @@ def archive(output: str) -> None:
                         tar.add(
                             name=path,
                             arcname=path.relative_to(
-                                Session.RESOLVER(
+                                Session.resolver(
                                     id_=FileNode.RYUJINXKIT_ROAMING_DATA
                                 )
                             ),
@@ -257,7 +265,7 @@ def archive(output: str) -> None:
                             advance=path.stat().st_size / size,
                         ),
                     ]
-                    for path in Session.RESOLVER(
+                    for path in Session.resolver(
                         id_=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
                     ).rglob(pattern="*")
                     if not path.is_dir()
@@ -267,11 +275,12 @@ def archive(output: str) -> None:
 # -----------------------------------------------------------------------------
 
 
-def read_archive(path: Path) -> int:
+def read_archive(console: Console, path: Path) -> int:
     """
     Assimilate save states from an archive.
 
     :param path: Path to your archive.
+    :param console: A console to track progress on.
 
     :returns: Number of read save states.
     """
@@ -279,7 +288,7 @@ def read_archive(path: Path) -> int:
     with (
         TemporaryDirectory() as temp_dir,
         TarFile(name=path, stream=True) as tar,
-        Progress(transient=True) as progress,
+        Progress(transient=True, console=console) as progress,
     ):
         temp_dir = Path(temp_dir)
         task_id = progress.add_task(
@@ -324,7 +333,7 @@ def read_archive(path: Path) -> int:
         for state in states:
             save_dir = (
                 temp_dir
-                / Session.RESOLVER(id_=FileNode.RYUJINXKIT_SAVE_FOLDER).name
+                / Session.resolver(id_=FileNode.RYUJINXKIT_SAVE_FOLDER).name
                 / str(state["id"])
             )
 
@@ -343,7 +352,7 @@ def read_archive(path: Path) -> int:
 
             sleep(DATABASE_INSERT_BUFFER)
 
-            with Session.RESOLVER.cache_only(
+            with Session.resolver.cache_only(
                 (
                     FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER,
                     str(Session.database_cursor.lastrowid),
@@ -364,7 +373,7 @@ def read_archive(path: Path) -> int:
                             else subpath.mkdir(parents=True, exist_ok=True)
                         )
                     )(
-                        Session.RESOLVER(
+                        Session.resolver(
                             id_=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
                         )
                         / entry.relative_to(save_dir)
