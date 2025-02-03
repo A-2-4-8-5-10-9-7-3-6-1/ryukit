@@ -2,10 +2,12 @@
 - dependency level 0.
 """
 
-from typing import TypeVar
+from typing import ParamSpec, TypeVar
 
 # =============================================================================
 
-T = TypeVar(name="*")
+P = ParamSpec(name="*P")
+
+T = TypeVar(name="*T")
 
 # =============================================================================
