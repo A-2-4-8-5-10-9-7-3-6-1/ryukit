@@ -1,4 +1,4 @@
-from src.ui import start
+from ryujinxkit.ui import start
 
 # =============================================================================
 

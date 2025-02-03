@@ -10,7 +10,7 @@ from platformdirs import PlatformDirs
 from requests import HTTPError, get
 from rich.progress import Progress
 
-from src.general import (
+from ryujinxkit.general import (
     RYUJINX_AUTHOR,
     RYUJINX_NAME,
     SOURCE_APP,

@@ -11,7 +11,7 @@ from rich.box import Box
 from rich.console import Console
 from rich.table import Table
 
-from src.general import (
+from ryujinxkit.general import (
     DATABASE_INSERT_BUFFER,
     DATABASE_SAVE_TAG_DEFAULT,
     RYUJINXKIT_NAME,

@@ -13,7 +13,7 @@ from typing import Any, Callable, Iterable, Literal, Sequence
 
 from rich.progress import Progress
 
-from src.general import DATABASE_INSERT_BUFFER, FileNode, Session
+from ryujinxkit.general import DATABASE_INSERT_BUFFER, FileNode, Session
 
 # =============================================================================
 

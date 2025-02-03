@@ -2,7 +2,7 @@
 - dependency level 0.
 """
 
-from src.general import RYUJINXKIT_NAME
+from ryujinxkit.general import RYUJINXKIT_NAME
 
 # =============================================================================
 
