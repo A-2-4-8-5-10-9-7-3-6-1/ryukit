@@ -8,13 +8,12 @@ from pathlib import Path
 from shutil import rmtree
 from tarfile import TarFile, TarInfo
 from tempfile import TemporaryDirectory
-from time import sleep
 from typing import Any, Callable, Iterable, Literal, Sequence
 
 from rich.console import Console
 from rich.progress import Progress
 
-from ryujinxkit.general import DATABASE_INSERT_BUFFER, FileNode, Session
+from ryujinxkit.general import FileNode, Session
 
 # =============================================================================
 
@@ -349,8 +348,6 @@ def read_archive(console: Console, path: Path) -> int:
                     )
                 ),
             )
-
-            sleep(DATABASE_INSERT_BUFFER)
 
             with Session.resolver.cache_only(
                 (

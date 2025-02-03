@@ -4,7 +4,6 @@
 
 from argparse import Namespace
 from pathlib import Path
-from time import sleep
 from typing import Any, Callable, Concatenate
 
 from parser_generator import Command as ParserCommand
@@ -20,7 +19,6 @@ from ryujinxkit.data import (
     use_save,
 )
 from ryujinxkit.general import (
-    DATABASE_INSERT_BUFFER,
     DATABASE_SAVE_TAG_DEFAULT,
     RYUJINXKIT_NAME,
     RYUJINXKIT_VERSION,
@@ -205,8 +203,6 @@ def _(args: Namespace) -> None:
         """,
         [args.tag],
     )
-
-    sleep(DATABASE_INSERT_BUFFER)
 
     Session.console.print(f"ID is {Session.database_cursor.lastrowid}.")
 

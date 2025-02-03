@@ -3,7 +3,6 @@ General configurations and tools.
 """
 
 from .constants.configs import (
-    DATABASE_INSERT_BUFFER,
     DATABASE_SAVE_TAG_DEFAULT,
     RYUJINX_AUTHOR,
     RYUJINX_NAME,
@@ -23,7 +22,6 @@ from .types.param_vars import P, T
 # =============================================================================
 
 __all__ = [
-    "DATABASE_INSERT_BUFFER",
     "DATABASE_SAVE_TAG_DEFAULT",
     "SOURCE_APP",
     "SOURCE_CHUNK_SIZE",

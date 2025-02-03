@@ -5,7 +5,6 @@
 # =============================================================================
 
 DATABASE_SAVE_TAG_DEFAULT = "untagged"
-DATABASE_INSERT_BUFFER = 0
 
 SOURCE_CHUNK_SIZE = pow(2, 13)
 SOURCE_META = "ryujinx.json"
