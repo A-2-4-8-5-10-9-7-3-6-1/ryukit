@@ -35,7 +35,7 @@ class FileNode(Enum):
 # -----------------------------------------------------------------------------
 
 
-class Command(Enum):
+class RyujinxKitCommand(Enum):
     """
     Service commands.
     """

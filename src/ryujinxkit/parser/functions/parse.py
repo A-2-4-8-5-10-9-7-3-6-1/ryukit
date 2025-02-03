@@ -6,8 +6,7 @@ from argparse import Namespace
 from pathlib import Path
 from typing import Any, Callable, Concatenate
 
-from parser_generator import Command as ParserCommand
-from parser_generator import generate
+from parser_generator import Command, generate
 from rich.box import Box
 from rich.table import Table
 
@@ -22,9 +21,9 @@ from ryujinxkit.general import (
     DATABASE_SAVE_TAG_DEFAULT,
     RYUJINXKIT_NAME,
     RYUJINXKIT_VERSION,
-    Command,
     FileNode,
     P,
+    RyujinxKitCommand,
     Session,
     T,
 )
@@ -40,7 +39,7 @@ def _sign(
     [
         Callable[
             Concatenate[
-                Command,
+                RyujinxKitCommand,
                 list[tuple[str, Callable[[Any], Any]]] | None,
                 P,
             ],
@@ -48,7 +47,11 @@ def _sign(
         ]
     ],
     Callable[
-        Concatenate[Command, list[tuple[str, Callable[[Any], Any]]] | None, P],
+        Concatenate[
+            RyujinxKitCommand,
+            list[tuple[str, Callable[[Any], Any]]] | None,
+            P,
+        ],
         T,
     ],
 ]:
@@ -65,14 +68,14 @@ def _sign(
 
 # -----------------------------------------------------------------------------
 
-_configs: dict[Command, ParserCommand] = {}
+_configs: dict[RyujinxKitCommand, Command] = {}
 
 # -----------------------------------------------------------------------------
 
 
-@_sign(ParserCommand)
+@_sign(Command)
 def _command(
-    id_: Command,
+    id_: RyujinxKitCommand,
     formatters: list[tuple[str, Callable[[Any], Any]]] | None = None,
     **kwargs: Any,
 ) -> Callable[[Callable[[Namespace], Any]], None]:
@@ -106,7 +109,7 @@ def _command(
             ][1]
         )
 
-        _configs[id_] = ParserCommand(**kwargs)
+        _configs[id_] = Command(**kwargs)
 
     return inner
 
@@ -133,12 +136,12 @@ def _format_tag(tag: str) -> str:
 
 
 @_command(
-    Command.RYUJINXKIT_VERSION,
+    RyujinxKitCommand.RYUJINXKIT_VERSION,
     parser_args={
         "name": "version",
         "help": "Show version and quit",
     },
-    parent=Command.RYUJINXKIT,
+    parent=RyujinxKitCommand.RYUJINXKIT,
 )
 def _(_: Namespace) -> None:
     Session.console.print(f"{RYUJINXKIT_NAME} version {RYUJINXKIT_VERSION}")
@@ -148,7 +151,7 @@ def _(_: Namespace) -> None:
 
 
 @_command(
-    Command.RYUJINXKIT_SOURCE,
+    RyujinxKitCommand.RYUJINXKIT_SOURCE,
     parser_args={
         "name": "install",
         "help": "Install and ready Ryujinx",
@@ -161,7 +164,7 @@ def _(_: Namespace) -> None:
             "type": str,
         }
     ],
-    parent=Command.RYUJINXKIT,
+    parent=RyujinxKitCommand.RYUJINXKIT,
 )
 def _(args: Namespace) -> None:
     source(Session.console, url=args.url)
@@ -175,7 +178,7 @@ def _(args: Namespace) -> None:
 
 
 @_command(
-    Command.RYUJINXKIT_SAVE_CREATE,
+    RyujinxKitCommand.RYUJINXKIT_SAVE_CREATE,
     [("tag", _format_tag)],
     parser_args={
         "name": "create",
@@ -190,7 +193,7 @@ def _(args: Namespace) -> None:
             },
         )
     ],
-    parent=Command.RYUJINXKIT_SAVE,
+    parent=RyujinxKitCommand.RYUJINXKIT_SAVE,
     defaults={
         "tag": DATABASE_SAVE_TAG_DEFAULT,
     },
@@ -211,13 +214,13 @@ def _(args: Namespace) -> None:
 
 
 @_command(
-    Command.RYUJINXKIT_SAVE_LIST,
+    RyujinxKitCommand.RYUJINXKIT_SAVE_LIST,
     parser_args={
         "name": "list",
         "aliases": ["ls"],
         "help": "List your save states",
     },
-    parent=Command.RYUJINXKIT_SAVE,
+    parent=RyujinxKitCommand.RYUJINXKIT_SAVE,
 )
 def _(_: Namespace) -> None:
     table = Table(
@@ -265,7 +268,7 @@ def _(_: Namespace) -> None:
 
 
 @_command(
-    Command.RYUJINXKIT_SAVE_REMOVE,
+    RyujinxKitCommand.RYUJINXKIT_SAVE_REMOVE,
     parser_args={
         "name": "remove",
         "aliases": ["rm"],
@@ -278,7 +281,7 @@ def _(_: Namespace) -> None:
             "dest": "id",
         }
     ],
-    parent=Command.RYUJINXKIT_SAVE,
+    parent=RyujinxKitCommand.RYUJINXKIT_SAVE,
 )
 def _(args: Namespace) -> None:
     remove_save(Session.console, id_=args.id)
@@ -288,7 +291,7 @@ def _(args: Namespace) -> None:
 
 
 @_command(
-    Command.RYUJINXKIT_SAVE_UPDATE,
+    RyujinxKitCommand.RYUJINXKIT_SAVE_UPDATE,
     parser_args={
         "name": "update",
         "help": "Update a save state with the current "
@@ -301,7 +304,7 @@ def _(args: Namespace) -> None:
             "type": str,
         }
     ],
-    parent=Command.RYUJINXKIT_SAVE,
+    parent=RyujinxKitCommand.RYUJINXKIT_SAVE,
 )
 def _(args: Namespace) -> None:
     use_save(Session.console, id_=args.id, operation="update")
@@ -311,7 +314,7 @@ def _(args: Namespace) -> None:
 
 
 @_command(
-    Command.RYUJINXKIT_SAVE_RESTORE,
+    RyujinxKitCommand.RYUJINXKIT_SAVE_RESTORE,
     parser_args={
         "name": "restore",
         "help": "Restore your Ryujinx environment from a save state",
@@ -323,7 +326,7 @@ def _(args: Namespace) -> None:
             "type": str,
         }
     ],
-    parent=Command.RYUJINXKIT_SAVE,
+    parent=RyujinxKitCommand.RYUJINXKIT_SAVE,
 )
 def _(args: Namespace) -> None:
     use_save(Session.console, id_=args.id, operation="restore")
@@ -333,7 +336,7 @@ def _(args: Namespace) -> None:
 
 
 @_command(
-    Command.RYUJINXKIT_SAVE_RETAG,
+    RyujinxKitCommand.RYUJINXKIT_SAVE_RETAG,
     [("tag", _format_tag)],
     parser_args={
         "name": "retag",
@@ -352,7 +355,7 @@ def _(args: Namespace) -> None:
             "help": "A new tag for the save state",
         },
     ],
-    parent=Command.RYUJINXKIT_SAVE,
+    parent=RyujinxKitCommand.RYUJINXKIT_SAVE,
 )
 def _(args: Namespace) -> None:
     Session.database_cursor.execute(
@@ -369,7 +372,7 @@ def _(args: Namespace) -> None:
 
 
 @_command(
-    Command.RYUJINXKIT_SAVE_EXPORT,
+    RyujinxKitCommand.RYUJINXKIT_SAVE_EXPORT,
     [
         (
             "output",
@@ -390,7 +393,7 @@ def _(args: Namespace) -> None:
             },
         )
     ],
-    parent=Command.RYUJINXKIT_SAVE,
+    parent=RyujinxKitCommand.RYUJINXKIT_SAVE,
     defaults={
         "output": DEFAULT_ARCHIVE_NAME,
     },
@@ -403,7 +406,7 @@ def _(args: Namespace) -> None:
 
 
 @_command(
-    Command.RYUJINXKIT_SAVE_EXTRACT,
+    RyujinxKitCommand.RYUJINXKIT_SAVE_EXTRACT,
     parser_args={
         "name": "extract",
         "help": "Extract save states from an export",
@@ -416,7 +419,7 @@ def _(args: Namespace) -> None:
             "type": Path,
         }
     ],
-    parent=Command.RYUJINXKIT_SAVE,
+    parent=RyujinxKitCommand.RYUJINXKIT_SAVE,
 )
 def _(args: Namespace) -> None:
     read_archive(Session.console, path=args.path)
@@ -428,7 +431,7 @@ def _(args: Namespace) -> None:
     _command(*args, **kwargs)(lambda _: None)
     for *args, kwargs in [
         (
-            Command.RYUJINXKIT,
+            RyujinxKitCommand.RYUJINXKIT,
             {
                 "parser_args": {
                     "prog": RYUJINXKIT_NAME.lower(),
@@ -439,11 +442,11 @@ def _(args: Namespace) -> None:
                     "title": "commands",
                     "required": True,
                 },
-                "parent": Command.RYUJINXKIT,
+                "parent": RyujinxKitCommand.RYUJINXKIT,
             },
         ),
         (
-            Command.RYUJINXKIT_SAVE,
+            RyujinxKitCommand.RYUJINXKIT_SAVE,
             {
                 "parser_args": {
                     "name": "save",
@@ -454,7 +457,7 @@ def _(args: Namespace) -> None:
                     "title": "commands",
                     "required": True,
                 },
-                "parent": Command.RYUJINXKIT,
+                "parent": RyujinxKitCommand.RYUJINXKIT,
             },
         ),
     ]

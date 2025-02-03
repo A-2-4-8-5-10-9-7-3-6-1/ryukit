@@ -15,7 +15,7 @@ from .constants.configs import (
     SOURCE_META,
     SOURCE_REGISTERED,
 )
-from .enums import Command, FileNode
+from .enums import FileNode, RyujinxKitCommand
 from .session import Session
 from .types.param_vars import P, T
 
@@ -35,7 +35,7 @@ __all__ = [
     "RYUJINX_AUTHOR",
     "RYUJINX_NAME",
     "FileNode",
-    "Command",
+    "RyujinxKitCommand",
     "Session",
     "T",
     "P",
