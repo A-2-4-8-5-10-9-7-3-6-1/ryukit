@@ -137,21 +137,6 @@ def _format_tag(tag: str) -> str:
 
 
 @_command(
-    RyujinxKitCommand.RYUJINXKIT_VERSION,
-    parser_args={
-        "name": "version",
-        "help": "Show version and quit",
-    },
-    parent=RyujinxKitCommand.RYUJINXKIT,
-)
-def _(_: Namespace) -> None:
-    Session.console.print(f"{RYUJINXKIT_NAME} version {RYUJINXKIT_VERSION}")
-
-
-# -----------------------------------------------------------------------------
-
-
-@_command(
     RyujinxKitCommand.RYUJINXKIT_SOURCE,
     parser_args={
         "name": "install",
@@ -222,60 +207,6 @@ def _(args: Namespace) -> None:
     )
 
     Session.console.print(f"ID is {Session.database_cursor.lastrowid}.")
-
-
-# -----------------------------------------------------------------------------
-
-
-@_command(
-    RyujinxKitCommand.RYUJINXKIT_SAVE_LIST,
-    parser_args={
-        "name": "list",
-        "aliases": ["ls"],
-        "help": "List your save states",
-    },
-    parent=RyujinxKitCommand.RYUJINXKIT_SAVE,
-)
-def _(_: Namespace) -> None:
-    table = Table(
-        "ID",
-        "TAG",
-        "CREATED",
-        "UPDATED",
-        "USED",
-        "SIZE",
-        box=Box(
-            box="    \n"
-            "    \n"
-            " -  \n"
-            "    \n"
-            "    \n"
-            "    \n"
-            "    \n"
-            "    \n",
-            ascii=True,
-        ),
-    )
-
-    [
-        table.add_row(*row)
-        for row in Session.database_cursor.execute(
-            """
-            SELECT 
-                CAST(id AS TEXT),
-                CAST(tag AS TEXT),
-                CAST(strftime("%Y/%m/%d %H:%M", created) AS TEXT),
-                CAST(strftime("%Y/%m/%d %H:%M", updated) AS TEXT),
-                CAST(strftime("%Y/%m/%d %H:%M", updated) AS text),
-                CAST(ROUND(size / (1024 * 1024.0), 2) AS TEXT) || "MB"
-            FROM saves
-            ORDER BY used DESC, updated DESC, created DESC;
-            """
-        ).fetchall()
-    ]
-
-    with Session.console.pager():
-        Session.console.print(table)
 
 
 # -----------------------------------------------------------------------------
@@ -469,12 +400,26 @@ def _(args: Namespace) -> None:
     },
     subparsers_args={
         "title": "commands",
-        "required": True,
     },
     parent=RyujinxKitCommand.RYUJINXKIT,
+    params=[
+        (
+            ["--version"],
+            {
+                "help": "Show version and quit.",
+                "action": "store_true",
+            },
+        )
+    ],
 )
-def _(_: Namespace) -> None:
-    pass
+def _(args: Namespace) -> None:
+    if args.version:
+        Session.console.print(
+            f"{RYUJINXKIT_NAME} version {RYUJINXKIT_VERSION}"
+        )
+
+    else:
+        Session.console.print("Try using '--help'.")
 
 
 # -----------------------------------------------------------------------------
@@ -489,12 +434,62 @@ def _(_: Namespace) -> None:
     },
     subparsers_args={
         "title": "commands",
-        "required": True,
     },
     parent=RyujinxKitCommand.RYUJINXKIT,
+    params=[
+        (
+            ["--list"],
+            {
+                "help": "List your save instances.",
+                "action": "store_true",
+            },
+        ),
+    ],
 )
-def _(_: Namespace) -> None:
-    pass
+def _(args: Namespace) -> None:
+    if args.list:
+        table = Table(
+            "ID",
+            "TAG",
+            "CREATED",
+            "UPDATED",
+            "USED",
+            "SIZE",
+            box=Box(
+                box="    \n"
+                "    \n"
+                " -  \n"
+                "    \n"
+                "    \n"
+                "    \n"
+                "    \n"
+                "    \n",
+                ascii=True,
+            ),
+        )
+
+        [
+            table.add_row(*row)
+            for row in Session.database_cursor.execute(
+                """
+                SELECT 
+                    CAST(id AS TEXT),
+                    CAST(tag AS TEXT),
+                    CAST(strftime("%Y/%m/%d %H:%M", created) AS TEXT),
+                    CAST(strftime("%Y/%m/%d %H:%M", updated) AS TEXT),
+                    CAST(strftime("%Y/%m/%d %H:%M", updated) AS text),
+                    CAST(ROUND(size / (1024 * 1024.0), 2) AS TEXT) || "MB"
+                FROM saves
+                ORDER BY used DESC, updated DESC, created DESC;
+                """
+            ).fetchall()
+        ]
+
+        with Session.console.pager():
+            Session.console.print(table)
+
+    else:
+        Session.console.print("Try using '--help'.")
 
 
 # -----------------------------------------------------------------------------
