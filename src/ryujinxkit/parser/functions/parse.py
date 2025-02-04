@@ -4,7 +4,7 @@
 
 from argparse import Namespace
 from pathlib import Path
-from typing import Any, Callable, Concatenate
+from typing import Any, Callable
 
 from parser_generator import Command, generate
 from requests import ConnectionError
@@ -23,92 +23,48 @@ from ryujinxkit.general import (
     RYUJINXKIT_NAME,
     RYUJINXKIT_VERSION,
     FileNode,
-    P,
     RyujinxKitCommand,
     Session,
-    T,
 )
 
 from ..constants.configs import DEFAULT_ARCHIVE_NAME
 
 # =============================================================================
 
-
-def _sign(
-    _: Callable[P, Any],
-) -> Callable[
-    [
-        Callable[
-            Concatenate[
-                RyujinxKitCommand,
-                list[tuple[str, Callable[[Any], Any]]] | None,
-                P,
-            ],
-            T,
-        ]
-    ],
-    Callable[
-        Concatenate[
-            RyujinxKitCommand,
-            list[tuple[str, Callable[[Any], Any]]] | None,
-            P,
-        ],
-        T,
-    ],
-]:
-    """
-    Inherit function signature from another.
-
-    :param _: Function to inherit from.
-
-    :returns: Decorator, accepting the function to pass inheritance down to.
-    """
-
-    return lambda x: x
-
-
-# -----------------------------------------------------------------------------
-
 _configs: dict[RyujinxKitCommand, Command] = {}
 
 # -----------------------------------------------------------------------------
 
 
-@_sign(Command)
 def _command(
     id_: RyujinxKitCommand,
-    formatters: list[tuple[str, Callable[[Any], Any]]] | None = None,
+    formatters: list[tuple[str, Callable[[Any], Any]]] = [],
     **kwargs: Any,
-) -> Callable[[Callable[[Namespace], Any]], None]:  # update signature with *
+) -> Callable[[Callable[[Namespace], Any]], None]:
     """
     Add command configuration to `_configs`.
 
     **Notes**:
         - Settings for `defaults["func"]` will be overwritten by whatever \
-        function is passed into the output function.
-        - All parameters after `id_` and `formatters` must be keyword \
-        arguments.
+        function proceeds this decorator.
 
     :param %id_%: Command's ID.
     :param formatters: Formatters for the command.
+    :param kwargs: Parameters from `parser_generator.Command`.
 
-    :returns: Addition function for setting "func" in `defaults`.
+    :returns: Adder for setting the function key in `defaults`.
     """
 
     kwargs.setdefault("defaults", {})
 
     def inner(function: Callable[[Namespace], Any]) -> None:
-        kwargs["defaults"]["func"] = (
-            function
-            if formatters is None
-            else lambda namespace: [
-                [
-                    setattr(namespace, key, sanitizer(getattr(namespace, key)))
-                    for key, sanitizer in formatters
-                ],
-                function(namespace),
-            ][1]
-        )
+        kwargs["defaults"]["func"] = lambda namespace: [
+            [
+                setattr(namespace, key, sanitizer(getattr(namespace, key)))
+                for key, sanitizer in formatters
+            ],
+            function(namespace),
+        ][1]
 
         _configs[id_] = Command(**kwargs)
 
@@ -137,7 +93,7 @@ def _format_tag(tag: str) -> str:
 
 
 @_command(
-    RyujinxKitCommand.RYUJINXKIT_SOURCE,
+    id_=RyujinxKitCommand.RYUJINXKIT_SOURCE,
     parser_args={
         "name": "install",
         "help": "Install and ready Ryujinx",
@@ -179,8 +135,8 @@ def _(args: Namespace) -> None:
 
 
 @_command(
-    RyujinxKitCommand.RYUJINXKIT_SAVE_CREATE,
-    [("tag", _format_tag)],
+    id_=RyujinxKitCommand.RYUJINXKIT_SAVE_CREATE,
+    formatters=[("tag", _format_tag)],
     parser_args={
         "name": "create",
         "help": "Create a new save state--it will be empty",
@@ -215,7 +171,7 @@ def _(args: Namespace) -> None:
 
 
 @_command(
-    RyujinxKitCommand.RYUJINXKIT_SAVE_REMOVE,
+    id_=RyujinxKitCommand.RYUJINXKIT_SAVE_REMOVE,
     parser_args={
         "name": "remove",
         "aliases": ["rm"],
@@ -238,7 +194,7 @@ def _(args: Namespace) -> None:
 
 
 @_command(
-    RyujinxKitCommand.RYUJINXKIT_SAVE_UPDATE,
+    id_=RyujinxKitCommand.RYUJINXKIT_SAVE_UPDATE,
     parser_args={
         "name": "update",
         "help": "Update a save state with the current "
@@ -265,7 +221,7 @@ def _(args: Namespace) -> None:
 
 
 @_command(
-    RyujinxKitCommand.RYUJINXKIT_SAVE_RESTORE,
+    id_=RyujinxKitCommand.RYUJINXKIT_SAVE_RESTORE,
     parser_args={
         "name": "restore",
         "help": "Restore your Ryujinx environment from a save state",
@@ -291,8 +247,8 @@ def _(args: Namespace) -> None:
 
 
 @_command(
-    RyujinxKitCommand.RYUJINXKIT_SAVE_RETAG,
-    [("tag", _format_tag)],
+    id_=RyujinxKitCommand.RYUJINXKIT_SAVE_RETAG,
+    formatters=[("tag", _format_tag)],
     parser_args={
         "name": "retag",
         "help": "Change the tag of a save-state",
@@ -327,8 +283,8 @@ def _(args: Namespace) -> None:
 
 
 @_command(
-    RyujinxKitCommand.RYUJINXKIT_SAVE_EXPORT,
-    [
+    id_=RyujinxKitCommand.RYUJINXKIT_SAVE_EXPORT,
+    formatters=[
         (
             "output",
             lambda name: name if name != "" else DEFAULT_ARCHIVE_NAME,
@@ -361,7 +317,7 @@ def _(args: Namespace) -> None:
 
 
 @_command(
-    RyujinxKitCommand.RYUJINXKIT_SAVE_EXTRACT,
+    id_=RyujinxKitCommand.RYUJINXKIT_SAVE_EXTRACT,
     parser_args={
         "name": "extract",
         "help": "Extract save states from an export",
@@ -395,7 +351,7 @@ def _(args: Namespace) -> None:
 
 
 @_command(
-    RyujinxKitCommand.RYUJINXKIT,
+    id_=RyujinxKitCommand.RYUJINXKIT,
     parser_args={
         "prog": RYUJINXKIT_NAME.lower(),
         "description": "A tool for Ryujinx (for Windows) " "management.",
@@ -428,7 +384,7 @@ def _(args: Namespace) -> None:
 
 
 @_command(
-    RyujinxKitCommand.RYUJINXKIT_SAVE,
+    id_=RyujinxKitCommand.RYUJINXKIT_SAVE,
     parser_args={
         "name": "save",
         "help": "Save-state usage commands",
