@@ -406,7 +406,7 @@ def _(args: Namespace) -> None:
         (
             ["--version"],
             {
-                "help": "Show version and quit.",
+                "help": "Show version and quit",
                 "action": "store_true",
             },
         )
