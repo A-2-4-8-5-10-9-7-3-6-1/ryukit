@@ -431,9 +431,9 @@ def _ryujinxkit_save_export(args: Namespace) -> None:
 def _ryujinxkit_save_extract(args: Namespace) -> None:
     try:
         Session.console.print(
-            "Added",
+            "Accepted",
             read_archive(Session.console, path=args.path),
-            "save instances (instance).",
+            "save instance(s).",
         )  # change to "collected ... instance(s) from extraction."
 
     except FileNotFoundError:

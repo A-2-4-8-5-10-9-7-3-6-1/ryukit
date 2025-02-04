@@ -8,7 +8,6 @@ from pathlib import Path
 from shutil import rmtree
 from tarfile import TarFile, TarInfo
 from tempfile import TemporaryDirectory
-from time import sleep
 from typing import Any, Callable, Iterable, Literal, Sequence
 
 from rich.console import Console
@@ -251,7 +250,6 @@ def archive(console: Console, output: str) -> None:
                 if not Session.resolver(
                     id_=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
                 ).exists():
-                    sleep(0.001)
                     progress.advance(task_id=task_id, advance=1)
 
                     continue
@@ -343,8 +341,6 @@ def read_archive(console: Console, path: Path) -> int:
                         )
                     ),
                 )
-
-                sleep(0.001)
 
                 if state["size"] == 0:
                     progress.advance(task_id=task_id, advance=1)
