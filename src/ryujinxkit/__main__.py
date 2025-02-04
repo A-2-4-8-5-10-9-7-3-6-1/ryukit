@@ -9,8 +9,12 @@ def main() -> None:
     Entry point.
     """
 
-    with Session:
-        parse()
+    try:
+        with Session:
+            parse()
+
+    except BaseException:
+        pass
 
 
 # -----------------------------------------------------------------------------
