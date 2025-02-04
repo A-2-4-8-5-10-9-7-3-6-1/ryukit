@@ -173,6 +173,10 @@ class Session(metaclass=_Meta):
     # -------------------------------------------------------------------------
 
     def __init__(self):
+        """
+        :raises: `NotImplementedError` if invoked.
+        """
+
         raise NotImplementedError
 
 

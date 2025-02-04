@@ -34,7 +34,7 @@ def source(console: Console, url: str) -> None:
     :param url: RyujinxKit-content download url.
     :param console: A console for documenting progress.
 
-    :raises: HTTPError if request status code is not 200.
+    :raises: `HTTPError` if request status code is not 200.
     """
 
     routes = {
