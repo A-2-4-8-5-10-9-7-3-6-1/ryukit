@@ -164,12 +164,15 @@ def _(args: Namespace) -> None:
     except ConnectionError:
         Session.console.print("Failed to connect to service.")
 
-    # except Exception:  # could indicate a time out. fix this.
-    #     Session.console.print(
-    #         "URL locates an invalid service.",
-    #         "Contact an authority for a valid one.",
-    #         sep="\n",
-    #     )
+    except Exception:
+        Session.console.print(
+            "An error occured. This was the resullt of one of the "
+            "following:\n",
+            "(1) Your URL locates an invalid service,",
+            "(2) Your connection timed out.",
+            "\nIn case of (1), contact an authority for a valid URL.",
+            sep="\n",
+        )
 
 
 # -----------------------------------------------------------------------------
