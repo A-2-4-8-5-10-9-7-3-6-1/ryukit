@@ -19,4 +19,6 @@ RYUJINXKIT_VERSION = "1.0.1"
 RYUJINX_NAME = "Ryujinx"
 RYUJINX_AUTHOR = False
 
+UI_REFRESH_RATE = 10
+
 # =============================================================================

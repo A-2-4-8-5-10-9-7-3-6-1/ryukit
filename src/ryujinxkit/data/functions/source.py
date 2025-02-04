@@ -9,7 +9,7 @@ from tarfile import TarFile
 from platformdirs import PlatformDirs
 from requests import HTTPError, get
 from rich.console import Console
-from rich.progress import Progress
+from rich.progress import Progress, SpinnerColumn
 
 from ryujinxkit.general import (
     RYUJINX_AUTHOR,
@@ -19,6 +19,7 @@ from ryujinxkit.general import (
     SOURCE_KEYS,
     SOURCE_META,
     SOURCE_REGISTERED,
+    UI_REFRESH_RATE,
     FileNode,
     Session,
 )
@@ -31,105 +32,98 @@ def source(console: Console, url: str) -> None:
     Source setup data.
 
     :param url: RyujinxKit-content download url.
-    :parma console: A console for documenting progress.
+    :param console: A console for documenting progress.
+
+    :raises: HTTPError if request status code is not 200.
     """
 
-    response = get(url=url, stream=True)
+    routes = {
+        SOURCE_APP: FileNode.RYUJINX_LOCAL_DATA,
+        SOURCE_REGISTERED: FileNode.RYUJINX_REGISTERED,
+        SOURCE_KEYS: FileNode.RYUJINX_SYSTEM,
+    }
 
-    if response.status_code != 200:
-        raise HTTPError("Couldn't connect to server.", response=response)
+    with BytesIO() as buffer:
+        response = get(url=url, stream=True)
 
-    with (
-        Progress(transient=True, console=console) as progress,
-        BytesIO() as buffer,
-    ):
-        task_id = progress.add_task(
-            description="[yellow]Downloading[/yellow]",
-            total=float(response.headers.get("content-length", 0)),
-        )
+        if response.status_code != 200:
+            raise HTTPError(
+                "Couldn't connect to server.",
+                response=response,
+            )
 
-        [
+        with Progress(
+            SpinnerColumn(style="dim"),
+            "[dim]{task.description}",
+            "[dim]({task.percentage:.1f}%)",
+            console=console,
+            refresh_per_second=UI_REFRESH_RATE,
+            transient=True,
+        ) as progress:
+            task_id = progress.add_task(
+                description="Downloading resources",
+                total=float(response.headers.get("content-length", 0)),
+                modifiers="[dim]",
+            )
+
             [
-                buffer.write(chunk),
-                progress.update(task_id=task_id, advance=len(chunk)),
+                [
+                    buffer.write(chunk),
+                    progress.advance(
+                        task_id=task_id,
+                        advance=SOURCE_CHUNK_SIZE,
+                    ),
+                ]
+                for chunk in response.iter_content(
+                    chunk_size=SOURCE_CHUNK_SIZE
+                )
             ]
-            for chunk in response.iter_content(chunk_size=SOURCE_CHUNK_SIZE)
-        ]
-
-        progress.update(
-            task_id=task_id,
-            description="[green]Downloaded[/green]",
-        )
 
         buffer.seek(0)
 
-        with TarFile(fileobj=buffer) as tar:
-            task_id = progress.add_task(
-                description="[yellow]Unpacking[/yellow]",
-                total=sum(1 for _ in tar),
-            )
-            routes: dict[str, FileNode] = {
-                SOURCE_APP: FileNode.RYUJINX_LOCAL_DATA,
-                SOURCE_REGISTERED: FileNode.RYUJINX_REGISTERED,
-                SOURCE_KEYS: FileNode.RYUJINX_SYSTEM,
-            }
+        with (
+            console.status(
+                status="[dim]Organizing assets",
+                spinner_style="dim",
+                refresh_per_second=UI_REFRESH_RATE,
+            ),
+            TarFile(fileobj=buffer) as tar,
+        ):
+            ryujinx_version: str
+
+            with tar.extractfile(member=SOURCE_META) as meta:
+                ryujinx_version = str(
+                    PlatformDirs(
+                        appname=RYUJINX_NAME,
+                        appauthor=RYUJINX_AUTHOR,
+                        version="-".join(
+                            map(
+                                load(fp=meta).__getitem__,
+                                ("version", "system"),
+                            )
+                        ),
+                    ).user_data_path
+                )
 
             with (
-                tar.extractfile(member=SOURCE_META) as meta,
                 Session.resolver.cache_only(
-                    (
-                        FileNode.RYUJINX_LOCAL_DATA,
-                        str(
-                            PlatformDirs(
-                                appname=RYUJINX_NAME,
-                                appauthor=RYUJINX_AUTHOR,
-                                version="-".join(
-                                    map(
-                                        load(fp=meta).__getitem__,
-                                        ("version", "system"),
-                                    )
-                                ),
-                            ).user_data_path
-                        ),
-                    )
+                    (FileNode.RYUJINX_LOCAL_DATA, ryujinx_version)
                 ),
             ):
-                [
-                    [
-                        (
-                            (
-                                lambda buffer, head, tail=None: [
-                                    (
-                                        (
-                                            lambda path: [
-                                                path.parent.mkdir(
-                                                    parents=True,
-                                                    exist_ok=True,
-                                                ),
-                                                path.write_bytes(
-                                                    buffer.read()
-                                                ),
-                                            ]
-                                        )(
-                                            Session.resolver(id_=routes[head])
-                                            / tail
-                                        )
-                                        if head in routes
-                                        else None
-                                    ),
-                                    buffer.close(),
-                                ]
-                            )(
-                                tar.extractfile(member=member),
-                                *member.name.split(sep="/", maxsplit=1),
-                            )
-                            if not member.isdir()
-                            else None
-                        ),
-                        progress.advance(task_id=task_id, advance=1),
-                    ]
-                    for member in tar
-                ]
+                for member in tar:
+                    if member.isdir():
+                        continue
+
+                    with tar.extractfile(member=member) as file_buffer:
+                        head, *tail = member.name.split(sep="/", maxsplit=1)
+
+                        if head not in routes:
+                            continue
+
+                        path = Session.resolver(id_=routes[head]) / tail[0]
+
+                        path.parent.mkdir(parents=True, exist_ok=True)
+                        path.write_bytes(file_buffer.read())
 
 
 # =============================================================================

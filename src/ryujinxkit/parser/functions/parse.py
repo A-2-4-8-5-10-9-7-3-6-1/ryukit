@@ -79,7 +79,7 @@ def _command(
     id_: RyujinxKitCommand,
     formatters: list[tuple[str, Callable[[Any], Any]]] | None = None,
     **kwargs: Any,
-) -> Callable[[Callable[[Namespace], Any]], None]:
+) -> Callable[[Callable[[Namespace], Any]], None]:  # update signature with *
     """
     Add command configuration to `_configs`.
 
@@ -157,20 +157,19 @@ def _(args: Namespace) -> None:
         source(Session.console, url=args.url)
 
         Session.console.print(
-            f"Installed to ",
-            Session.resolver(id_=FileNode.RYUJINX_LOCAL_DATA),
-            ".",
+            "Installed to",
+            f"{Session.resolver(id_=FileNode.RYUJINX_LOCAL_DATA)}.",
         )
 
     except ConnectionError:
         Session.console.print("Failed to connect to service.")
 
-    except Exception:
-        Session.console.print(
-            "URL locates an invalid service.",
-            "Contact an authority for a valid one.",
-            sep="\n",
-        )
+    # except Exception:  # could indicate a time out. fix this.
+    #     Session.console.print(
+    #         "URL locates an invalid service.",
+    #         "Contact an authority for a valid one.",
+    #         sep="\n",
+    #     )
 
 
 # -----------------------------------------------------------------------------
@@ -380,7 +379,7 @@ def _(args: Namespace) -> None:
             "Added",
             read_archive(Session.console, path=args.path),
             "save instances (instance).",
-        )
+        )  # change to "collected ... instance(s) from extraction."
 
     except FileNotFoundError:
         Session.console.print("Path is for a non-existent file.")
