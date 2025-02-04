@@ -30,7 +30,7 @@ from ..constants.configs import DEFAULT_ARCHIVE_NAME
 
 # =============================================================================
 
-_configs: dict[int, Command] = {}
+_configs: dict[Callable[[Namespace], Any], Command] = {}
 
 # -----------------------------------------------------------------------------
 
@@ -38,7 +38,7 @@ _configs: dict[int, Command] = {}
 def _command(
     formatters: list[tuple[str, Callable[[Any], Any]]] = [],
     **kwargs: Any,
-) -> Callable[[Callable[[Namespace], Any]], int]:
+) -> Callable[[Callable[[Namespace], Any]], Callable[[Namespace], Any]]:
     """
     Add command configuration to `_configs`.
 
@@ -53,11 +53,11 @@ def _command(
     :returns: Adder for setting the function key in `defaults`.
     """
 
-    id_ = len(_configs)
-
     kwargs.setdefault("defaults", {})
 
-    def inner(function: Callable[[Namespace], Any]) -> int:
+    def inner(
+        function: Callable[[Namespace], Any]
+    ) -> Callable[[Namespace], Any]:
         kwargs["defaults"]["func"] = lambda namespace: [
             [
                 setattr(namespace, key, sanitizer(getattr(namespace, key)))
@@ -66,11 +66,11 @@ def _command(
             function(namespace),
         ][1]
 
-        _configs[id_] = Command(**kwargs)
+        kwargs.setdefault("parent", kwargs["defaults"]["func"])
 
-        return id_
+        _configs[kwargs["defaults"]["func"]] = Command(**kwargs)
 
-    kwargs.setdefault("parent", id_)
+        return kwargs["defaults"]["func"]
 
     return inner
 
@@ -135,62 +135,100 @@ def _ryujinxkit(args: Namespace) -> None:
     },
     subparsers_args={
         "title": "commands",
+        "required": True,
     },
     parent=_ryujinxkit,
+)
+def _ryujinxkit_save(_: Namespace) -> None:
+    pass
+
+
+# -----------------------------------------------------------------------------
+
+
+@_command(
+    parser_args={
+        "name": "list",
+        "help": "List your save instances",
+        "aliases": ["ls"],
+    },
+    parent=_ryujinxkit_save,
     params=[
         (
-            ["--list"],
+            ["--order-by"],
             {
-                "help": "List your save instances.",
-                "action": "store_true",
+                "help": "Priority ordering for rows",
+                "choices": (
+                    lambda bin, options: [
+                        [bin.extend([f"{x}+", f"{x}-"]) for x in options],
+                        bin,
+                    ][1]
+                )([], ["id", "tag", "created", "updated", "used", "size"]),
+                "nargs": "+",
             },
         ),
     ],
+    defaults={
+        "order_by": ["used-", "updated-", "created-"],
+    },
 )
-def _ryujinxkit_save(args: Namespace) -> None:
-    if args.list:
-        table = Table(
-            "ID",
-            "TAG",
-            "CREATED",
-            "UPDATED",
-            "USED",
-            "SIZE",
-            box=Box(
-                box="    \n"
-                "    \n"
-                " -  \n"
-                "    \n"
-                "    \n"
-                "    \n"
-                "    \n"
-                "    \n",
-                ascii=True,
-            ),
+def _ryujinxkit_save_list(args: Namespace) -> None:
+    table: Table | None = None
+
+    with Session.console.status(
+        status="[dim]Collecting saves",
+        spinner_style="dim",
+    ):
+        Session.database_cursor.execute(
+            f"""
+            SELECT 
+                CAST(id AS TEXT),
+                CAST(tag AS TEXT),
+                CAST(strftime("%Y/%m/%d %H:%M", created) AS TEXT),
+                CAST(strftime("%Y/%m/%d %H:%M", updated) AS TEXT),
+                CAST(strftime("%Y/%m/%d %H:%M", used) AS TEXT),
+                CAST(ROUND(size / (1024 * 1024.0), 2) AS TEXT) || "MB"
+            FROM (
+                SELECT id, tag, created, updated, used, size
+                FROM saves
+                ORDER BY {
+                    ", ".join(
+                        f"{flag[:-1]} {"DESC" if flag[-1] == "-" else "ASC"}"
+                        for flag in args.order_by
+                    )
+                }
+            )
+            """
         )
 
-        [
-            table.add_row(*row)
-            for row in Session.database_cursor.execute(
-                """
-                SELECT 
-                    CAST(id AS TEXT),
-                    CAST(tag AS TEXT),
-                    CAST(strftime("%Y/%m/%d %H:%M", created) AS TEXT),
-                    CAST(strftime("%Y/%m/%d %H:%M", updated) AS TEXT),
-                    CAST(strftime("%Y/%m/%d %H:%M", updated) AS text),
-                    CAST(ROUND(size / (1024 * 1024.0), 2) AS TEXT) || "MB"
-                FROM saves
-                ORDER BY used DESC, updated DESC, created DESC;
-                """
+    for i, row in enumerate(Session.database_cursor):
+        if table is None:
+            table = Table(
+                "ID",
+                "TAG",
+                "CREATED",
+                "UPDATED",
+                "USED",
+                "SIZE",
+                box=Box(
+                    box="    \n"
+                    "    \n"
+                    " -  \n"
+                    "    \n"
+                    "    \n"
+                    "    \n"
+                    "    \n"
+                    "    \n",
+                    ascii=True,
+                ),
             )
-        ]
 
-        with Session.console.pager():
-            Session.console.print(table)
+        table.add_row(*row)
 
-    else:
-        Session.console.print("Try using '--help'.")
+        if (i + 1) % 7 == 0:
+            Session.console.input(table)
+
+            table = None
 
 
 # -----------------------------------------------------------------------------
