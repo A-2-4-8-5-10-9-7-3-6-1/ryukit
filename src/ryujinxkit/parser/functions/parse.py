@@ -183,7 +183,7 @@ def _ryujinxkit_save(args: Namespace) -> None:
                 FROM saves
                 ORDER BY used DESC, updated DESC, created DESC;
                 """
-            ).fetchall()
+            )
         ]
 
         with Session.console.pager():
@@ -434,7 +434,7 @@ def _ryujinxkit_save_extract(args: Namespace) -> None:
             "Accepted",
             read_archive(Session.console, path=args.path),
             "save instance(s).",
-        )  # change to "collected ... instance(s) from extraction."
+        )
 
     except FileNotFoundError:
         Session.console.print("Path is for a non-existent file.")

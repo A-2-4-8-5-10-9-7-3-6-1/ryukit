@@ -229,7 +229,7 @@ def archive(console: Console, output: str) -> None:
                             SELECT id, tag, created, updated, used, size
                             FROM saves;
                             """
-                        ).fetchall()
+                        )
                     ]
                 ).encode()
             )
@@ -243,7 +243,7 @@ def archive(console: Console, output: str) -> None:
             SELECT CAST(id AS TEXT), size
             FROM saves;
             """
-        ).fetchall():
+        ):
             with Session.resolver.cache_only(
                 (FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
             ):
