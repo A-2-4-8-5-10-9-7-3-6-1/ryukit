@@ -37,12 +37,6 @@ class _Meta(type):
         Initialize session.
         """
 
-        cls.database_cursor = connect(
-            database=cls.resolver(id_=FileNode.RYUJINXKIT_DATABASE),
-            autocommit=False,
-        ).cursor()
-        cls.null_buffer = StringIO()
-
         [
             cls.resolver(id_=id_).mkdir(parents=True, exist_ok=True)
             for id_ in [
@@ -52,6 +46,12 @@ class _Meta(type):
                 FileNode.RYUJINXKIT_CONFIGS,
             ]
         ]
+
+        cls.database_cursor = connect(
+            database=cls.resolver(id_=FileNode.RYUJINXKIT_DATABASE),
+            autocommit=False,
+        ).cursor()
+        cls.null_buffer = StringIO()
 
         cls.database_cursor.executescript(
             """
