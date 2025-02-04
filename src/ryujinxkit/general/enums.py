@@ -32,26 +32,4 @@ class FileNode(Enum):
     RYUJINXKIT_SAVE_INSTANCE_SAVE_META = 13
 
 
-# -----------------------------------------------------------------------------
-
-
-class RyujinxKitCommand(Enum):
-    """
-    Service commands.
-    """
-
-    RYUJINXKIT = 0
-
-    RYUJINXKIT_SOURCE = 1
-    RYUJINXKIT_SAVE = 4
-
-    RYUJINXKIT_SAVE_CREATE = 2
-    RYUJINXKIT_SAVE_REMOVE = 5
-    RYUJINXKIT_SAVE_UPDATE = 6
-    RYUJINXKIT_SAVE_RETAG = 7
-    RYUJINXKIT_SAVE_EXPORT = 8
-    RYUJINXKIT_SAVE_EXTRACT = 9
-    RYUJINXKIT_SAVE_RESTORE = 10
-
-
 # =============================================================================

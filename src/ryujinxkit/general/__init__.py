@@ -16,7 +16,7 @@ from .constants.configs import (
     SOURCE_REGISTERED,
     UI_REFRESH_RATE,
 )
-from .enums import FileNode, RyujinxKitCommand
+from .enums import FileNode
 from .session import Session
 from .types.param_vars import P, T
 
@@ -37,7 +37,6 @@ __all__ = [
     "RYUJINX_NAME",
     "UI_REFRESH_RATE",
     "FileNode",
-    "RyujinxKitCommand",
     "Session",
     "T",
     "P",
