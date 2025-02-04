@@ -445,7 +445,11 @@ def _(args: Namespace) -> None:
 )
 def _(args: Namespace) -> None:
     try:
-        read_archive(Session.console, path=args.path)  # use output
+        Session.console.print(
+            "Added",
+            read_archive(Session.console, path=args.path),
+            "save instances (instance).",
+        )
 
     except FileNotFoundError:
         Session.console.print("Path is for a non-existent file.")

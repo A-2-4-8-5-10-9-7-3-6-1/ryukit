@@ -381,5 +381,7 @@ def read_archive(console: Console, path: Path) -> int:
                 if state["size"] == 0:
                     progress.advance(task_id=task_id, advance=1)
 
+        return len(states)
+
 
 # =============================================================================
