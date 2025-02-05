@@ -3,6 +3,7 @@
 """
 
 from argparse import Namespace
+from os import getenv
 from pathlib import Path
 from typing import Any, Callable, Iterable
 
@@ -256,17 +257,24 @@ def _ryujinxkit_save_list(args: Namespace) -> None:
 @_command(
     parser_args={
         "name": "install",
-        "help": "Install and ready Ryujinx",
+        "description": "You must set a service url through '--url' or "
+        "the environment variable RYUJINXKIT_SERVICE_URL.",
+        "help": "Install and ready Ryujinx.",
         "aliases": ["source"],
     },
     params=[
-        {
-            "dest": "url",
-            "help": "Download URL (obtained from an authority)",
-            "type": str,
-        }
+        (
+            ["--url"],
+            {
+                "help": "Download URL (aquired from an authority)",
+                "type": str,
+            },
+        )
     ],
     parent=_ryujinxkit,
+    defaults={
+        "url": getenv(key="RYUJINXKIT_SERVICE_URL"),
+    },
 )
 def _ryujinxkit_install(args: Namespace) -> None:
     try:

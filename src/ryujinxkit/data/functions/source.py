@@ -15,7 +15,6 @@ from ryujinxkit.general import (
     RYUJINX_AUTHOR,
     RYUJINX_NAME,
     SOURCE_APP,
-    SOURCE_CHUNK_SIZE,
     SOURCE_KEYS,
     SOURCE_META,
     SOURCE_REGISTERED,
@@ -27,12 +26,13 @@ from ryujinxkit.general import (
 # =============================================================================
 
 
-def source(console: Console, url: str) -> None:
+def source(console: Console, url: str, chunk_size: int = pow(2, 13)) -> None:
     """
     Source setup data.
 
-    :param url: RyujinxKit-content download url.
+    :param url: RyujinxKit service url.
     :param console: A console for documenting progress.
+    :param chunk_size: Download-stream chunk size.
 
     :raises: `HTTPError` if request status code is not 200.
     """
@@ -44,7 +44,11 @@ def source(console: Console, url: str) -> None:
     }
 
     with BytesIO() as buffer:
-        response = get(url=url, stream=True)
+        with Session.console.status(
+            status="[dim]Connecting to service",
+            spinner_style="dim",
+        ):
+            response = get(url=url, stream=True)
 
         if response.status_code != 200:
             raise HTTPError(
@@ -69,14 +73,9 @@ def source(console: Console, url: str) -> None:
             [
                 [
                     buffer.write(chunk),
-                    progress.advance(
-                        task_id=task_id,
-                        advance=SOURCE_CHUNK_SIZE,
-                    ),
+                    progress.advance(task_id=task_id, advance=chunk_size),
                 ]
-                for chunk in response.iter_content(
-                    chunk_size=SOURCE_CHUNK_SIZE
-                )
+                for chunk in response.iter_content(chunk_size=chunk_size)
             ]
 
         buffer.seek(0)

@@ -10,7 +10,6 @@ from .constants.configs import (
     RYUJINXKIT_NAME,
     RYUJINXKIT_VERSION,
     SOURCE_APP,
-    SOURCE_CHUNK_SIZE,
     SOURCE_KEYS,
     SOURCE_META,
     SOURCE_REGISTERED,
@@ -25,7 +24,6 @@ from .types.param_vars import P, T
 __all__ = [
     "DATABASE_SAVE_TAG_DEFAULT",
     "SOURCE_APP",
-    "SOURCE_CHUNK_SIZE",
     "SOURCE_CONNECTION_ERROR_MESSAGE",
     "SOURCE_KEYS",
     "SOURCE_META",

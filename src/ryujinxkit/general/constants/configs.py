@@ -6,7 +6,6 @@
 
 DATABASE_SAVE_TAG_DEFAULT = "untagged"
 
-SOURCE_CHUNK_SIZE = pow(2, 13)
 SOURCE_META = "ryujinx.json"
 SOURCE_REGISTERED = "registered"
 SOURCE_APP = "app"
