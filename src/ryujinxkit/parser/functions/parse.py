@@ -4,7 +4,7 @@
 
 from argparse import Namespace
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Iterable
 
 from parser_generator import Command, generate
 from requests import ConnectionError
@@ -173,8 +173,6 @@ def _ryujinxkit_save(_: Namespace) -> None:
     },
 )
 def _ryujinxkit_save_list(args: Namespace) -> None:
-    table: Table | None = None
-
     with Session.console.status(
         status="[dim]Collecting saves",
         spinner_style="dim",
@@ -201,34 +199,55 @@ def _ryujinxkit_save_list(args: Namespace) -> None:
             """
         )
 
-    for i, row in enumerate(Session.database_cursor):
-        if table is None:
-            table = Table(
-                "ID",
-                "TAG",
-                "CREATED",
-                "UPDATED",
-                "USED",
-                "SIZE",
-                box=Box(
-                    box="    \n"
-                    "    \n"
-                    " -  \n"
-                    "    \n"
-                    "    \n"
-                    "    \n"
-                    "    \n"
-                    "    \n",
-                    ascii=True,
-                ),
-            )
+    quick_draw = True
+    no8: Iterable[Any] = []
 
-        table.add_row(*row)
+    while not quick_draw or no8 == []:
+        table = Table(
+            "ID",
+            "TAG",
+            "CREATED",
+            "UPDATED",
+            "USED",
+            "SIZE",
+            box=Box(
+                box="    \n"
+                "    \n"
+                " -  \n"
+                "    \n"
+                "    \n"
+                "    \n"
+                "    \n"
+                "    \n",
+                ascii=True,
+            ),
+        )
 
-        if (i + 1) % 7 == 0:
-            Session.console.input(table)
+        if no8 != []:
+            table.add_row(*no8)
 
-            table = None
+        try:
+            [
+                table.add_row(*next(Session.database_cursor))
+                for _ in range(7 if quick_draw else 6)
+            ]
+
+            no8 = next(Session.database_cursor)
+            quick_draw = False
+
+        except StopIteration:
+            quick_draw = True
+
+        finally:
+            if table.row_count != 0:
+                (
+                    Session.console.print
+                    if quick_draw
+                    else Session.console.input
+                )(table)
+
+            if quick_draw and no8 == []:
+                break
 
 
 # -----------------------------------------------------------------------------
