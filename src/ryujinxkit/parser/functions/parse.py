@@ -168,7 +168,7 @@ def _ryujinxkit_save(_: Namespace) -> None:
         ),
     ],
     defaults={
-        "order_by": ["used-", "updated-", "created-"],
+        "order_by": ["used-", "updated-", "created-", "tag-", "id-"],
     },
 )
 def _ryujinxkit_save_list(args: Namespace) -> None:
