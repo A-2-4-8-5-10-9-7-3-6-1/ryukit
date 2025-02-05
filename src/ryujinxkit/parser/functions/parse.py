@@ -20,9 +20,8 @@ from ryujinxkit.data import (
     use_save,
 )
 from ryujinxkit.general import (
+    APP_VERSION,
     DATABASE_SAVE_TAG_DEFAULT,
-    RYUJINXKIT_NAME,
-    RYUJINXKIT_VERSION,
     FileNode,
     Session,
 )
@@ -99,7 +98,7 @@ def _format_tag(tag: str) -> str:
 
 @_command(
     parser_args={
-        "prog": RYUJINXKIT_NAME.lower(),
+        "prog": "ryujinxkit",
         "description": "A tool for Ryujinx (for Windows) " "management.",
     },
     subparsers_args={
@@ -117,9 +116,7 @@ def _format_tag(tag: str) -> str:
 )
 def _ryujinxkit(args: Namespace) -> None:
     if args.version:
-        Session.console.print(
-            f"{RYUJINXKIT_NAME} version {RYUJINXKIT_VERSION}"
-        )
+        Session.console.print(f"RyujinxKit version {APP_VERSION}")
 
     else:
         Session.console.print("Try using '--help'.")

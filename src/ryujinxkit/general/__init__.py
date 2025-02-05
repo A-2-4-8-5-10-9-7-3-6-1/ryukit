@@ -3,12 +3,11 @@ General configurations and tools.
 """
 
 from .constants.configs import (
+    APP_AUTHOR,
+    APP_VERSION,
     DATABASE_SAVE_TAG_DEFAULT,
     RYUJINX_AUTHOR,
     RYUJINX_NAME,
-    RYUJINXKIT_AUTHOR,
-    RYUJINXKIT_NAME,
-    RYUJINXKIT_VERSION,
     SOURCE_APP,
     SOURCE_KEYS,
     SOURCE_META,
@@ -28,9 +27,8 @@ __all__ = [
     "SOURCE_KEYS",
     "SOURCE_META",
     "SOURCE_REGISTERED",
-    "RYUJINXKIT_AUTHOR",
-    "RYUJINXKIT_NAME",
-    "RYUJINXKIT_VERSION",
+    "APP_AUTHOR",
+    "APP_VERSION",
     "RYUJINX_AUTHOR",
     "RYUJINX_NAME",
     "UI_REFRESH_RATE",

@@ -10,12 +10,7 @@ from hyrchy_pthresolver import Node, Resolver
 from platformdirs import PlatformDirs, user_data_path
 from rich.console import Console
 
-from .constants.configs import (
-    RYUJINX_AUTHOR,
-    RYUJINX_NAME,
-    RYUJINXKIT_AUTHOR,
-    RYUJINXKIT_NAME,
-)
+from .constants.configs import APP_AUTHOR, RYUJINX_AUTHOR, RYUJINX_NAME
 from .enums import FileNode
 
 # =============================================================================
@@ -164,8 +159,8 @@ class Session(metaclass=_Meta):
             roaming=True,
         ),
         PlatformDirs(
-            appname=RYUJINXKIT_NAME,
-            appauthor=RYUJINXKIT_AUTHOR,
+            appname="RyujinxKit",
+            appauthor=APP_AUTHOR,
             roaming=True,
         ),
     )
