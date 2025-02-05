@@ -187,24 +187,12 @@ def archive(console: Console, output: str) -> None:
 
     with (
         TarFile(name=output, mode="w") as tar,
-        Progress(
-            SpinnerColumn(style="dim"),
-            "[dim]{task.description}",
-            "[dim]({task.percentage:.1f}%)",
-            console=console,
+        Session.console.status(
+            status="[dim]Exporting saves",
+            spinner_style="dim",
             refresh_per_second=UI_REFRESH_RATE,
-            transient=True,
-        ) as progress,
+        ),
     ):
-        task_id = progress.add_task(
-            description="Exporting",
-            total=Session.database_cursor.execute(
-                """
-                SELECT COUNT(*)
-                FROM saves;
-                """
-            ).fetchone()[0],
-        )
         entities_info = TarInfo(name="entities.json")
 
         with BytesIO() as buffer:
@@ -250,26 +238,19 @@ def archive(console: Console, output: str) -> None:
                 if not Session.resolver(
                     id_=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
                 ).exists():
-                    progress.advance(task_id=task_id, advance=1)
-
                     continue
+
                 [
-                    [
-                        tar.add(
-                            name=path,
-                            arcname=str(
-                                path.relative_to(
-                                    Session.resolver(
-                                        id_=FileNode.RYUJINXKIT_ROAMING_DATA
-                                    )
+                    tar.add(
+                        name=path,
+                        arcname=str(
+                            path.relative_to(
+                                Session.resolver(
+                                    id_=FileNode.RYUJINXKIT_ROAMING_DATA
                                 )
-                            ),
+                            )
                         ),
-                        progress.advance(
-                            task_id=task_id,
-                            advance=path.stat().st_size / size,
-                        ),
-                    ]
+                    )
                     for path in Session.resolver(
                         id_=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
                     ).rglob(pattern="*")
@@ -301,11 +282,13 @@ def read_archive(console: Console, path: Path) -> int:
             status="Extracting export",
             spinner_style="dim",
             refresh_per_second=UI_REFRESH_RATE,
-        ) as progress:
+        ):
             tar.extractall(path=temp_dir)
 
         with (temp_dir / "entities.json").open() as buffer:
             states = load(fp=buffer)
+
+        state_count = len(states)
 
         with Progress(
             SpinnerColumn(style="dim"),
@@ -317,7 +300,7 @@ def read_archive(console: Console, path: Path) -> int:
         ) as progress:
             task_id = progress.add_task(
                 description="Reading export",
-                total=len(states),
+                total=state_count,
             )
 
             for state in states:
@@ -370,7 +353,7 @@ def read_archive(console: Console, path: Path) -> int:
                             advance=subpath.stat().st_size / state["size"],
                         )
 
-        return len(states)
+        return state_count
 
 
 # =============================================================================

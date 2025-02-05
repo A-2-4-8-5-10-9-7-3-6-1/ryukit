@@ -116,7 +116,7 @@ def _format_tag(tag: str) -> str:
 )
 def _ryujinxkit(args: Namespace) -> None:
     if args.version:
-        Session.console.print(f"RyujinxKit version {APP_VERSION}")
+        Session.console.print(f"RyujinxKit version {APP_VERSION}.")
 
     else:
         Session.console.print("Try using '--help'.")
