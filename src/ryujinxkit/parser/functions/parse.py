@@ -22,6 +22,7 @@ from ryujinxkit.data import (
 from ryujinxkit.general import (
     APP_VERSION,
     DATABASE_SAVE_TAG_DEFAULT,
+    UI_REFRESH_RATE,
     FileNode,
     Session,
 )
@@ -174,6 +175,7 @@ def _ryujinxkit_save_list(args: Namespace) -> None:
     with Session.console.status(
         status="[dim]Collecting saves",
         spinner_style="dim",
+        refresh_per_second=UI_REFRESH_RATE,
     ):
         Session.database_cursor.execute(
             f"""

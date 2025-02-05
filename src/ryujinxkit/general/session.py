@@ -10,7 +10,7 @@ from hyrchy_pthresolver import Node, Resolver
 from platformdirs import PlatformDirs, user_data_path
 from rich.console import Console
 
-from .constants.configs import APP_AUTHOR, RYUJINX_AUTHOR, RYUJINX_NAME
+from .constants.configs import APP_AUTHOR, RYUJINX_AUTHOR
 from .enums import FileNode
 
 # =============================================================================
@@ -154,7 +154,7 @@ class Session(metaclass=_Meta):
         )
     )(
         PlatformDirs(
-            appname=RYUJINX_NAME,
+            appname="Ryujinx",
             appauthor=RYUJINX_AUTHOR,
             roaming=True,
         ),

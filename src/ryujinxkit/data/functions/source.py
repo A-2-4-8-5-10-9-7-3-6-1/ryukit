@@ -13,7 +13,6 @@ from rich.progress import Progress, SpinnerColumn
 
 from ryujinxkit.general import (
     RYUJINX_AUTHOR,
-    RYUJINX_NAME,
     SOURCE_APP,
     SOURCE_KEYS,
     SOURCE_META,
@@ -44,17 +43,15 @@ def source(console: Console, url: str, chunk_size: int = pow(2, 13)) -> None:
     }
 
     with BytesIO() as buffer:
-        with Session.console.status(
+        with console.status(
             status="[dim]Connecting to service",
             spinner_style="dim",
+            refresh_per_second=UI_REFRESH_RATE,
         ):
             response = get(url=url, stream=True)
 
         if response.status_code != 200:
-            raise HTTPError(
-                "Couldn't connect to server.",
-                response=response,
-            )
+            raise HTTPError
 
         with Progress(
             SpinnerColumn(style="dim"),
@@ -93,7 +90,7 @@ def source(console: Console, url: str, chunk_size: int = pow(2, 13)) -> None:
             with tar.extractfile(member=SOURCE_META) as meta:
                 ryujinx_version = str(
                     PlatformDirs(
-                        appname=RYUJINX_NAME,
+                        appname="Ryujinx",
                         appauthor=RYUJINX_AUTHOR,
                         version="-".join(
                             map(

@@ -187,7 +187,7 @@ def archive(console: Console, output: str) -> None:
 
     with (
         TarFile(name=output, mode="w") as tar,
-        Session.console.status(
+        console.status(
             status="[dim]Exporting saves",
             spinner_style="dim",
             refresh_per_second=UI_REFRESH_RATE,
@@ -226,9 +226,9 @@ def archive(console: Console, output: str) -> None:
 
             tar.addfile(tarinfo=entities_info, fileobj=buffer)
 
-        for id_, size in Session.database_cursor.execute(
+        for id_ in Session.database_cursor.execute(
             """
-            SELECT CAST(id AS TEXT), size
+            SELECT CAST(id AS TEXT)
             FROM saves;
             """
         ):
@@ -282,6 +282,7 @@ def read_archive(console: Console, path: Path) -> int:
             status="Extracting export",
             spinner_style="dim",
             refresh_per_second=UI_REFRESH_RATE,
+            console=console,
         ):
             tar.extractall(path=temp_dir)
 
@@ -320,7 +321,7 @@ def read_archive(console: Console, path: Path) -> int:
                     list(
                         map(
                             state.__getitem__,
-                            ("tag", "created", "updated", "used", "size"),
+                            ["tag", "created", "updated", "used", "size"],
                         )
                     ),
                 )
