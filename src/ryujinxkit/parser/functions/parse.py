@@ -100,14 +100,14 @@ def _format_tag(tag: str) -> str:
 @_command(
     parser_args={
         "prog": "ryujinxkit",
-        "description": "A tool for Ryujinx (for Windows) " "management.",
+        "description": "A tool for Ryujinx (Windows) management.",
     },
     subparsers_args={
         "title": "commands",
     },
     params=[
         (
-            ["--version"],
+            "--version",
             {
                 "help": "Show version and quit",
                 "action": "store_true",
@@ -154,7 +154,7 @@ def _ryujinxkit_save(_: Namespace) -> None:
     parent=_ryujinxkit_save,
     params=[
         (
-            ["--order-by"],
+            "--order-by",
             {
                 "help": "Priority ordering for rows",
                 "choices": (
@@ -263,7 +263,7 @@ def _ryujinxkit_save_list(args: Namespace) -> None:
     },
     params=[
         (
-            ["--url"],
+            "--url",
             {
                 "help": "Download URL (aquired from an authority)",
                 "type": str,
@@ -309,7 +309,8 @@ def _ryujinxkit_install(args: Namespace) -> None:
     },
     params=[
         (
-            ["-t", "--tag"],
+            "-t",
+            "--tag",
             {
                 "help": "A tag for your save state",
                 "type": str,
@@ -417,15 +418,18 @@ def _ryujinxkit_save_restore(args: Namespace) -> None:
         "aliases": ["rt"],
     },
     params=[
+        (
+            "--tag",
+            {
+                "type": str,
+                "help": "A new tag for the save state",
+                "required": True,
+            },
+        ),
         {
             "help": "Save-state's ID",
             "dest": "id",
             "type": str,
-        },
-        {
-            "dest": "tag",
-            "type": str,
-            "help": "A new tag for the save state",
         },
     ],
     parent=_ryujinxkit_save,
@@ -458,7 +462,8 @@ def _ryujinxkit_save_retag(args: Namespace) -> None:
     },
     params=[
         (
-            ["-o", "--output"],
+            "-o",
+            "--output",
             {
                 "help": f"Output-file name--default is {DEFAULT_ARCHIVE_NAME}",
                 "type": str,
