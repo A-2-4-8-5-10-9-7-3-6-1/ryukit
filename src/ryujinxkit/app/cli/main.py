@@ -53,7 +53,7 @@ def _version_callback() -> None:
 # -----------------------------------------------------------------------------
 
 
-@_app.callback(invoke_without_command=True)
+@_app.callback()
 def _(
     _: Annotated[
         bool,
