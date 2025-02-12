@@ -10,7 +10,7 @@ from hyrchy_pthresolver import Node, Resolver
 from platformdirs import PlatformDirs, user_data_path
 from rich.console import Console
 
-from .constants.configs import APP_AUTHOR, RYUJINX_AUTHOR
+from .configs import APP_AUTHOR, RYUJINX_AUTHOR
 from .enums import FileNode
 
 # =============================================================================
@@ -87,7 +87,7 @@ class Session(metaclass=_Meta):
     :attr null_buffer: Buffer for hidden output.
     """
 
-    console = Console(highlight=False, width=79)
+    console = Console(highlight=False)
     resolver = (
         lambda ryujinx_rpd, ryujinxkit_rpd: Resolver(
             nodes={

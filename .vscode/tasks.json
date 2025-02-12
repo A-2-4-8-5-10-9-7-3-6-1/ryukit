@@ -21,7 +21,15 @@
             "type": "shell"
         },
         {
-            "command": "docker build -f ${DOCKERFILE} -t ${TAG} ${CONTEXT}",
+            "command": "docker",
+            "args": [
+                "build",
+                "-f",
+                "${DOCKERFILE}",
+                "-t",
+                "${TAG}",
+                "${CONTEXT}"
+            ],
             "group": "build",
             "label": "Build: development",
             "options": {
