@@ -1,34 +1,14 @@
 """
-- dependency level 1.
+- dependency level 0.
 """
 
 from typing import Callable, Iterable, ParamSpec, TypeVar
-
-from ..constants.configs import DATABASE_SAVE_TAG_DEFAULT
 
 # =============================================================================
 
 _P = ParamSpec(name="P")
 _T = TypeVar(name="T")
 _U = TypeVar(name="U")
-
-# -----------------------------------------------------------------------------
-
-
-def format_tag(tag: str) -> str:
-    """
-    Format save-state tag.
-
-    :param tag: Tag to be formatted.
-
-    :returns: Formatted tag.
-    """
-
-    if tag != "" and tag[0].isalnum():
-        return tag.strip().replace(" ", "-").lower()
-
-    return DATABASE_SAVE_TAG_DEFAULT
-
 
 # -----------------------------------------------------------------------------
 

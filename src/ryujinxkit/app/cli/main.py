@@ -5,12 +5,12 @@
 from typing import Annotated
 
 from requests import ConnectionError
-from typer import Exit, Option, Typer
+from typer import Argument, Exit, Option, Typer
 
 from ryujinxkit.data import source
 from ryujinxkit.general import APP_VERSION, FileNode, Session
 
-from .save_commands import save_commands
+from .save import save_commands
 
 # =============================================================================
 
@@ -18,7 +18,8 @@ _app = Typer(name="ryujinxkit", rich_markup_mode=None)
 
 # -----------------------------------------------------------------------------
 
-_app.add_typer(typer_instance=save_commands)
+_app.add_typer(typer_instance=save_commands, name="save", epilog="Aliases: sv")
+_app.add_typer(typer_instance=save_commands, name="sv", hidden=True)
 
 # -----------------------------------------------------------------------------
 
@@ -39,32 +40,46 @@ def main() -> None:
 # -----------------------------------------------------------------------------
 
 
+def _version_callback() -> None:
+    """
+    Show version and quit.
+    """
+
+    Session.console.print(f"RyujinxKit version {APP_VERSION}.")
+
+    raise Exit()
+
+
+# -----------------------------------------------------------------------------
+
+
 @_app.callback(invoke_without_command=True)
 def _(
-    version: Annotated[
+    _: Annotated[
         bool,
-        Option("--version", help="Show version and quit."),
+        Option(
+            "--version",
+            help="Show version and quit.",
+            callback=lambda x: _version_callback() if x else None,
+        ),
     ] = False,
 ) -> None:
     """
     CLI for Ryujinx (Windows) management.
     """
 
-    if version:
-        Session.console.print(f"RyujinxKit version {APP_VERSION}.")
-
-        raise Exit()
-
 
 # -----------------------------------------------------------------------------
 
 
-@_app.command(name="install")
+@_app.command(name="install", epilog="Aliases: i")
+@_app.command(name="i", hidden=True)
 def _(
     url: Annotated[
         str,
-        Option(
-            help="Download URL (aquired from an authority)",
+        Argument(
+            metavar="URL",
+            help="Download URL (aquired from an authority).",
             envvar="RYUJINXKIT_SERVICE_URL",
         ),
     ]

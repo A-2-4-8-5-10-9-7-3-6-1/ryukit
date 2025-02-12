@@ -2,8 +2,8 @@
 Data-management systems.
 """
 
-from .constants.configs import DEFAULT_ARCHIVE_NAME
-from .functions.save_states import (
+from .configs import DEFAULT_ARCHIVE_NAME
+from .functions.saves import (
     archive,
     collect_saves,
     create_save,

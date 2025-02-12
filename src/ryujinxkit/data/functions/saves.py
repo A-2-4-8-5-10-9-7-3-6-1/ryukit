@@ -23,13 +23,13 @@ from ryujinxkit.general import (
     format_tag,
 )
 
-from ..constants.configs import DEFAULT_ARCHIVE_NAME
+from ..configs import DEFAULT_ARCHIVE_NAME
 
 # =============================================================================
 
 
 @apply_formatters(formatters=[("tag", format_tag)])
-def create_save(tag: str = DATABASE_SAVE_TAG_DEFAULT) -> None:
+def create_save(*, tag: str = DATABASE_SAVE_TAG_DEFAULT) -> None:
     """
     Create a new save.
 
@@ -49,7 +49,7 @@ def create_save(tag: str = DATABASE_SAVE_TAG_DEFAULT) -> None:
 
 
 @apply_formatters(formatters=[("tag", format_tag)])
-def retag_save(id_: str, tag: str) -> None:
+def retag_save(id_: str, *, tag: str) -> None:
     """
     Change a save's tagging.
 
@@ -71,6 +71,7 @@ def retag_save(id_: str, tag: str) -> None:
 
 
 def collect_saves(
+    console: Console,
     order_by: Sequence[
         Literal[
             "id+",
@@ -86,37 +87,42 @@ def collect_saves(
             "used-",
             "size-",
         ]
-    ]
+    ],
 ) -> Cursor:
     """
     Collect complete list of save states into a `sqlite3.Cursor`.
 
+    :param console: Console for logging progress.
     :param order_by: How you want the results ordered.
 
     :returns: `sqlite3.Cursor` containing results.
     """
-
-    return Session.database_cursor.execute(
-        f"""
-        SELECT 
-            CAST(id AS TEXT),
-            CAST(tag AS TEXT),
-            CAST(strftime("%Y/%m/%d %H:%M", created) AS TEXT),
-            CAST(strftime("%Y/%m/%d %H:%M", updated) AS TEXT),
-            CAST(strftime("%Y/%m/%d %H:%M", used) AS TEXT),
-            CAST(ROUND(size / (1024 * 1024.0), 2) AS TEXT) || "MB"
-        FROM (
-            SELECT id, tag, created, updated, used, size
-            FROM saves
-            ORDER BY {
-                ", ".join(
-                    f"{flag[:-1]} {"DESC" if flag[-1] == "-" else "ASC"}"
-                    for flag in order_by
-                )
-            }
+    with console.status(
+        status="[dim]Collecting saves",
+        spinner_style="dim",
+        refresh_per_second=UI_REFRESH_RATE,
+    ):
+        return Session.database_cursor.execute(
+            f"""
+            SELECT 
+                CAST(id AS TEXT),
+                CAST(tag AS TEXT),
+                CAST(strftime("%Y/%m/%d %H:%M", created) AS TEXT),
+                CAST(strftime("%Y/%m/%d %H:%M", updated) AS TEXT),
+                CAST(strftime("%Y/%m/%d %H:%M", used) AS TEXT),
+                CAST(ROUND(size / (1024 * 1024.0), 2) AS TEXT) || "MB"
+            FROM (
+                SELECT id, tag, created, updated, used, size
+                FROM saves
+                ORDER BY {
+                    ", ".join(
+                        f"{flag[:-1]} {"DESC" if flag[-1] == "-" else "ASC"}"
+                        for flag in order_by
+                    )
+                }
+            )
+            """
         )
-        """
-    )
 
 
 # -----------------------------------------------------------------------------
@@ -284,7 +290,7 @@ def remove_save(console: Console, id_: str) -> None:
 @apply_formatters(
     formatters=[("output", lambda x: x if x != "" else DEFAULT_ARCHIVE_NAME)]
 )
-def archive(console: Console, output: str) -> None:
+def archive(console: Console, *, output: Path) -> None:
     """
     Archive all save states into a tar file.
 

@@ -4,12 +4,11 @@
 
 from enum import Enum
 from pathlib import Path
-from sqlite3 import Cursor
 from typing import Annotated, Any, Iterable
 
 from rich.box import Box
 from rich.table import Table
-from typer import Option, Typer
+from typer import Argument, Option, Typer
 
 from ryujinxkit.data import (
     DEFAULT_ARCHIVE_NAME,
@@ -21,11 +20,7 @@ from ryujinxkit.data import (
     retag_save,
     use_save,
 )
-from ryujinxkit.general import (
-    DATABASE_SAVE_TAG_DEFAULT,
-    UI_REFRESH_RATE,
-    Session,
-)
+from ryujinxkit.general import DATABASE_SAVE_TAG_DEFAULT, Session
 
 # =============================================================================
 
@@ -48,31 +43,27 @@ class _ListOrder(Enum):
 
 # -----------------------------------------------------------------------------
 
-save_commands = Typer(name="save", help="Save-usage commands.")
+save_commands = Typer(help="Save-usage commands.")
 
 # -----------------------------------------------------------------------------
 
 
-@save_commands.command(name="list")
+@save_commands.command(name="list", epilog="Aliases: ls")
+@save_commands.command(name="ls", hidden=True)
 def _(
     order_by: Annotated[
         list[_ListOrder],
-        Option("-o", "--order-by", help="How to order your saves."),
+        Option("-k", "--key", help="Sort key."),
     ] = ["used-", "updated-", "created-", "tag-", "id-"]
 ) -> None:
     """
     List your save instances.
     """
 
-    cursor: Cursor
-
-    with Session.console.status(
-        status="[dim]Collecting saves",
-        spinner_style="dim",
-        refresh_per_second=UI_REFRESH_RATE,
-    ):
-        cursor = collect_saves(order_by=[lo.value for lo in order_by])
-
+    cursor = collect_saves(
+        console=Session.console,
+        order_by=[lo.value for lo in order_by],
+    )
     quick_draw = True
     no8: Iterable[Any] = []
 
@@ -131,11 +122,11 @@ def _(
 def _(
     tag: Annotated[
         str,
-        Option(help="A tag for your save-state."),
+        Option(help="A tag for your save."),
     ] = DATABASE_SAVE_TAG_DEFAULT
 ) -> None:
     """
-    Create an empty save state.
+    Create an empty save.
     """
 
     create_save(tag=tag)
@@ -146,26 +137,31 @@ def _(
 # -----------------------------------------------------------------------------
 
 
-@save_commands.command(name="remove")
-def _(id_: Annotated[str, Option(help="The save-state's ID.")]) -> None:
+@save_commands.command(name="remove", epilog="Aliases: rm")
+@save_commands.command(name="rm", hidden=True)
+def _(
+    id_: Annotated[str, Argument(metavar="ID", help="The save's ID.")]
+) -> None:
     """
-    Remove a save state.
+    Remove a save.
     """
 
-    remove_save(Session.console, id_=id_)
+    remove_save(console=Session.console, id_=id_)
 
 
 # -----------------------------------------------------------------------------
 
 
 @save_commands.command(name="update")
-def _(id_: Annotated[str, Option("--id", help="ID of save-state.")]) -> None:
+def _(
+    id_: Annotated[str, Argument(metavar="ID", help="ID of save-state.")]
+) -> None:
     """
-    Copy Ryujinx environment into a save-state.
+    Copy Ryujinx environment into a save.
     """
 
     try:
-        use_save(Session.console, id_=id_, operation="update")
+        use_save(console=Session.console, id_=id_, operation="update")
 
     except Exception:
         Session.console.print("Unknown ID.")
@@ -175,13 +171,13 @@ def _(id_: Annotated[str, Option("--id", help="ID of save-state.")]) -> None:
 
 
 @save_commands.command(name="restore")
-def _(id_: Annotated[str, Option("--id", help="ID of save-state.")]) -> None:
+def _(id_: Annotated[str, Argument(metavar="ID", help="Save's ID.")]) -> None:
     """
-    Restore your Ryujinx environment from a save-state.
+    Restore your Ryujinx environment from save.
     """
 
     try:
-        use_save(Session.console, id_=id_, operation="restore")
+        use_save(console=Session.console, id_=id_, operation="restore")
 
     except Exception:
         Session.console.print("Unknown ID.")
@@ -190,13 +186,14 @@ def _(id_: Annotated[str, Option("--id", help="ID of save-state.")]) -> None:
 # -----------------------------------------------------------------------------
 
 
-@save_commands.command(name="retag")
+@save_commands.command(name="retag", epilog="Aliases: rt")
+@save_commands.command(name="rt", hidden=True)
 def _(
-    id_: Annotated[str, Option("--id", help="Save-state's ID.")],
-    tag: Annotated[str, Option(help="Save-state's new tag.")],
+    id_: Annotated[str, Argument(metavar="ID", help="Save's ID.")],
+    tag: Annotated[str, Argument(metavar="TAG", help="Save's new tag.")],
 ) -> None:
     """
-    Change the tag of a save-state.
+    Change a save's tag.
     """
 
     retag_save(id_=id_, tag=tag)
@@ -208,35 +205,43 @@ def _(
 @save_commands.command(name="export")
 def _(
     output: Annotated[
-        str,
-        Option(help=f"Output-file's name."),
+        Path,
+        Option(help="Output-file's path."),
     ] = DEFAULT_ARCHIVE_NAME
 ) -> None:
     """
-    Export your save states as a tar file.
+    Export your saves to a tar file.
     """
 
-    archive(Session.console, output=output)
+    archive(console=Session.console, output=output)
 
 
 # -----------------------------------------------------------------------------
 
 
 @save_commands.command(name="extract")
-def _(path: Annotated[Path, Option(help="Path to your extract.")]) -> None:
+def _(
+    path: Annotated[
+        Path,
+        Argument(
+            metavar="PATH",
+            exists=True,
+            dir_okay=False,
+            resolve_path=True,
+            help="Path to your extract.",
+        ),
+    ]
+) -> None:
     """
-    Extract save states from an export.
+    Extract saves from an export.
     """
 
     try:
         Session.console.print(
             f"Accepted {
-                read_archive(Session.console, path=path)
+                read_archive(console=Session.console, path=path)
             } save instance(s).",
         )
-
-    except FileNotFoundError:
-        Session.console.print("Path is for a non-existent file.")
 
     except Exception:
         Session.console.print("Located file was malformed.")

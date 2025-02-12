@@ -2,7 +2,7 @@
 Implements commands.
 """
 
-from .functions.main import main
+from .cli.main import main
 
 # =============================================================================
 
