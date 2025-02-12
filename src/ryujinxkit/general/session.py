@@ -87,7 +87,7 @@ class Session(metaclass=_Meta):
     :attr null_buffer: Buffer for hidden output.
     """
 
-    console = Console(highlight=False, width=79)
+    console = Console(highlight=False)
     resolver = (
         lambda ryujinx_rpd, ryujinxkit_rpd: Resolver(
             nodes={

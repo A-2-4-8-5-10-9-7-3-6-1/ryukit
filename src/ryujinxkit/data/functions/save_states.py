@@ -1,11 +1,12 @@
 """
-- dependency level 0.
+- dependency level 1.
 """
 
 from io import BytesIO
 from json import dumps, load
 from pathlib import Path
 from shutil import rmtree
+from sqlite3 import Cursor
 from tarfile import TarFile, TarInfo
 from tempfile import TemporaryDirectory
 from typing import Any, Callable, Iterable, Literal, Sequence
@@ -13,9 +14,112 @@ from typing import Any, Callable, Iterable, Literal, Sequence
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn
 
-from ryujinxkit.general import UI_REFRESH_RATE, FileNode, Session
+from ryujinxkit.general import (
+    DATABASE_SAVE_TAG_DEFAULT,
+    UI_REFRESH_RATE,
+    FileNode,
+    Session,
+    apply_formatters,
+    format_tag,
+)
+
+from ..constants.configs import DEFAULT_ARCHIVE_NAME
 
 # =============================================================================
+
+
+@apply_formatters(formatters=[("tag", format_tag)])
+def create_save(tag: str = DATABASE_SAVE_TAG_DEFAULT) -> None:
+    """
+    Create a new save.
+
+    :param tag: A tag for the save.
+    """
+
+    Session.database_cursor.execute(
+        """
+        INSERT INTO saves (tag)
+        VALUES (?);
+        """,
+        [tag],
+    )
+
+
+# -----------------------------------------------------------------------------
+
+
+@apply_formatters(formatters=[("tag", format_tag)])
+def retag_save(id_: str, tag: str) -> None:
+    """
+    Change a save's tagging.
+
+    :param %id_%: The save's ID.
+    :param tag: The save's new tag.
+    """
+
+    Session.database_cursor.execute(
+        """
+        UPDATE saves
+        SET tag = ?, updated = datetime("now")
+        WHERE id = ?;
+        """,
+        [tag, id_],
+    )
+
+
+# -----------------------------------------------------------------------------
+
+
+def collect_saves(
+    order_by: Sequence[
+        Literal[
+            "id+",
+            "tag+",
+            "created+",
+            "updated+",
+            "used+",
+            "size+",
+            "id-",
+            "tag-",
+            "created-",
+            "updated-",
+            "used-",
+            "size-",
+        ]
+    ]
+) -> Cursor:
+    """
+    Collect complete list of save states into a `sqlite3.Cursor`.
+
+    :param order_by: How you want the results ordered.
+
+    :returns: `sqlite3.Cursor` containing results.
+    """
+
+    return Session.database_cursor.execute(
+        f"""
+        SELECT 
+            CAST(id AS TEXT),
+            CAST(tag AS TEXT),
+            CAST(strftime("%Y/%m/%d %H:%M", created) AS TEXT),
+            CAST(strftime("%Y/%m/%d %H:%M", updated) AS TEXT),
+            CAST(strftime("%Y/%m/%d %H:%M", used) AS TEXT),
+            CAST(ROUND(size / (1024 * 1024.0), 2) AS TEXT) || "MB"
+        FROM (
+            SELECT id, tag, created, updated, used, size
+            FROM saves
+            ORDER BY {
+                ", ".join(
+                    f"{flag[:-1]} {"DESC" if flag[-1] == "-" else "ASC"}"
+                    for flag in order_by
+                )
+            }
+        )
+        """
+    )
+
+
+# -----------------------------------------------------------------------------
 
 
 def use_save(
@@ -177,6 +281,9 @@ def remove_save(console: Console, id_: str) -> None:
 # -----------------------------------------------------------------------------
 
 
+@apply_formatters(
+    formatters=[("output", lambda x: x if x != "" else DEFAULT_ARCHIVE_NAME)]
+)
 def archive(console: Console, output: str) -> None:
     """
     Archive all save states into a tar file.
@@ -226,7 +333,7 @@ def archive(console: Console, output: str) -> None:
 
             tar.addfile(tarinfo=entities_info, fileobj=buffer)
 
-        for id_ in Session.database_cursor.execute(
+        for (id_,) in Session.database_cursor.execute(
             """
             SELECT CAST(id AS TEXT)
             FROM saves;
@@ -282,7 +389,6 @@ def read_archive(console: Console, path: Path) -> int:
             status="Extracting export",
             spinner_style="dim",
             refresh_per_second=UI_REFRESH_RATE,
-            console=console,
         ):
             tar.extractall(path=temp_dir)
 

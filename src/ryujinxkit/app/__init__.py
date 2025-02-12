@@ -1,13 +1,11 @@
 """
-- dependency level 0.
+Implements commands.
 """
 
-from typing import ParamSpec, TypeVar
+from .functions.main import main
 
 # =============================================================================
 
-P = ParamSpec(name="*P")
-
-T = TypeVar(name="*T")
+__all__ = ["main"]
 
 # =============================================================================
