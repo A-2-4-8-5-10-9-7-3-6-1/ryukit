@@ -2,20 +2,16 @@
 - dependency level 0.
 """
 
-from typing import Callable, Iterable, ParamSpec, TypeVar
+from collections.abc import Callable
+from inspect import signature
+from typing import get_type_hints
+
+from .formatter import Formatter
 
 # =============================================================================
 
-_P = ParamSpec(name="P")
-_T = TypeVar(name="T")
-_U = TypeVar(name="U")
 
-# -----------------------------------------------------------------------------
-
-
-def apply_formatters(
-    formatters: Iterable[tuple[str, Callable[[_T], _T]]] = [],
-) -> Callable[[Callable[_P, _U]], Callable[_P, _U]]:
+def apply_formatters[**P, T](function: Callable[P, T]) -> Callable[P, T]:
     """
     Apply formatters to args for pre-processing.
 
@@ -25,10 +21,29 @@ def apply_formatters(
     :returns: Ammended version of input function.
     """
 
-    return lambda function: lambda *args, **kwargs: [
-        [kwargs.__setitem__(k, f(kwargs[k])) for k, f in formatters],
-        function(*args, **kwargs),
-    ][1]
+    sgn = signature(obj=function)
+    annotations = get_type_hints(obj=function, include_extras=True)
+
+    def decorator(*args: P.args, **kwargs: P.kwargs) -> T:
+        bound_args = sgn.bind(*args, **kwargs)
+
+        bound_args.apply_defaults()
+
+        for k, v in bound_args.arguments.items():
+            if not (
+                k in annotations and hasattr(annotations[k], "__metadata__")
+            ):
+                continue
+
+            for formatter in annotations[k].__metadata__:
+                if not isinstance(formatter, Formatter):
+                    continue
+
+                bound_args.arguments[k] = formatter(input_=v)
+
+        return function(*bound_args.args, **bound_args.kwargs)
+
+    return decorator
 
 
 # =============================================================================

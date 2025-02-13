@@ -144,8 +144,8 @@ files = [
 
 [[package]]
 name = "devkit"
-version = "2.0.0"
-description = "Collection of tools for Python development."
+version = "3.0.0"
+description = "Python development packages."
 optional = false
 python-versions = ">=3.13"
 groups = ["main"]
@@ -155,8 +155,8 @@ develop = false
 [package.source]
 type = "git"
 url = "https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git"
-reference = "v2.0.0"
-resolved_reference = "857020c51d79b089ecd137dd9eae58e1b83f1f52"
+reference = "v3.0.0"
+resolved_reference = "e7098231324b293dee91a125d56d4378db86a5c3"
 
 [[package]]
 name = "idna"
@@ -335,4 +335,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13,<3.14"
-content-hash = "50c90eb1853de7157838f134a349ce86c0184df6efe34c7a9799e9ce7ef3ba69"
+content-hash = "d1328879d501a901290b47b9c90b65e905bc1fbde073e2d8248f47eff6786cb4"

@@ -1,5 +1,5 @@
 """
-Implements commands.
+App's interface.
 """
 
 from .cli.main import main

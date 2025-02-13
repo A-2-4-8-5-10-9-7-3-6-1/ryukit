@@ -2,6 +2,7 @@
 - dependency level 1.
 """
 
+from collections.abc import Callable, Iterable, Sequence
 from io import BytesIO
 from json import dumps, load
 from pathlib import Path
@@ -9,7 +10,7 @@ from shutil import rmtree
 from sqlite3 import Cursor
 from tarfile import TarFile, TarInfo
 from tempfile import TemporaryDirectory
-from typing import Any, Callable, Iterable, Literal, Sequence
+from typing import Annotated, Any, Literal
 
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn
@@ -18,18 +19,23 @@ from ryujinxkit.general import (
     DATABASE_SAVE_TAG_DEFAULT,
     UI_REFRESH_RATE,
     FileNode,
+    Formatter,
     Session,
     apply_formatters,
-    format_tag,
 )
 
-from ..configs import DEFAULT_ARCHIVE_NAME
+from ..formatting.formatters import format_tag
 
 # =============================================================================
 
 
-@apply_formatters(formatters=[("tag", format_tag)])
-def create_save(*, tag: str = DATABASE_SAVE_TAG_DEFAULT) -> None:
+@apply_formatters
+def create_save(
+    tag: Annotated[
+        str,
+        Formatter(function=format_tag),
+    ] = DATABASE_SAVE_TAG_DEFAULT,
+) -> None:
     """
     Create a new save.
 
@@ -48,8 +54,11 @@ def create_save(*, tag: str = DATABASE_SAVE_TAG_DEFAULT) -> None:
 # -----------------------------------------------------------------------------
 
 
-@apply_formatters(formatters=[("tag", format_tag)])
-def retag_save(id_: str, *, tag: str) -> None:
+@apply_formatters
+def retag_save(
+    id_: str,
+    tag: Annotated[str, Formatter(function=format_tag)],
+) -> None:
     """
     Change a save's tagging.
 
@@ -151,7 +160,7 @@ def use_save(
         [id_],
     ).fetchone()[0]
     final_query: Callable[[int], tuple[str, list[Any]]]
-    order: Callable[[Sequence[FileNode]], Sequence[FileNode]]
+    order: Callable[[Sequence[FileNode]], Iterable[FileNode]]
     size_logic: Callable[[Iterable[Path]], int]
 
     match operation:
@@ -182,7 +191,7 @@ def use_save(
             )
 
     with (
-        Session.resolver.cache_only(
+        Session.resolver.cache_locked(
             (FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
         ),
         Progress(
@@ -257,7 +266,7 @@ def remove_save(console: Console, id_: str) -> None:
     """
 
     with (
-        Session.resolver.cache_only(
+        Session.resolver.cache_locked(
             (FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
         ),
         console.status(
@@ -287,10 +296,7 @@ def remove_save(console: Console, id_: str) -> None:
 # -----------------------------------------------------------------------------
 
 
-@apply_formatters(
-    formatters=[("output", lambda x: x if x != "" else DEFAULT_ARCHIVE_NAME)]
-)
-def archive(console: Console, *, output: Path) -> None:
+def archive(console: Console, output: Path) -> None:
     """
     Archive all save states into a tar file.
 
@@ -345,7 +351,7 @@ def archive(console: Console, *, output: Path) -> None:
             FROM saves;
             """
         ):
-            with Session.resolver.cache_only(
+            with Session.resolver.cache_locked(
                 (FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
             ):
                 if not Session.resolver(
@@ -389,7 +395,7 @@ def read_archive(console: Console, path: Path) -> int:
         TarFile(name=path, stream=True) as tar,
     ):
         temp_dir = Path(temp_dir)
-        states: Iterable[dict[str, Any]]
+        states: Sequence[dict[str, Any]]
 
         with console.status(
             status="Extracting export",
@@ -443,7 +449,7 @@ def read_archive(console: Console, path: Path) -> int:
 
                     continue
 
-                with Session.resolver.cache_only(
+                with Session.resolver.cache_locked(
                     (
                         FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER,
                         str(Session.database_cursor.lastrowid),

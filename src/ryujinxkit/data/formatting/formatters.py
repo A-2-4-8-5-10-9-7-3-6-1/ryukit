@@ -2,7 +2,7 @@
 - dependency level 1.
 """
 
-from ..configs import DATABASE_SAVE_TAG_DEFAULT
+from ryujinxkit.general import DATABASE_SAVE_TAG_DEFAULT
 
 # =============================================================================
 

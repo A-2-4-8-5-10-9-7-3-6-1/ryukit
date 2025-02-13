@@ -12,7 +12,7 @@ SOURCE_APP = "app"
 SOURCE_KEYS = "keys"
 
 APP_AUTHOR = "A-2-4-8-5-10-9-7-3-6-1"
-APP_VERSION = "2.0.0"
+APP_VERSION = "2.0.1"
 
 RYUJINX_AUTHOR = False
 

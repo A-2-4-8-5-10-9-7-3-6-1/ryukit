@@ -15,7 +15,7 @@ from .configs import (
 )
 from .enums import FileNode
 from .formatting.decorators import apply_formatters
-from .formatting.formatters import format_tag
+from .formatting.formatter import Formatter
 from .session import Session
 
 # =============================================================================
@@ -23,7 +23,6 @@ from .session import Session
 __all__ = [
     "DATABASE_SAVE_TAG_DEFAULT",
     "SOURCE_APP",
-    "SOURCE_CONNECTION_ERROR_MESSAGE",
     "SOURCE_KEYS",
     "SOURCE_META",
     "SOURCE_REGISTERED",
@@ -33,8 +32,8 @@ __all__ = [
     "UI_REFRESH_RATE",
     "FileNode",
     "Session",
+    "Formatter",
     "apply_formatters",
-    "format_tag",
 ]
 
 # =============================================================================
