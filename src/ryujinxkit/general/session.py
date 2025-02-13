@@ -4,7 +4,7 @@
 
 from io import StringIO
 from sqlite3 import Cursor, connect
-from typing import Any
+from typing import Any, ClassVar, Never
 
 from hyrchy_pthresolver import Node, Resolver
 from platformdirs import PlatformDirs, user_data_path
@@ -87,8 +87,8 @@ class Session(metaclass=_Meta):
     :attr null_buffer: Buffer for hidden output.
     """
 
-    console = Console(highlight=False)
-    resolver = (
+    console: ClassVar[Console] = Console(highlight=False)
+    resolver: ClassVar[Resolver[FileNode]] = (
         lambda ryujinx_rpd, ryujinxkit_rpd: Resolver(
             nodes={
                 FileNode.RYUJINX_LOCAL_DATA: Node(
@@ -167,7 +167,7 @@ class Session(metaclass=_Meta):
 
     # -------------------------------------------------------------------------
 
-    def __init__(self):
+    def __init__(self) -> Never:
         """
         :raises: `NotImplementedError` if invoked.
         """

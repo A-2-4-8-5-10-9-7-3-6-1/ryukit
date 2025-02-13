@@ -2,9 +2,10 @@
 - dependency level 1.
 """
 
+from collections.abc import Iterable
 from enum import Enum
 from pathlib import Path
-from typing import Annotated, Any, Iterable
+from typing import Annotated, Any
 
 from rich.box import Box
 from rich.table import Table
@@ -54,7 +55,13 @@ def _(
     order_by: Annotated[
         list[_ListOrder],
         Option("-k", "--key", help="Sort key."),
-    ] = ["used-", "updated-", "created-", "tag-", "id-"]
+    ] = [
+        "used-",
+        "updated-",
+        "created-",
+        "tag-",
+        "id-",
+    ]  # type: ignore
 ) -> None:
     """
     List your save instances.
@@ -105,11 +112,10 @@ def _(
 
         finally:
             if table.row_count != 0:
-                (
-                    Session.console.print
-                    if quick_draw
-                    else Session.console.input
-                )(table)
+                Session.console.print(table)
+
+                if not quick_draw:
+                    Session.console.input()
 
             if quick_draw and no8 == []:
                 break
@@ -207,7 +213,7 @@ def _(
     output: Annotated[
         Path,
         Option(help="Output-file's path."),
-    ] = DEFAULT_ARCHIVE_NAME
+    ] = Path(DEFAULT_ARCHIVE_NAME)
 ) -> None:
     """
     Export your saves to a tar file.

@@ -89,7 +89,7 @@ def _(
     """
 
     try:
-        source(Session.console, url=url)
+        source(console=Session.console, url=url)
 
         Session.console.print(
             f"Installed to {

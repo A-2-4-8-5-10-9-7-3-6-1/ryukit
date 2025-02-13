@@ -87,7 +87,7 @@ def source(console: Console, url: str, chunk_size: int = pow(2, 13)) -> None:
         ):
             ryujinx_version: str
 
-            with tar.extractfile(member=SOURCE_META) as meta:
+            with tar.extractfile(member=SOURCE_META) as meta:  # type: ignore
                 ryujinx_version = str(
                     PlatformDirs(
                         appname="Ryujinx",
@@ -108,7 +108,7 @@ def source(console: Console, url: str, chunk_size: int = pow(2, 13)) -> None:
                     if member.isdir():
                         continue
 
-                    with tar.extractfile(member=member) as file_buffer:
+                    with tar.extractfile(member=member) as file_buffer:  # type: ignore
                         head, *tail = member.name.split(sep="/", maxsplit=1)
 
                         if head not in routes:
