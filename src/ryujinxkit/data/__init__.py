@@ -14,8 +14,6 @@ from .functions.saves import (
 )
 from .functions.source import source
 
-# =============================================================================
-
 __all__ = [
     "DEFAULT_ARCHIVE_NAME",
     "use_save",
@@ -27,5 +25,3 @@ __all__ = [
     "collect_saves",
     "retag_save",
 ]
-
-# =============================================================================

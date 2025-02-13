@@ -2,30 +2,23 @@
 - dependency level 0.
 """
 
-from io import BytesIO
-from json import load
-from tarfile import TarFile
+import io
+import json
+import tarfile
 
-from platformdirs import PlatformDirs
-from requests import HTTPError, get
-from rich.console import Console
-from rich.progress import Progress, SpinnerColumn
+import platformdirs
+import requests
+import rich.console
+import rich.progress
 
-from ryujinxkit.general import (
-    RYUJINX_AUTHOR,
-    SOURCE_APP,
-    SOURCE_KEYS,
-    SOURCE_META,
-    SOURCE_REGISTERED,
-    UI_REFRESH_RATE,
-    FileNode,
-    Session,
-)
-
-# =============================================================================
+import ryujinxkit.general
 
 
-def source(console: Console, url: str, chunk_size: int = pow(2, 13)) -> None:
+def source(
+    console: rich.console.Console,
+    url: str,
+    chunk_size: int = pow(2, 13),
+) -> None:
     """
     Source setup data.
 
@@ -33,32 +26,32 @@ def source(console: Console, url: str, chunk_size: int = pow(2, 13)) -> None:
     :param console: A console for documenting progress.
     :param chunk_size: Download-stream chunk size.
 
-    :raises: `HTTPError` if request status code is not 200.
+    :raises: `requests.HTTPError` if request status code is not 200.
     """
 
     routes = {
-        SOURCE_APP: FileNode.RYUJINX_LOCAL_DATA,
-        SOURCE_REGISTERED: FileNode.RYUJINX_REGISTERED,
-        SOURCE_KEYS: FileNode.RYUJINX_SYSTEM,
+        ryujinxkit.general.SOURCE_APP: ryujinxkit.general.FileNode.RYUJINX_LOCAL_DATA,
+        ryujinxkit.general.SOURCE_REGISTERED: ryujinxkit.general.FileNode.RYUJINX_REGISTERED,
+        ryujinxkit.general.SOURCE_KEYS: ryujinxkit.general.FileNode.RYUJINX_SYSTEM,
     }
 
-    with BytesIO() as buffer:
+    with io.BytesIO() as buffer:
         with console.status(
             status="[dim]Connecting to service",
             spinner_style="dim",
-            refresh_per_second=UI_REFRESH_RATE,
+            refresh_per_second=ryujinxkit.general.UI_REFRESH_RATE,
         ):
-            response = get(url=url, stream=True)
+            response = requests.get(url=url, stream=True)
 
         if response.status_code != 200:
-            raise HTTPError
+            raise requests.HTTPError
 
-        with Progress(
-            SpinnerColumn(style="dim"),
+        with rich.progress.Progress(
+            rich.progress.SpinnerColumn(style="dim"),
             "[dim]{task.description}",
             "[dim]({task.percentage:.1f}%)",
             console=console,
-            refresh_per_second=UI_REFRESH_RATE,
+            refresh_per_second=ryujinxkit.general.UI_REFRESH_RATE,
             transient=True,
         ) as progress:
             task_id = progress.add_task(
@@ -81,28 +74,33 @@ def source(console: Console, url: str, chunk_size: int = pow(2, 13)) -> None:
             console.status(
                 status="[dim]Organizing assets",
                 spinner_style="dim",
-                refresh_per_second=UI_REFRESH_RATE,
+                refresh_per_second=ryujinxkit.general.UI_REFRESH_RATE,
             ),
-            TarFile(fileobj=buffer) as tar,
+            tarfile.TarFile(fileobj=buffer) as tar,
         ):
             ryujinx_version: str
 
-            with tar.extractfile(member=SOURCE_META) as meta:  # type: ignore
+            with tar.extractfile(
+                member=ryujinxkit.general.SOURCE_META
+            ) as meta:  # type: ignore
                 ryujinx_version = str(
-                    PlatformDirs(
+                    platformdirs.PlatformDirs(
                         appname="Ryujinx",
-                        appauthor=RYUJINX_AUTHOR,
+                        appauthor=ryujinxkit.general.RYUJINX_AUTHOR,
                         version="-".join(
                             map(
-                                load(fp=meta).__getitem__,
+                                json.load(fp=meta).__getitem__,
                                 ("version", "system"),
                             )
                         ),
                     ).user_data_path
                 )
 
-            with Session.resolver.cache_locked(
-                (FileNode.RYUJINX_LOCAL_DATA, ryujinx_version)
+            with ryujinxkit.general.Session.resolver.cache_locked(
+                (
+                    ryujinxkit.general.FileNode.RYUJINX_LOCAL_DATA,
+                    ryujinx_version,
+                )
             ):
                 for member in tar:
                     if member.isdir():
@@ -114,10 +112,12 @@ def source(console: Console, url: str, chunk_size: int = pow(2, 13)) -> None:
                         if head not in routes:
                             continue
 
-                        path = Session.resolver(id_=routes[head]) / tail[0]
+                        path = (
+                            ryujinxkit.general.Session.resolver(
+                                id_=routes[head]
+                            )
+                            / tail[0]
+                        )
 
                         path.parent.mkdir(parents=True, exist_ok=True)
                         path.write_bytes(file_buffer.read())
-
-
-# =============================================================================

@@ -2,18 +2,15 @@
 - dependency level 1.
 """
 
-from io import StringIO
-from sqlite3 import Cursor, connect
-from typing import Any, ClassVar, Never
+import io
+import sqlite3
+import typing
 
-from hyrchy_pthresolver import Resolver
-from platformdirs import PlatformDirs, user_data_path
-from rich.console import Console
+import hyrchy_pthresolver
+import platformdirs
 
 from .configs import APP_AUTHOR, RYUJINX_AUTHOR
 from .enums import FileNode
-
-# =============================================================================
 
 
 class _Meta(type):
@@ -21,11 +18,8 @@ class _Meta(type):
     Metaclass for `Session`.
     """
 
-    resolver: Resolver[FileNode]
-    database_cursor: Cursor
-    null_buffer: StringIO
-
-    # -------------------------------------------------------------------------
+    resolver: hyrchy_pthresolver.Resolver[FileNode]
+    database_cursor: sqlite3.Cursor
 
     def __enter__(cls) -> None:
         """
@@ -42,11 +36,11 @@ class _Meta(type):
             ]
         ]
 
-        cls.database_cursor = connect(
+        cls.database_cursor = sqlite3.connect(
             database=cls.resolver(id_=FileNode.RYUJINXKIT_DATABASE),
             autocommit=False,
         ).cursor()
-        cls.null_buffer = StringIO()
+        cls.null_buffer = io.StringIO()
 
         cls.database_cursor.executescript(
             """
@@ -62,19 +56,13 @@ class _Meta(type):
             """
         )
 
-    # -------------------------------------------------------------------------
-
-    def __exit__(cls, *_: Any) -> None:
+    def __exit__(cls, *_: typing.Any) -> None:
         """
         Close session.
         """
 
         cls.database_cursor.connection.commit()
         cls.database_cursor.connection.close()
-        cls.null_buffer.close()
-
-
-# -----------------------------------------------------------------------------
 
 
 class Session(metaclass=_Meta):
@@ -87,9 +75,8 @@ class Session(metaclass=_Meta):
     :attr null_buffer: Buffer for hidden output.
     """
 
-    console: ClassVar[Console] = Console(highlight=False)
-    resolver: ClassVar[Resolver[FileNode]] = (
-        lambda ryujinx_rpd, ryujinxkit_rpd: Resolver(
+    resolver: typing.ClassVar[hyrchy_pthresolver.Resolver[FileNode]] = (
+        lambda ryujinx_rpd, ryujinxkit_rpd: hyrchy_pthresolver.Resolver(
             leaves={
                 FileNode.RYUJINX_LOCAL_DATA: {
                     "parent": FileNode.LOCAL_USER_DATA,
@@ -146,33 +133,28 @@ class Session(metaclass=_Meta):
                 },
             },
             basics={
-                FileNode.LOCAL_USER_DATA: user_data_path(),
+                FileNode.LOCAL_USER_DATA: platformdirs.user_data_path(),
                 FileNode.RYUJINX_ROAMING_DATA: ryujinx_rpd.user_data_path,
                 FileNode.RYUJINXKIT_ROAMING_DATA: ryujinxkit_rpd.user_data_path,
                 FileNode.RYUJINXKIT_CONFIGS: ryujinxkit_rpd.user_config_path,
             },
         )
     )(
-        PlatformDirs(
+        platformdirs.PlatformDirs(
             appname="Ryujinx",
             appauthor=RYUJINX_AUTHOR,
             roaming=True,
         ),
-        PlatformDirs(
+        platformdirs.PlatformDirs(
             appname="RyujinxKit",
             appauthor=APP_AUTHOR,
             roaming=True,
         ),
     )
 
-    # -------------------------------------------------------------------------
-
-    def __init__(self) -> Never:
+    def __init__(self) -> typing.Never:
         """
         :raises: `NotImplementedError` if invoked.
         """
 
         raise NotImplementedError
-
-
-# =============================================================================

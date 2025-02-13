@@ -2,12 +2,10 @@
 - dependency level 0.
 """
 
-from enum import Enum
-
-# =============================================================================
+import enum
 
 
-class FileNode(Enum):
+class FileNode(enum.Enum):
     """
     File-system nodes.
     """
@@ -30,6 +28,3 @@ class FileNode(Enum):
     RYUJINXKIT_SAVE_INSTANCE_SYSTEM_SAVE = 11
     RYUJINXKIT_SAVE_INSTANCE_SAVE = 12
     RYUJINXKIT_SAVE_INSTANCE_SAVE_META = 13
-
-
-# =============================================================================

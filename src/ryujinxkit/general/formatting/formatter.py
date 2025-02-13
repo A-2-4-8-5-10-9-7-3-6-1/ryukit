@@ -2,9 +2,7 @@
 - dependency level 0.
 """
 
-from collections.abc import Callable
-
-# =============================================================================
+import collections.abc
 
 
 class Formatter[T, R]:
@@ -12,7 +10,7 @@ class Formatter[T, R]:
     Formatter class for function parameters.
     """
 
-    def __init__(self, function: Callable[[T], R]) -> None:
+    def __init__(self, function: collections.abc.Callable[[T], R]) -> None:
         """
         Instantiate a formatter.
 
@@ -20,8 +18,6 @@ class Formatter[T, R]:
         """
 
         self._function = function
-
-    # -------------------------------------------------------------------------
 
     def __call__(self, input_: T) -> R:
         """
@@ -33,6 +29,3 @@ class Formatter[T, R]:
         """
 
         return self._function(input_)
-
-
-# =============================================================================

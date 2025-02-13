@@ -2,39 +2,30 @@
 - dependency level 1.
 """
 
-from collections.abc import Callable, Iterable, Sequence
-from io import BytesIO
-from json import dumps, load
-from pathlib import Path
-from shutil import rmtree
-from sqlite3 import Cursor
-from tarfile import TarFile, TarInfo
-from tempfile import TemporaryDirectory
-from typing import Annotated, Any, Literal
+import collections.abc
+import io
+import json
+import pathlib
+import shutil
+import sqlite3
+import tarfile
+import tempfile
+import typing
 
-from rich.console import Console
-from rich.progress import Progress, SpinnerColumn
+import rich.console
+import rich.progress
 
-from ryujinxkit.general import (
-    DATABASE_SAVE_TAG_DEFAULT,
-    UI_REFRESH_RATE,
-    FileNode,
-    Formatter,
-    Session,
-    apply_formatters,
-)
+import ryujinxkit.general
 
 from ..formatting.formatters import format_tag
 
-# =============================================================================
 
-
-@apply_formatters
+@ryujinxkit.general.apply_formatters
 def create_save(
-    tag: Annotated[
+    tag: typing.Annotated[
         str,
-        Formatter(function=format_tag),
-    ] = DATABASE_SAVE_TAG_DEFAULT,
+        ryujinxkit.general.Formatter(function=format_tag),
+    ] = ryujinxkit.general.DATABASE_SAVE_TAG_DEFAULT,
 ) -> None:
     """
     Create a new save.
@@ -42,7 +33,7 @@ def create_save(
     :param tag: A tag for the save.
     """
 
-    Session.database_cursor.execute(
+    ryujinxkit.general.Session.database_cursor.execute(
         """
         INSERT INTO saves (tag)
         VALUES (?);
@@ -51,13 +42,13 @@ def create_save(
     )
 
 
-# -----------------------------------------------------------------------------
-
-
-@apply_formatters
+@ryujinxkit.general.apply_formatters
 def retag_save(
     id_: str,
-    tag: Annotated[str, Formatter(function=format_tag)],
+    tag: typing.Annotated[
+        str,
+        ryujinxkit.general.Formatter(function=format_tag),
+    ],
 ) -> None:
     """
     Change a save's tagging.
@@ -66,7 +57,7 @@ def retag_save(
     :param tag: The save's new tag.
     """
 
-    Session.database_cursor.execute(
+    ryujinxkit.general.Session.database_cursor.execute(
         """
         UPDATE saves
         SET tag = ?, updated = datetime("now")
@@ -76,13 +67,10 @@ def retag_save(
     )
 
 
-# -----------------------------------------------------------------------------
-
-
 def collect_saves(
-    console: Console,
-    order_by: Sequence[
-        Literal[
+    console: rich.console.Console,
+    order_by: collections.abc.Sequence[
+        typing.Literal[
             "id+",
             "tag+",
             "created+",
@@ -97,21 +85,21 @@ def collect_saves(
             "size-",
         ]
     ],
-) -> Cursor:
+) -> sqlite3.Cursor:
     """
-    Collect complete list of save states into a `sqlite3.Cursor`.
+    Collect complete list of save states into a `sqlite3.sqlite3.Cursor`.
 
-    :param console: Console for logging progress.
+    :param console: rich.console.Console for logging progress.
     :param order_by: How you want the results ordered.
 
-    :returns: `sqlite3.Cursor` containing results.
+    :returns: `sqlite3.sqlite3.Cursor` containing results.
     """
     with console.status(
         status="[dim]Collecting saves",
         spinner_style="dim",
-        refresh_per_second=UI_REFRESH_RATE,
+        refresh_per_second=ryujinxkit.general.UI_REFRESH_RATE,
     ):
-        return Session.database_cursor.execute(
+        return ryujinxkit.general.Session.database_cursor.execute(
             f"""
             SELECT 
                 CAST(id AS TEXT),
@@ -134,13 +122,10 @@ def collect_saves(
         )
 
 
-# -----------------------------------------------------------------------------
-
-
 def use_save(
-    console: Console,
+    console: rich.console.Console,
     id_: str,
-    operation: Literal["restore", "update"],
+    operation: typing.Literal["restore", "update"],
 ) -> None:
     """
     Perform an operation on a save state.
@@ -151,7 +136,7 @@ def use_save(
     """
 
     total: int = 0
-    initial_size = Session.database_cursor.execute(
+    initial_size = ryujinxkit.general.Session.database_cursor.execute(
         """
         SELECT size
         FROM saves
@@ -159,9 +144,15 @@ def use_save(
         """,
         [id_],
     ).fetchone()[0]
-    final_query: Callable[[int], tuple[str, list[Any]]]
-    order: Callable[[Sequence[FileNode]], Iterable[FileNode]]
-    size_logic: Callable[[Iterable[Path]], int]
+    final_query: collections.abc.Callable[[int], tuple[str, list[typing.Any]]]
+    order: collections.abc.Callable[
+        [collections.abc.Sequence[ryujinxkit.general.FileNode]],
+        collections.abc.Iterable[ryujinxkit.general.FileNode],
+    ]
+    size_logic: collections.abc.Callable[
+        [collections.abc.Iterable[pathlib.Path]],
+        int,
+    ]
 
     match operation:
         case "restore":
@@ -191,34 +182,34 @@ def use_save(
             )
 
     with (
-        Session.resolver.cache_locked(
-            (FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
+        ryujinxkit.general.Session.resolver.cache_locked(
+            (ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
         ),
-        Progress(
-            SpinnerColumn(style="dim"),
+        rich.progress.Progress(
+            rich.progress.SpinnerColumn(style="dim"),
             "[dim]{task.description}",
             "[dim]({task.completed}/{task.total})",
             console=console,
-            refresh_per_second=UI_REFRESH_RATE,
+            refresh_per_second=ryujinxkit.general.UI_REFRESH_RATE,
             transient=True,
         ) as progress,
     ):
         paths = [
-            map(Session.resolver, pair)
+            map(ryujinxkit.general.Session.resolver, pair)
             for pair in map(
                 order,
                 [
                     (
-                        FileNode.RYUJINXKIT_SAVE_INSTANCE_SYSTEM_SAVE,
-                        FileNode.RYUJINX_SYSTEM_SAVE,
+                        ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_SYSTEM_SAVE,
+                        ryujinxkit.general.FileNode.RYUJINX_SYSTEM_SAVE,
                     ),
                     (
-                        FileNode.RYUJINXKIT_SAVE_INSTANCE_SAVE_META,
-                        FileNode.RYUJINX_SAVE_META,
+                        ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_SAVE_META,
+                        ryujinxkit.general.FileNode.RYUJINX_SAVE_META,
                     ),
                     (
-                        FileNode.RYUJINXKIT_SAVE_INSTANCE_SAVE,
-                        FileNode.RYUJINX_USER_SAVE,
+                        ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_SAVE,
+                        ryujinxkit.general.FileNode.RYUJINX_USER_SAVE,
                     ),
                 ],
             )
@@ -236,28 +227,21 @@ def use_save(
             total += size
 
             if dest.exists():
-                rmtree(path=dest)
+                shutil.rmtree(path=dest)
 
             if size != 0:
-                [
-                    (
-                        lambda path, dest: [
-                            dest.parent.mkdir(parents=True, exist_ok=True),
-                            dest.write_bytes(data=path.read_bytes()),
-                        ]
-                    )(path, dest / path.relative_to(source))
-                    for path in members
-                ]
+                for path in members:
+                    bucket = dest / path.relative_to(source)
+
+                    bucket.parent.mkdir(parents=True, exist_ok=True)
+                    bucket.write_bytes(data=path.read_bytes())
 
             progress.advance(task_id=task_id, advance=1)
 
-    Session.database_cursor.execute(*final_query(total))
+    ryujinxkit.general.Session.database_cursor.execute(*final_query(total))
 
 
-# -----------------------------------------------------------------------------
-
-
-def remove_save(console: Console, id_: str) -> None:
+def remove_save(console: rich.console.Console, id_: str) -> None:
     """
     Removes a save state.
 
@@ -266,16 +250,16 @@ def remove_save(console: Console, id_: str) -> None:
     """
 
     with (
-        Session.resolver.cache_locked(
-            (FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
+        ryujinxkit.general.Session.resolver.cache_locked(
+            (ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
         ),
         console.status(
             status="[dim]Deleting save",
             spinner_style="dim",
-            refresh_per_second=UI_REFRESH_RATE,
+            refresh_per_second=ryujinxkit.general.UI_REFRESH_RATE,
         ),
     ):
-        Session.database_cursor.execute(
+        ryujinxkit.general.Session.database_cursor.execute(
             """
             DELETE FROM saves
             WHERE id = ?;
@@ -283,20 +267,17 @@ def remove_save(console: Console, id_: str) -> None:
             [id_],
         )
 
-        if Session.resolver(
-            id_=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
+        if ryujinxkit.general.Session.resolver(
+            id_=ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
         ).exists():
-            rmtree(
-                path=Session.resolver(
-                    id_=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
+            shutil.rmtree(
+                path=ryujinxkit.general.Session.resolver(
+                    id_=ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
                 )
             )
 
 
-# -----------------------------------------------------------------------------
-
-
-def archive(console: Console, output: Path) -> None:
+def archive(console: rich.console.Console, output: pathlib.Path) -> None:
     """
     Archive all save states into a tar file.
 
@@ -305,18 +286,18 @@ def archive(console: Console, output: Path) -> None:
     """
 
     with (
-        TarFile(name=output, mode="w") as tar,
+        tarfile.TarFile(name=output, mode="w") as tar,
         console.status(
             status="[dim]Exporting saves",
             spinner_style="dim",
-            refresh_per_second=UI_REFRESH_RATE,
+            refresh_per_second=ryujinxkit.general.UI_REFRESH_RATE,
         ),
     ):
-        entities_info = TarInfo(name="entities.json")
+        entities_info = tarfile.TarInfo(name="entities.json")
 
-        with BytesIO() as buffer:
+        with io.BytesIO() as buffer:
             entities_info.size = buffer.write(
-                dumps(
+                json.dumps(
                     obj=[
                         dict(
                             zip(
@@ -331,7 +312,7 @@ def archive(console: Console, output: Path) -> None:
                                 record,
                             )
                         )
-                        for record in Session.database_cursor.execute(
+                        for record in ryujinxkit.general.Session.database_cursor.execute(
                             """
                             SELECT id, tag, created, updated, used, size
                             FROM saves;
@@ -345,17 +326,20 @@ def archive(console: Console, output: Path) -> None:
 
             tar.addfile(tarinfo=entities_info, fileobj=buffer)
 
-        for (id_,) in Session.database_cursor.execute(
+        for (id_,) in ryujinxkit.general.Session.database_cursor.execute(
             """
             SELECT CAST(id AS TEXT)
             FROM saves;
             """
         ):
-            with Session.resolver.cache_locked(
-                (FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
+            with ryujinxkit.general.Session.resolver.cache_locked(
+                (
+                    ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER,
+                    id_,
+                )
             ):
-                if not Session.resolver(
-                    id_=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
+                if not ryujinxkit.general.Session.resolver(
+                    id_=ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
                 ).exists():
                     continue
 
@@ -364,57 +348,54 @@ def archive(console: Console, output: Path) -> None:
                         name=path,
                         arcname=str(
                             path.relative_to(
-                                Session.resolver(
-                                    id_=FileNode.RYUJINXKIT_ROAMING_DATA
+                                ryujinxkit.general.Session.resolver(
+                                    id_=ryujinxkit.general.FileNode.RYUJINXKIT_ROAMING_DATA
                                 )
                             )
                         ),
                     )
-                    for path in Session.resolver(
-                        id_=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
+                    for path in ryujinxkit.general.Session.resolver(
+                        id_=ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
                     ).rglob(pattern="*")
                     if not path.is_dir()
                 ]
 
 
-# -----------------------------------------------------------------------------
-
-
-def read_archive(console: Console, path: Path) -> int:
+def read_archive(console: rich.console.Console, path: pathlib.Path) -> int:
     """
     Assimilate save states from an archive.
 
-    :param path: Path to your archive.
+    :param path: pathlib.Path to your archive.
     :param console: A console to track progress on.
 
     :returns: Number of read save states.
     """
 
     with (
-        TemporaryDirectory() as temp_dir,
-        TarFile(name=path, stream=True) as tar,
+        tempfile.TemporaryDirectory() as temp_dir,
+        tarfile.TarFile(name=path, stream=True) as tar,
     ):
-        temp_dir = Path(temp_dir)
-        states: Sequence[dict[str, Any]]
+        temp_dir = pathlib.Path(temp_dir)
+        states: collections.abc.Sequence[dict[str, typing.Any]]
 
         with console.status(
             status="Extracting export",
             spinner_style="dim",
-            refresh_per_second=UI_REFRESH_RATE,
+            refresh_per_second=ryujinxkit.general.UI_REFRESH_RATE,
         ):
             tar.extractall(path=temp_dir)
 
         with (temp_dir / "entities.json").open() as buffer:
-            states = load(fp=buffer)
+            states = json.load(fp=buffer)
 
         state_count = len(states)
 
-        with Progress(
-            SpinnerColumn(style="dim"),
+        with rich.progress.Progress(
+            rich.progress.SpinnerColumn(style="dim"),
             "[dim]{task.description}",
             "[dim]({task.percentage:.1f}%)",
             console=console,
-            refresh_per_second=UI_REFRESH_RATE,
+            refresh_per_second=ryujinxkit.general.UI_REFRESH_RATE,
             transient=True,
         ) as progress:
             task_id = progress.add_task(
@@ -425,13 +406,13 @@ def read_archive(console: Console, path: Path) -> int:
             for state in states:
                 save_dir = (
                     temp_dir
-                    / Session.resolver(
-                        id_=FileNode.RYUJINXKIT_SAVE_FOLDER
+                    / ryujinxkit.general.Session.resolver(
+                        id_=ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_FOLDER
                     ).name
                     / str(state["id"])
                 )
 
-                Session.database_cursor.execute(
+                ryujinxkit.general.Session.database_cursor.execute(
                     """
                     INSERT INTO saves (tag, created, updated, used, size)
                     VALUES (?, ?, ?, ?, ?);
@@ -449,15 +430,17 @@ def read_archive(console: Console, path: Path) -> int:
 
                     continue
 
-                with Session.resolver.cache_locked(
+                with ryujinxkit.general.Session.resolver.cache_locked(
                     (
-                        FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER,
-                        str(Session.database_cursor.lastrowid),
+                        ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER,
+                        str(
+                            ryujinxkit.general.Session.database_cursor.lastrowid
+                        ),
                     )
                 ):
                     for entry in save_dir.rglob(pattern="*"):
-                        subpath = Session.resolver(
-                            id_=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
+                        subpath = ryujinxkit.general.Session.resolver(
+                            id_=ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
                         ) / entry.relative_to(save_dir)
 
                         if entry.is_dir():
@@ -473,6 +456,3 @@ def read_archive(console: Console, path: Path) -> int:
                         )
 
         return state_count
-
-
-# =============================================================================

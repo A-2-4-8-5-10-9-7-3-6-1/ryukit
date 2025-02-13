@@ -1,10 +1,8 @@
 """
-- dependency level 1.
+- dependency level 0.
 """
 
 from ryujinxkit.general import DATABASE_SAVE_TAG_DEFAULT
-
-# =============================================================================
 
 
 def format_tag(tag: str) -> str:
@@ -20,6 +18,3 @@ def format_tag(tag: str) -> str:
         return tag.strip().replace(" ", "-").lower()
 
     return DATABASE_SAVE_TAG_DEFAULT
-
-
-# =============================================================================

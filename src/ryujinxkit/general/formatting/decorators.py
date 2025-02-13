@@ -2,16 +2,17 @@
 - dependency level 0.
 """
 
-from collections.abc import Callable
-from inspect import signature
-from typing import get_type_hints
+import collections.abc
+import inspect
+import typing
 
 from .formatter import Formatter
 
-# =============================================================================
 
-
-def apply_formatters[**P, T](function: Callable[P, T]) -> Callable[P, T]:
+def apply_formatters[
+    **P,
+    T,
+](function: collections.abc.Callable[P, T]) -> collections.abc.Callable[P, T]:
     """
     Apply formatters to args for pre-processing.
 
@@ -21,8 +22,8 @@ def apply_formatters[**P, T](function: Callable[P, T]) -> Callable[P, T]:
     :returns: Ammended version of input function.
     """
 
-    sgn = signature(obj=function)
-    annotations = get_type_hints(obj=function, include_extras=True)
+    sgn = inspect.signature(obj=function)
+    annotations = typing.get_type_hints(obj=function, include_extras=True)
 
     def decorator(*args: P.args, **kwargs: P.kwargs) -> T:
         bound_args = sgn.bind(*args, **kwargs)
@@ -44,6 +45,3 @@ def apply_formatters[**P, T](function: Callable[P, T]) -> Callable[P, T]:
         return function(*bound_args.args, **bound_args.kwargs)
 
     return decorator
-
-
-# =============================================================================

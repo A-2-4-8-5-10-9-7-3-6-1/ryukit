@@ -2,8 +2,6 @@
 - dependency level 0.
 """
 
-# =============================================================================
-
 DATABASE_SAVE_TAG_DEFAULT = "untagged"
 
 SOURCE_META = "ryujinx.json"
@@ -17,5 +15,3 @@ APP_VERSION = "2.0.1"
 RYUJINX_AUTHOR = False
 
 UI_REFRESH_RATE = 10
-
-# =============================================================================
