@@ -6,7 +6,7 @@ from io import StringIO
 from sqlite3 import Cursor, connect
 from typing import Any, ClassVar, Never
 
-from hyrchy_pthresolver import Node, Resolver
+from hyrchy_pthresolver import Resolver
 from platformdirs import PlatformDirs, user_data_path
 from rich.console import Console
 
@@ -90,62 +90,62 @@ class Session(metaclass=_Meta):
     console: ClassVar[Console] = Console(highlight=False)
     resolver: ClassVar[Resolver[FileNode]] = (
         lambda ryujinx_rpd, ryujinxkit_rpd: Resolver(
-            nodes={
-                FileNode.RYUJINX_LOCAL_DATA: Node(
-                    parent=FileNode.LOCAL_USER_DATA,
-                    cache=True,
-                ),
-                FileNode.RYUJINX_SYSTEM: Node(
-                    parent=FileNode.RYUJINX_ROAMING_DATA,
-                    cache=True,
-                    tail="system",
-                ),
-                FileNode.RYUJINX_REGISTERED: Node(
-                    parent=FileNode.RYUJINX_ROAMING_DATA,
-                    tail="bis/system/Contents/registered",
-                ),
-                FileNode.RYUJINXKIT_DATABASE: Node(
-                    parent=FileNode.RYUJINXKIT_ROAMING_DATA,
-                    cache=True,
-                    tail="metadata.db",
-                ),
-                FileNode.RYUJINXKIT_SAVE_FOLDER: Node(
-                    parent=FileNode.RYUJINXKIT_ROAMING_DATA,
-                    cache=True,
-                    tail="states",
-                ),
-                FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER: Node(
-                    parent=FileNode.RYUJINXKIT_SAVE_FOLDER
-                ),
-                FileNode.RYUJINXKIT_SAVE_INSTANCE_SYSTEM_SAVE: Node(
-                    parent=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER,
-                    tail="system",
-                ),
-                FileNode.RYUJINXKIT_SAVE_INSTANCE_SAVE: Node(
-                    parent=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER,
-                    tail="user",
-                ),
-                FileNode.RYUJINXKIT_SAVE_INSTANCE_SAVE_META: Node(
-                    parent=FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER,
-                    tail="meta",
-                ),
-                FileNode.RYUJINX_SYSTEM_SAVE: Node(
-                    parent=FileNode.RYUJINX_ROAMING_DATA,
-                    cache=True,
-                    tail="bis/system/save",
-                ),
-                FileNode.RYUJINX_USER_SAVE: Node(
-                    parent=FileNode.RYUJINX_ROAMING_DATA,
-                    cache=True,
-                    tail="bis/user/save",
-                ),
-                FileNode.RYUJINX_SAVE_META: Node(
-                    parent=FileNode.RYUJINX_ROAMING_DATA,
-                    cache=True,
-                    tail="bis/user/saveMeta",
-                ),
+            leaves={
+                FileNode.RYUJINX_LOCAL_DATA: {
+                    "parent": FileNode.LOCAL_USER_DATA,
+                    "cache": True,
+                },
+                FileNode.RYUJINX_SYSTEM: {
+                    "parent": FileNode.RYUJINX_ROAMING_DATA,
+                    "cache": True,
+                    "tail": "system",
+                },
+                FileNode.RYUJINX_REGISTERED: {
+                    "parent": FileNode.RYUJINX_ROAMING_DATA,
+                    "tail": "bis/system/Contents/registered",
+                },
+                FileNode.RYUJINXKIT_DATABASE: {
+                    "parent": FileNode.RYUJINXKIT_ROAMING_DATA,
+                    "cache": True,
+                    "tail": "metadata.db",
+                },
+                FileNode.RYUJINXKIT_SAVE_FOLDER: {
+                    "parent": FileNode.RYUJINXKIT_ROAMING_DATA,
+                    "cache": True,
+                    "tail": "states",
+                },
+                FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER: {
+                    "parent": FileNode.RYUJINXKIT_SAVE_FOLDER
+                },
+                FileNode.RYUJINXKIT_SAVE_INSTANCE_SYSTEM_SAVE: {
+                    "parent": FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER,
+                    "tail": "system",
+                },
+                FileNode.RYUJINXKIT_SAVE_INSTANCE_SAVE: {
+                    "parent": FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER,
+                    "tail": "user",
+                },
+                FileNode.RYUJINXKIT_SAVE_INSTANCE_SAVE_META: {
+                    "parent": FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER,
+                    "tail": "meta",
+                },
+                FileNode.RYUJINX_SYSTEM_SAVE: {
+                    "parent": FileNode.RYUJINX_ROAMING_DATA,
+                    "cache": True,
+                    "tail": "bis/system/save",
+                },
+                FileNode.RYUJINX_USER_SAVE: {
+                    "parent": FileNode.RYUJINX_ROAMING_DATA,
+                    "cache": True,
+                    "tail": "bis/user/save",
+                },
+                FileNode.RYUJINX_SAVE_META: {
+                    "parent": FileNode.RYUJINX_ROAMING_DATA,
+                    "cache": True,
+                    "tail": "bis/user/saveMeta",
+                },
             },
-            primitives={
+            basics={
                 FileNode.LOCAL_USER_DATA: user_data_path(),
                 FileNode.RYUJINX_ROAMING_DATA: ryujinx_rpd.user_data_path,
                 FileNode.RYUJINXKIT_ROAMING_DATA: ryujinxkit_rpd.user_data_path,

@@ -101,7 +101,7 @@ def source(console: Console, url: str, chunk_size: int = pow(2, 13)) -> None:
                     ).user_data_path
                 )
 
-            with Session.resolver.cache_only(
+            with Session.resolver.cache_locked(
                 (FileNode.RYUJINX_LOCAL_DATA, ryujinx_version)
             ):
                 for member in tar:

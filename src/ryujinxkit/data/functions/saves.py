@@ -191,7 +191,7 @@ def use_save(
             )
 
     with (
-        Session.resolver.cache_only(
+        Session.resolver.cache_locked(
             (FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
         ),
         Progress(
@@ -266,7 +266,7 @@ def remove_save(console: Console, id_: str) -> None:
     """
 
     with (
-        Session.resolver.cache_only(
+        Session.resolver.cache_locked(
             (FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
         ),
         console.status(
@@ -351,7 +351,7 @@ def archive(console: Console, output: Path) -> None:
             FROM saves;
             """
         ):
-            with Session.resolver.cache_only(
+            with Session.resolver.cache_locked(
                 (FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
             ):
                 if not Session.resolver(
@@ -449,7 +449,7 @@ def read_archive(console: Console, path: Path) -> int:
 
                     continue
 
-                with Session.resolver.cache_only(
+                with Session.resolver.cache_locked(
                     (
                         FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER,
                         str(Session.database_cursor.lastrowid),
