@@ -21,19 +21,14 @@
             "type": "shell"
         },
         {
-            "command": "docker",
-            "args": [
-                "build",
-                "-f",
-                "${DOCKERFILE}",
-                "-t",
-                "${TAG}",
-                "${CONTEXT}"
+            "command": [
+                "docker build -f ${DOCKERFILE} -t ${TAG} ${CONTEXT}",
+                "&& docker run -i --rm --mount ${BIND} ${TAG}"
             ],
-            "group": "build",
-            "label": "Build: development",
+            "label": "Run: development",
             "options": {
                 "env": {
+                    "BIND": "type=bind,source=.,target=/workdir",
                     "CONTEXT": ".",
                     "DOCKERFILE": "docker/development.Dockerfile",
                     "TAG": "ryujinxkit:development"
