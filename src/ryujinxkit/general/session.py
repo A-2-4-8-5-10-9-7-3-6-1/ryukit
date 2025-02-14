@@ -19,7 +19,7 @@ class _Meta(type):
     """
 
     resolver: hyrchy_pthresolver.Resolver[FileNode]
-    database_cursor: sqlite3.Cursor
+    cursor: sqlite3.Cursor
 
     def __enter__(cls) -> None:
         """
@@ -27,7 +27,7 @@ class _Meta(type):
         """
 
         [
-            cls.resolver(id_=id_).mkdir(parents=True, exist_ok=True)
+            cls.resolver[id_].mkdir(parents=True, exist_ok=True)
             for id_ in [
                 FileNode.RYUJINXKIT_ROAMING_DATA,
                 FileNode.RYUJINX_ROAMING_DATA,
@@ -36,13 +36,13 @@ class _Meta(type):
             ]
         ]
 
-        cls.database_cursor = sqlite3.connect(
-            database=cls.resolver(id_=FileNode.RYUJINXKIT_DATABASE),
+        cls.cursor = sqlite3.connect(
+            database=cls.resolver[FileNode.RYUJINXKIT_DATABASE],
             autocommit=False,
         ).cursor()
         cls.null_buffer = io.StringIO()
 
-        cls.database_cursor.executescript(
+        cls.cursor.executescript(
             """
             CREATE TABLE IF NOT EXISTS saves (
                 id INTEGER,
@@ -61,8 +61,8 @@ class _Meta(type):
         Close session.
         """
 
-        cls.database_cursor.connection.commit()
-        cls.database_cursor.connection.close()
+        cls.cursor.connection.commit()
+        cls.cursor.connection.close()
 
 
 class Session(metaclass=_Meta):
@@ -70,9 +70,7 @@ class Session(metaclass=_Meta):
     Session-management class.
 
     :attr resolver: Path resolver.
-    :attr database_cursor: Database cursor.
-    :attr console: Main console.
-    :attr null_buffer: Buffer for hidden output.
+    :attr cursor: Database cursor.
     """
 
     resolver: typing.ClassVar[hyrchy_pthresolver.Resolver[FileNode]] = (

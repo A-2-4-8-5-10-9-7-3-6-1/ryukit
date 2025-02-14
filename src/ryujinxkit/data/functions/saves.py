@@ -33,7 +33,7 @@ def create_save(
     :param tag: A tag for the save.
     """
 
-    ryujinxkit.general.Session.database_cursor.execute(
+    ryujinxkit.general.Session.cursor.execute(
         """
         INSERT INTO saves (tag)
         VALUES (?);
@@ -57,7 +57,7 @@ def retag_save(
     :param tag: The save's new tag.
     """
 
-    ryujinxkit.general.Session.database_cursor.execute(
+    ryujinxkit.general.Session.cursor.execute(
         """
         UPDATE saves
         SET tag = ?, updated = datetime("now")
@@ -99,7 +99,7 @@ def collect_saves(
         spinner_style="dim",
         refresh_per_second=ryujinxkit.general.UI_REFRESH_RATE,
     ):
-        return ryujinxkit.general.Session.database_cursor.execute(
+        return ryujinxkit.general.Session.cursor.execute(
             f"""
             SELECT 
                 CAST(id AS TEXT),
@@ -136,7 +136,7 @@ def use_save(
     """
 
     total: int = 0
-    initial_size = ryujinxkit.general.Session.database_cursor.execute(
+    initial_size = ryujinxkit.general.Session.cursor.execute(
         """
         SELECT size
         FROM saves
@@ -195,7 +195,7 @@ def use_save(
         ) as progress,
     ):
         paths = [
-            map(ryujinxkit.general.Session.resolver, pair)
+            map(ryujinxkit.general.Session.resolver.__getitem__, pair)
             for pair in map(
                 order,
                 [
@@ -238,7 +238,7 @@ def use_save(
 
             progress.advance(task_id=task_id, advance=1)
 
-    ryujinxkit.general.Session.database_cursor.execute(*final_query(total))
+    ryujinxkit.general.Session.cursor.execute(*final_query(total))
 
 
 def remove_save(console: rich.console.Console, id_: str) -> None:
@@ -259,7 +259,7 @@ def remove_save(console: rich.console.Console, id_: str) -> None:
             refresh_per_second=ryujinxkit.general.UI_REFRESH_RATE,
         ),
     ):
-        ryujinxkit.general.Session.database_cursor.execute(
+        ryujinxkit.general.Session.cursor.execute(
             """
             DELETE FROM saves
             WHERE id = ?;
@@ -267,13 +267,13 @@ def remove_save(console: rich.console.Console, id_: str) -> None:
             [id_],
         )
 
-        if ryujinxkit.general.Session.resolver(
-            id_=ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
-        ).exists():
+        if ryujinxkit.general.Session.resolver[
+            ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
+        ].exists():
             shutil.rmtree(
-                path=ryujinxkit.general.Session.resolver(
-                    id_=ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
-                )
+                path=ryujinxkit.general.Session.resolver[
+                    ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
+                ]
             )
 
 
@@ -312,7 +312,7 @@ def archive(console: rich.console.Console, output: pathlib.Path) -> None:
                                 record,
                             )
                         )
-                        for record in ryujinxkit.general.Session.database_cursor.execute(
+                        for record in ryujinxkit.general.Session.cursor.execute(
                             """
                             SELECT id, tag, created, updated, used, size
                             FROM saves;
@@ -326,7 +326,7 @@ def archive(console: rich.console.Console, output: pathlib.Path) -> None:
 
             tar.addfile(tarinfo=entities_info, fileobj=buffer)
 
-        for (id_,) in ryujinxkit.general.Session.database_cursor.execute(
+        for (id_,) in ryujinxkit.general.Session.cursor.execute(
             """
             SELECT CAST(id AS TEXT)
             FROM saves;
@@ -338,9 +338,9 @@ def archive(console: rich.console.Console, output: pathlib.Path) -> None:
                     id_,
                 )
             ):
-                if not ryujinxkit.general.Session.resolver(
-                    id_=ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
-                ).exists():
+                if not ryujinxkit.general.Session.resolver[
+                    ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
+                ].exists():
                     continue
 
                 [
@@ -348,15 +348,15 @@ def archive(console: rich.console.Console, output: pathlib.Path) -> None:
                         name=path,
                         arcname=str(
                             path.relative_to(
-                                ryujinxkit.general.Session.resolver(
-                                    id_=ryujinxkit.general.FileNode.RYUJINXKIT_ROAMING_DATA
-                                )
+                                ryujinxkit.general.Session.resolver[
+                                    ryujinxkit.general.FileNode.RYUJINXKIT_ROAMING_DATA
+                                ]
                             )
                         ),
                     )
-                    for path in ryujinxkit.general.Session.resolver(
-                        id_=ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
-                    ).rglob(pattern="*")
+                    for path in ryujinxkit.general.Session.resolver[
+                        ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
+                    ].rglob(pattern="*")
                     if not path.is_dir()
                 ]
 
@@ -406,13 +406,13 @@ def read_archive(console: rich.console.Console, path: pathlib.Path) -> int:
             for state in states:
                 save_dir = (
                     temp_dir
-                    / ryujinxkit.general.Session.resolver(
-                        id_=ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_FOLDER
-                    ).name
+                    / ryujinxkit.general.Session.resolver[
+                        ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_FOLDER
+                    ].name
                     / str(state["id"])
                 )
 
-                ryujinxkit.general.Session.database_cursor.execute(
+                ryujinxkit.general.Session.cursor.execute(
                     """
                     INSERT INTO saves (tag, created, updated, used, size)
                     VALUES (?, ?, ?, ?, ?);
@@ -433,15 +433,13 @@ def read_archive(console: rich.console.Console, path: pathlib.Path) -> int:
                 with ryujinxkit.general.Session.resolver.cache_locked(
                     (
                         ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER,
-                        str(
-                            ryujinxkit.general.Session.database_cursor.lastrowid
-                        ),
+                        str(ryujinxkit.general.Session.cursor.lastrowid),
                     )
                 ):
                     for entry in save_dir.rglob(pattern="*"):
-                        subpath = ryujinxkit.general.Session.resolver(
-                            id_=ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
-                        ) / entry.relative_to(save_dir)
+                        subpath = ryujinxkit.general.Session.resolver[
+                            ryujinxkit.general.FileNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
+                        ] / entry.relative_to(save_dir)
 
                         if entry.is_dir():
                             subpath.mkdir(parents=True, exist_ok=True)

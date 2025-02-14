@@ -113,9 +113,7 @@ def source(
                             continue
 
                         path = (
-                            ryujinxkit.general.Session.resolver(
-                                id_=routes[head]
-                            )
+                            ryujinxkit.general.Session.resolver[routes[head]]
                             / tail[0]
                         )
 

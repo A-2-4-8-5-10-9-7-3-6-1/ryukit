@@ -121,7 +121,7 @@ def _(
 
     Objects.console.print(
         f"ID is {
-            ryujinxkit.general.Session.database_cursor.lastrowid
+            ryujinxkit.general.Session.cursor.lastrowid
         }."
     )
 
