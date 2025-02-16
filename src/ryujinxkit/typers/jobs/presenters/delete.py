@@ -13,8 +13,6 @@ def present() -> collections.abc.Generator[None, bool]:
     """
 
     if (yield):
-        console.print("Save deleted.")
-
-        yield
+        return console.print("Save deleted.")
 
     console.print("Unrecognized save ID.")

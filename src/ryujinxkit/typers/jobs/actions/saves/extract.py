@@ -33,6 +33,7 @@ def action(
             states: collections.abc.Sequence[dict[str, typing.Any]]
 
             yield ("EXTRACTING", 0)
+
             tar.extractall(path=temp_dir)
 
             with (temp_dir / "entities.json").open() as buffer:
@@ -85,4 +86,4 @@ def action(
                             )
 
     except Exception:
-        yield ("EXTRACTING", -1)
+        yield ("FAILED", 0)

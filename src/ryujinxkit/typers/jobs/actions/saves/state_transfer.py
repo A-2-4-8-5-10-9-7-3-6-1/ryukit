@@ -40,7 +40,7 @@ def action(
             )[0]
 
         except StopIteration:
-            yield ("TRANSFERING", -1)
+            yield ("FAILED", 0)
 
         query: collections.abc.Callable[[int], tuple[str, list[typing.Any]]]
         order: collections.abc.Callable[

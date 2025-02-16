@@ -4,7 +4,7 @@
 
 import collections.abc
 
-from .protocol import Merger
+from .protocol import Protocol as Merger
 
 
 def _null_presenter() -> collections.abc.Generator[None]:

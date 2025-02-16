@@ -6,7 +6,7 @@ import collections.abc
 import typing
 
 
-class Merger[T, I](typing.Protocol):
+class Protocol[T, I](typing.Protocol):
     """
     Merger protocol.
     """

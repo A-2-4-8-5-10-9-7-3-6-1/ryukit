@@ -13,8 +13,6 @@ def present() -> collections.abc.Generator[None, int]:
     """
 
     if (yield):
-        console.print("Tag updated.")
-
-        yield
+        return console.print("Tag updated.")
 
     console.print("Unrecognized save ID.")

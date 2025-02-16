@@ -17,5 +17,7 @@ def job(
     for message in in_:
         pole.send(message)
 
-        if message[1] == -1:
-            break
+        if message[0] == "FAILED":
+            return
+
+    pole.send(("FINISHED", -1))

@@ -37,18 +37,18 @@ def action(
         response = requests.get(url=url, stream=True)
 
         if response.status_code != 200:
-            yield ("DOWNLOADING", -1)
+            yield ("FAILED", 0)
 
         yield ("DOWNLOADING", float(response.headers.get("content-length", 0)))
 
-        for chunk in response.iter_content(chunk_size=chunk_size):
-            yield ("DOWNLOADING", buffer.write(chunk))
-
-        buffer.seek(0)
-
-        yield ("UNPCKING", 0)
-
         try:
+            for chunk in response.iter_content(chunk_size=chunk_size):
+                yield ("DOWNLOADING", buffer.write(chunk))
+
+            buffer.seek(0)
+
+            yield ("UNPCKING", 0)
+
             with tarfile.TarFile(fileobj=buffer) as tar:
                 ryujinx_local: str
 
@@ -90,4 +90,4 @@ def action(
                             path.write_bytes(file_buffer.read())
 
         except Exception:
-            yield ("UNPACKING", -1)
+            yield ("FAILED", 1)

@@ -22,9 +22,9 @@ def action(id_: str) -> bool:
         if (
             connection.execute(
                 """
-            DELETE FROM saves
-            WHERE id = ?;
-            """,
+                DELETE FROM saves
+                WHERE id = ?;
+                """,
                 [id_],
             ).rowcount
             == 0

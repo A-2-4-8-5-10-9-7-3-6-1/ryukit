@@ -19,3 +19,5 @@ def present() -> collections.abc.Generator[None]:
         refresh_per_second=UI_REFRESH_RATE,
     ):
         yield
+
+    console.print("Export completed.")

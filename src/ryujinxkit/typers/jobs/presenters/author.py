@@ -10,7 +10,7 @@ from .display.console import console
 
 def present() -> collections.abc.Generator[None, str]:
     """
-    Present information from the version action.
+    Present information from the author action.
     """
 
-    console.print(f"(RyujinxKit) version {(yield)}.")
+    console.print((yield))

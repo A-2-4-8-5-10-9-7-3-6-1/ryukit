@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [tool.poetry.scripts]
-ryujinxkit = "ryujinxkit.app.functions.main:main"
+ryujinxkit = "ryujinxkit.typers.root:typer_"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

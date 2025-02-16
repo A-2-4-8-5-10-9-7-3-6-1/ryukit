@@ -41,8 +41,6 @@ def _(
     if ctx.invoked_subcommand is None:
         list_job(order=keys)
 
-        raise typer.Exit()
-
 
 @typer_.command(name="create")
 def _(
