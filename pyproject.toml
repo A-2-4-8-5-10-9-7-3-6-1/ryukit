@@ -1,6 +1,6 @@
 [project]
 name = "ryujinxkit"
-version = "2.0.1"
+version = "3.0.0"
 description = "CLI for Ryujinx (Windows) management."
 authors = [
     {name = "A-2-4-8-5-10-9-7-3-6-1",email = "112730580+A-2-4-8-5-10-9-7-3-6-1@users.noreply.github.com"}
@@ -12,7 +12,7 @@ dependencies = [
     "platformdirs (>=4.3.6,<5.0.0)",
     "rich (>=13.9.4,<14.0.0)",
     "devkit @ git+https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git@v4.0.0",
-    "typer-slim (>=0.15.1,<0.16.0)",
+    "typer (>=0.15.1,<0.16.0)",
 ]
 
 [tool.poetry.scripts]

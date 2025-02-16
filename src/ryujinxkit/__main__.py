@@ -1,4 +1,3 @@
-from ryujinxkit.app import main
+from .typers.root import typer_ as app
 
-if __name__ == "__main__":
-    main()
+app()

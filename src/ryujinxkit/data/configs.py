@@ -1,5 +1,0 @@
-"""
-- dependency level 0.
-"""
-
-DEFAULT_ARCHIVE_NAME = "saves.tar"
