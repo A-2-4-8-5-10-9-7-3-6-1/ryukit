@@ -5,7 +5,7 @@
 import hyrchy_pthresolver
 import platformdirs
 
-from ..configs import APP_AUTHOR
+from ..metadata import AUTHOR
 from .resolver_node import ResolverNode
 
 resolver = hyrchy_pthresolver.Resolver(
@@ -73,12 +73,12 @@ resolver = hyrchy_pthresolver.Resolver(
         ).user_data_path,
         ResolverNode.RYUJINXKIT_ROAMING_DATA: platformdirs.PlatformDirs(
             appname="RyujinxKit",
-            appauthor=APP_AUTHOR,
+            appauthor=AUTHOR,
             roaming=True,
         ).user_data_path,
         ResolverNode.RYUJINXKIT_CONFIGS: platformdirs.PlatformDirs(
             appname="RyujinxKit",
-            appauthor=APP_AUTHOR,
+            appauthor=AUTHOR,
             roaming=True,
         ).user_config_path,
     },

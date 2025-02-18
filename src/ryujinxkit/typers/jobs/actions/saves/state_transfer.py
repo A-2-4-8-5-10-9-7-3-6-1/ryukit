@@ -10,11 +10,12 @@ import typing
 from .....database.connection import connect
 from .....file_access.resolver import resolver
 from .....file_access.resolver_node import ResolverNode
+from ..enums.state_transfering import Enum as Operation
 
 
 def action(
     id_: str,
-    operation: typing.Literal["restore", "update"],
+    operation: Operation,
 ) -> collections.abc.Generator[tuple[str, float]]:
     """
     Transfer state between a save instance and Ryujinx.
@@ -53,7 +54,7 @@ def action(
         ]
 
         match operation:
-            case "restore":
+            case Operation.RESTORE:
                 order = lambda x, y: (x, y)
                 size = lambda _: initial_size
                 query = lambda _: (
@@ -65,7 +66,7 @@ def action(
                     [id_],
                 )
 
-            case "update":
+            case Operation.UPDATE:
                 order = lambda x, y: (y, x)
                 size = lambda members: sum(
                     path.stat().st_size for path in members

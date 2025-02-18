@@ -1,6 +1,8 @@
 """
-- dependency level 0.
+- dependency level 1.
 """
+
+from .....metadata import VERSION
 
 
 def action() -> str:
@@ -10,4 +12,4 @@ def action() -> str:
     :returns: App's version.
     """
 
-    return "3.0.0"
+    return VERSION

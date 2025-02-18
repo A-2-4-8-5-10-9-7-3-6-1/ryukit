@@ -8,6 +8,7 @@ import typing
 import typer
 
 from ..database.configs import SAVE_TAG_DEFAULT
+from .jobs.actions.enums.state_transfering import Enum as Operation
 from .jobs.saves.create import job as create_job
 from .jobs.saves.delete import job as delete_job
 from .jobs.saves.export import job as export_job
@@ -75,29 +76,23 @@ def _(
     delete_job(id_=id_)
 
 
-@typer_.command(name="update")
+@typer_.command(name="operate", epilog="Aliases: op")
+@typer_.command(name="op", hidden=True)
 def _(
+    operation: typing.Annotated[
+        Operation,
+        typer.Argument(help="Operation to perform."),
+    ],
     id_: typing.Annotated[
         str,
-        typer.Argument(metavar="ID", help="Save's ID."),
-    ]
+        typer.Argument(metavar="ID", help="Save's ID.", case_sensitive=False),
+    ],
 ) -> None:
     """
-    Copy Ryujinx environment into a save.
+    Operate on save instances through file transference.
     """
 
-    transfer_job(id_=id_, operation="update")
-
-
-@typer_.command(name="restore")
-def _(
-    id_: typing.Annotated[str, typer.Argument(metavar="ID", help="Save's ID.")]
-) -> None:
-    """
-    Restore your Ryujinx environment from save.
-    """
-
-    transfer_job(id_=id_, operation="restore")
+    transfer_job(id_=id_, operation=operation)
 
 
 @typer_.command(name="retag", epilog="Aliases: rt")
