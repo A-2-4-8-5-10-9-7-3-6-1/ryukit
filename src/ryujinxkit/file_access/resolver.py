@@ -1,11 +1,10 @@
-"""
-- dependency level 1.
-"""
+import importlib.metadata
+import os
+import pathlib
 
 import hyrchy_pthresolver
 import platformdirs
 
-from ..metadata import AUTHOR
 from .resolver_node import ResolverNode
 
 resolver = hyrchy_pthresolver.Resolver(
@@ -26,12 +25,12 @@ resolver = hyrchy_pthresolver.Resolver(
         ResolverNode.RYUJINXKIT_DATABASE: {
             "parent": ResolverNode.RYUJINXKIT_ROAMING_DATA,
             "cache": True,
-            "tail": "metadata.db",
+            "tail": "database.db",
         },
         ResolverNode.RYUJINXKIT_SAVE_FOLDER: {
             "parent": ResolverNode.RYUJINXKIT_ROAMING_DATA,
             "cache": True,
-            "tail": "states",
+            "tail": "saves",
         },
         ResolverNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER: {
             "parent": ResolverNode.RYUJINXKIT_SAVE_FOLDER
@@ -64,22 +63,29 @@ resolver = hyrchy_pthresolver.Resolver(
             "tail": "bis/user/saveMeta",
         },
     },
-    basics={
-        ResolverNode.LOCAL_USER_DATA: platformdirs.user_data_path(),
-        ResolverNode.RYUJINX_ROAMING_DATA: platformdirs.PlatformDirs(
-            appname="Ryujinx",
-            appauthor=False,
-            roaming=True,
-        ).user_data_path,
-        ResolverNode.RYUJINXKIT_ROAMING_DATA: platformdirs.PlatformDirs(
-            appname="RyujinxKit",
-            appauthor=AUTHOR,
-            roaming=True,
-        ).user_data_path,
-        ResolverNode.RYUJINXKIT_CONFIGS: platformdirs.PlatformDirs(
-            appname="RyujinxKit",
-            appauthor=AUTHOR,
-            roaming=True,
-        ).user_config_path,
-    },
+    basics=(
+        {
+            ResolverNode.LOCAL_USER_DATA: pathlib.Path(".ryujinxkit"),
+            ResolverNode.RYUJINX_ROAMING_DATA: pathlib.Path(".ryujinxkit")
+            / "Ryujinx",
+            ResolverNode.RYUJINXKIT_ROAMING_DATA: pathlib.Path(".ryujinxkit")
+            / "RyujinxKit",
+        }
+        if os.getenv("RYUJINXKIT_DEV_MODE", "0") == "1"
+        else {
+            ResolverNode.LOCAL_USER_DATA: platformdirs.user_data_path(),
+            ResolverNode.RYUJINX_ROAMING_DATA: platformdirs.PlatformDirs(
+                appname="Ryujinx",
+                appauthor=False,
+                roaming=True,
+            ).user_data_path,
+            ResolverNode.RYUJINXKIT_ROAMING_DATA: platformdirs.PlatformDirs(
+                appname="RyujinxKit",
+                appauthor=importlib.metadata.metadata(
+                    distribution_name="ryujinxkit"
+                )["Author"],
+                roaming=True,
+            ).user_data_path,
+        }
+    ),
 )

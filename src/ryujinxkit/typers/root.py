@@ -1,15 +1,12 @@
-"""
-- dependency level 6.
-"""
-
 import typing
 
 import typer
 
+from .context.settings import settings
 from .info_callback.decorator import decorator as info_callback
-from .jobs.app.author import job as author_job
-from .jobs.app.version import job as version_job
-from .jobs.ryujinx.install import job as install_job
+from .jobs.author import job as author_job
+from .jobs.install import job as install_job
+from .jobs.version import job as version_job
 from .saves import typer_ as save_typer
 
 typer_ = typer.Typer(
@@ -41,6 +38,14 @@ def _(
             callback=info_callback(job=version_job),
         ),
     ] = False,
+    json: typing.Annotated[
+        bool,
+        typer.Option(
+            "--json",
+            help="Enable JSON output.",
+            callback=lambda x: settings.__setitem__("json", x),  # type: ignore
+        ),
+    ] = settings["json"],
     author: typing.Annotated[
         bool,
         typer.Option(

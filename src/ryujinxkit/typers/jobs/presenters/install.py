@@ -1,25 +1,22 @@
-"""
-- dependency level 2.
-"""
-
-import collections.abc
-
 import rich.progress
 
+from ....display.configs import UI_REFRESH_RATE
+from ....display.console import console
 from ....file_access.resolver import resolver
 from ....file_access.resolver_node import ResolverNode
+from ...context.settings import settings
 from .animation.protocol import Protocol as Animation
-from .display.configs import UI_REFRESH_RATE
-from .display.console import console
+from .enums.commands import Enum as Command
+from .typing.presenter import Presenter
 
 
-def present() -> collections.abc.Generator[None, tuple[str, float]]:
+def present() -> Presenter[tuple[str, float]]:
     """
     Present information from Ryujinx-install action.
     """
 
     looping: bool = False
-    animation: Animation
+    animation: Animation | None = None
     task_id: rich.progress.TaskID
 
     while True:
@@ -36,6 +33,13 @@ def present() -> collections.abc.Generator[None, tuple[str, float]]:
                 looping = False
 
                 animation.stop()  # type: ignore
+
+                if settings["json"]:
+                    return console.print_json(
+                        data={
+                            "code": "SERVICE_CONNECTION_ISSUE",
+                        }
+                    )
 
                 return console.print("Failed to connect to service.")
 
@@ -64,10 +68,9 @@ def present() -> collections.abc.Generator[None, tuple[str, float]]:
                 animation.advance(task_id=task_id, advance=volume)  # type: ignore
 
             case "UNPACKING", volume:
-                looping = False
-
                 animation.stop()  # type: ignore
 
+                looping = False
                 animation = console.status(
                     status="[dim]Unpacking",
                     spinner_style="dim",
@@ -79,6 +82,13 @@ def present() -> collections.abc.Generator[None, tuple[str, float]]:
             case "FAILED", 1:
                 animation.stop()  # type: ignore
 
+                if settings["json"]:
+                    return console.print_json(
+                        data={
+                            "code": "NETWORK_ISSUE",
+                        }
+                    )
+
                 return console.print(
                     "An error occured. This was the resullt of one of the "
                     "following:\n",
@@ -88,13 +98,26 @@ def present() -> collections.abc.Generator[None, tuple[str, float]]:
                     sep="\n",
                 )
 
-            case "FINISHED", -1:
+            case Command.FINISHED:
                 looping = False
 
                 animation.stop()  # type: ignore
+
+                if settings["json"]:
+                    return console.print_json(
+                        data={
+                            "code": "SUCCESS",
+                            "path": str(
+                                resolver[ResolverNode.RYUJINX_LOCAL_DATA]
+                            ),
+                        }
+                    )
 
                 return console.print(
                     f"Ryujinx installed to {
                         resolver[ResolverNode.RYUJINX_LOCAL_DATA]
                     }."
                 )
+
+            case Command.KILL if animation is not None:
+                return animation.stop()

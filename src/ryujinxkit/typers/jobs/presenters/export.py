@@ -1,14 +1,9 @@
-"""
-- dependency level 1.
-"""
-
-import collections.abc
-
-from .display.configs import UI_REFRESH_RATE
-from .display.console import console
+from ....display.configs import UI_REFRESH_RATE
+from ....display.console import console
+from .typing.presenter import Presenter
 
 
-def present() -> collections.abc.Generator[None]:
+def present() -> Presenter[None]:
     """
     Present information from the extract action.
     """

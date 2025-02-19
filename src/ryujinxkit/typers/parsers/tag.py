@@ -1,8 +1,3 @@
-"""
-- dependency level 0.
-"""
-
-
 def parser(tag: str) -> str:
     """
     Validate tags.

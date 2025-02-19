@@ -1,3 +1,8 @@
 from .typers.root import typer_ as app
 
-app()
+
+def main() -> None:
+    app()
+
+
+main()

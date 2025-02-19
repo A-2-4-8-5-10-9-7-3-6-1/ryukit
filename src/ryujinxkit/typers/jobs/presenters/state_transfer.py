@@ -1,28 +1,34 @@
-"""
-- dependency level 1.
-"""
-
-import collections.abc
+import json
 
 import rich.progress
 
+from ....display.configs import UI_REFRESH_RATE
+from ....display.console import console
+from ...context.settings import settings
 from .animation.protocol import Protocol as Animation
-from .display.configs import UI_REFRESH_RATE
-from .display.console import console
+from .enums.commands import Enum as Command
+from .typing.presenter import Presenter
 
 
-def present() -> collections.abc.Generator[None, tuple[str, float]]:
+def present() -> Presenter[tuple[str, float]]:
     """
     Present information from save-transfer actions.
     """
 
     looping: bool = False
-    animation: Animation
+    animation: Animation | None = None
     task_id: rich.progress.TaskID
 
     while True:
         match (yield):
             case "FAILED", 0:
+                if settings["json"]:
+                    return console.print_json(
+                        data={
+                            "code": "ID_ISSUE",
+                        }
+                    )
+
                 return console.print("Unrecognized save ID.")
 
             case "TRANSFERING", volume:
@@ -47,9 +53,21 @@ def present() -> collections.abc.Generator[None, tuple[str, float]]:
 
                 animation.start()
 
-            case "FINISHED", -1:
+            case Command.FINISHED:
                 looping = False
 
                 animation.stop()  # type: ignore
 
+                if settings["json"]:
+                    return console.print(
+                        json.dumps(
+                            obj={
+                                "code": "SUCCESS",
+                            }
+                        )
+                    )
+
                 return console.print("Transfer successful.")
+
+            case Command.KILL if animation is not None:
+                return animation.stop()

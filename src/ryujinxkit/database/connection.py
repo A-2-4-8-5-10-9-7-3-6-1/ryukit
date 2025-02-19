@@ -1,7 +1,3 @@
-"""
-- dependency level 2.
-"""
-
 import collections.abc
 import contextlib
 import sqlite3

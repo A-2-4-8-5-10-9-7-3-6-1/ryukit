@@ -1,15 +1,24 @@
-"""
-- dependency level 1.
-"""
-
-import collections.abc
-
-from .display.console import console
+from ....display.console import console
+from ...context.settings import settings
+from .enums.commands import Enum as Command
+from .typing.presenter import Presenter
 
 
-def present() -> collections.abc.Generator[None, int]:
+def present() -> Presenter[int]:
     """
     Present information from the extract action.
     """
 
-    console.print(f"ID: {(yield)}.")
+    signal = yield
+
+    if isinstance(signal, Command):
+        return
+
+    if settings["json"]:
+        return console.print_json(
+            data={
+                "id": signal,
+            }
+        )
+
+    console.print(f"ID: {signal}.")

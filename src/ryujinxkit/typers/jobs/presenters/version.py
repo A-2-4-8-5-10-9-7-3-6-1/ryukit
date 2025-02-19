@@ -1,16 +1,24 @@
-"""
-- dependency level 1.
-"""
-
-import collections
-import collections.abc
-
-from .display.console import console
+from ....display.console import console
+from ...context.settings import settings
+from .enums.commands import Enum as Command
+from .typing.presenter import Presenter
 
 
-def present() -> collections.abc.Generator[None, str]:
+def present() -> Presenter[str]:
     """
     Present information from the version action.
     """
 
-    console.print(f"(RyujinxKit) version {(yield)}.")
+    signal = yield
+
+    if isinstance(signal, Command):
+        return
+
+    if settings["json"]:
+        return console.print_json(
+            data={
+                "version": signal,
+            }
+        )
+
+    console.print(f"(RyujinxKit) version {signal}")

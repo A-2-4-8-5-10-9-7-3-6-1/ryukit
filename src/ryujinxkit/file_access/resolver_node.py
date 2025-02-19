@@ -1,7 +1,3 @@
-"""
-- dependency level 0.
-"""
-
 import enum
 
 
@@ -21,7 +17,6 @@ class ResolverNode(int, enum.Enum):
     RYUJINX_SAVE_META = 16
 
     RYUJINXKIT_ROAMING_DATA = 6
-    RYUJINXKIT_CONFIGS = 17
     RYUJINXKIT_DATABASE = 8
     RYUJINXKIT_SAVE_FOLDER = 9
     RYUJINXKIT_SAVE_INSTANCE_FOLDER = 10

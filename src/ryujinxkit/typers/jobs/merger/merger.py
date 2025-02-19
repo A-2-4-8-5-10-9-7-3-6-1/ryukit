@@ -1,13 +1,11 @@
-"""
-- dependency level 1.
-"""
-
 import collections.abc
 
+from ..presenters.enums.commands import Enum as Command
+from ..presenters.typing.presenter import Presenter
 from .protocol import Protocol as Merger
 
 
-def _null_presenter() -> collections.abc.Generator[None]:
+def _null_presenter() -> Presenter[None]:
     """
     A dumb presenter.
     """
@@ -21,10 +19,7 @@ def merger[
     I,
 ](
     action: collections.abc.Callable[P, R],
-    presenter: collections.abc.Callable[
-        [],
-        collections.abc.Generator[None, I],
-    ] = _null_presenter,
+    presenter: collections.abc.Callable[[], Presenter[I]] = _null_presenter,
 ) -> collections.abc.Callable[
     [Merger[R, I]],
     collections.abc.Callable[P, None],
@@ -42,10 +37,14 @@ def merger[
 
     def decorator(merger: Merger[R, I]) -> collections.abc.Callable[P, None]:
         def inner(*args: P.args, **kwargs: P.kwargs) -> None:
-            next(pole)
-
             try:
-                merger(in_=action(*args, **kwargs), pole=pole)
+                next(pole)
+
+                try:
+                    merger(in_=action(*args, **kwargs), pole=pole)
+
+                except KeyboardInterrupt:
+                    pole.send(Command.KILL)
 
             except StopIteration:
                 pass

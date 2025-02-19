@@ -1,7 +1,3 @@
-"""
-- dependency level 1.
-"""
-
 import collections.abc
 import sqlite3
 import typing
@@ -10,16 +6,20 @@ import rich.box
 import rich.progress
 import rich.table
 
-from .display.configs import UI_REFRESH_RATE
-from .display.console import console
+from ryujinxkit.typers.context.settings import settings
+
+from ....display.configs import UI_REFRESH_RATE
+from ....display.console import console
+from .enums.commands import Enum as Command
+from .typing.presenter import Presenter
 
 
-def present() -> collections.abc.Generator[None, sqlite3.Cursor]:
+def present() -> Presenter[sqlite3.Cursor]:
     """
     Present information for the list command.
     """
 
-    cursor: sqlite3.Cursor
+    cursor: sqlite3.Cursor | Command
 
     with console.status(
         status="[dim]Collecting saves",
@@ -28,8 +28,19 @@ def present() -> collections.abc.Generator[None, sqlite3.Cursor]:
     ):
         cursor = yield
 
+    if isinstance(cursor, Command):
+        return
+
+    if settings["json"]:
+        return console.print_json(
+            data={
+                "size": len(cursor.fetchall()),
+            }
+        )
+
     quick_draw: bool = True
     no8: collections.abc.Iterable[typing.Any] = []
+    table: rich.table.Table
 
     while not quick_draw or no8 == []:
         table = rich.table.Table(
@@ -79,4 +90,7 @@ def present() -> collections.abc.Generator[None, sqlite3.Cursor]:
                     console.input()
 
             if quick_draw and no8 == []:
-                return
+                break
+
+    if table.row_count == 0:  # type: ignore
+        return console.print("No save to show.")
