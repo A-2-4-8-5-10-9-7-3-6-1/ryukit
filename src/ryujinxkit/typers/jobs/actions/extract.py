@@ -9,11 +9,12 @@ from ryujinxkit.file_access.resolver import resolver
 
 from ....database.connection import connect
 from ....file_access.resolver_node import ResolverNode
+from ..messages.extract import ExtractSignal
 
 
 def action(
     path: pathlib.Path,
-) -> collections.abc.Generator[tuple[str, float]]:
+) -> collections.abc.Generator[tuple[ExtractSignal, float]]:
     """
     Extract saves from an export.
 
@@ -28,14 +29,14 @@ def action(
             temp_dir = pathlib.Path(temp_dir)
             states: collections.abc.Sequence[dict[str, typing.Any]]
 
-            yield ("EXTRACTING", 0)
+            yield (ExtractSignal.EXTRACTING, 0)
 
             tar.extractall(path=temp_dir)
 
             with (temp_dir / "entities.json").open() as buffer:
                 states = json.load(fp=buffer)
 
-            yield ("READING", len(states))
+            yield (ExtractSignal.READING, len(states))
 
             with connect() as connection:
                 for state in states:
@@ -54,7 +55,7 @@ def action(
                     )
 
                     if state["size"] == 0:
-                        yield ("READING", 1)
+                        yield (ExtractSignal.READING, 1)
 
                         continue
 
@@ -77,9 +78,9 @@ def action(
                             subpath.write_bytes(data=entry.read_bytes())
 
                             yield (
-                                "READING",
+                                ExtractSignal.READING,
                                 subpath.stat().st_size / state["size"],
                             )
 
     except Exception:
-        yield ("FAILED", 0)
+        yield (ExtractSignal.FAILED, 0)

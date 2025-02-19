@@ -3,7 +3,7 @@ import typing
 import typer
 
 from .context.settings import settings
-from .info_callback.decorator import decorator as info_callback
+from .helpers.callbacks.info import decorator as info_callback
 from .jobs.author import job as author_job
 from .jobs.install import job as install_job
 from .jobs.version import job as version_job
@@ -27,7 +27,7 @@ def _(
         typer.Option(
             metavar="URL",
             help="Download URL (aquired from an authority).",
-            envvar="RYUJINXKIT_SERVICE_URL",
+            envvar="RYUJINXKIT_SERVICE",
         ),
     ],
     version: typing.Annotated[

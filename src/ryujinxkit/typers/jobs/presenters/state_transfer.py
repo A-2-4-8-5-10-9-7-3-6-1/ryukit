@@ -5,12 +5,13 @@ import rich.progress
 from ....display.configs import UI_REFRESH_RATE
 from ....display.console import console
 from ...context.settings import settings
+from ..messages.primers import Primer
+from ..messages.state_transfer import StateTransferSignal
 from .animation.protocol import Protocol as Animation
-from .enums.commands import Enum as Command
-from .typing.presenter import Presenter
+from .types.presenter import Presenter
 
 
-def present() -> Presenter[tuple[str, float]]:
+def present() -> Presenter[tuple[StateTransferSignal, float]]:
     """
     Present information from save-transfer actions.
     """
@@ -21,7 +22,7 @@ def present() -> Presenter[tuple[str, float]]:
 
     while True:
         match (yield):
-            case "FAILED", 0:
+            case StateTransferSignal.FAILED, 0:
                 if settings["json"]:
                     return console.print_json(
                         data={
@@ -31,7 +32,7 @@ def present() -> Presenter[tuple[str, float]]:
 
                 return console.print("Unrecognized save ID.")
 
-            case "TRANSFERING", volume:
+            case StateTransferSignal.TRANSFERING, volume:
                 if looping:
                     animation.advance(task_id=task_id, advance=volume)  # type: ignore
 
@@ -53,7 +54,7 @@ def present() -> Presenter[tuple[str, float]]:
 
                 animation.start()
 
-            case Command.FINISHED:
+            case Primer.FINISHED:
                 looping = False
 
                 animation.stop()  # type: ignore
@@ -69,5 +70,11 @@ def present() -> Presenter[tuple[str, float]]:
 
                 return console.print("Transfer successful.")
 
-            case Command.KILL if animation is not None:
-                return animation.stop()
+            case Primer.KILL:
+                if animation is not None:
+                    animation.stop()
+
+                return
+
+            case _:
+                pass

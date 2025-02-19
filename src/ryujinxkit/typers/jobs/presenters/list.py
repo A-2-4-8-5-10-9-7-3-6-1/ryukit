@@ -10,8 +10,8 @@ from ryujinxkit.typers.context.settings import settings
 
 from ....display.configs import UI_REFRESH_RATE
 from ....display.console import console
-from .enums.commands import Enum as Command
-from .typing.presenter import Presenter
+from ..messages.primers import Primer
+from .types.presenter import Presenter
 
 
 def present() -> Presenter[sqlite3.Cursor]:
@@ -19,7 +19,7 @@ def present() -> Presenter[sqlite3.Cursor]:
     Present information for the list command.
     """
 
-    cursor: sqlite3.Cursor | Command
+    cursor: sqlite3.Cursor | Primer
 
     with console.status(
         status="[dim]Collecting saves",
@@ -28,7 +28,7 @@ def present() -> Presenter[sqlite3.Cursor]:
     ):
         cursor = yield
 
-    if isinstance(cursor, Command):
+    if isinstance(cursor, Primer):
         return
 
     if settings["json"]:

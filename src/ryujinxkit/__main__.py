@@ -1,4 +1,4 @@
-from .typers.root import typer_ as app
+from .typers.app import typer_ as app
 
 
 def main() -> None:

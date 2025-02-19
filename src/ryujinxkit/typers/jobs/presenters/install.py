@@ -5,12 +5,13 @@ from ....display.console import console
 from ....file_access.resolver import resolver
 from ....file_access.resolver_node import ResolverNode
 from ...context.settings import settings
+from ..messages.install import InstallSignal
+from ..messages.primers import Primer
 from .animation.protocol import Protocol as Animation
-from .enums.commands import Enum as Command
-from .typing.presenter import Presenter
+from .types.presenter import Presenter
 
 
-def present() -> Presenter[tuple[str, float]]:
+def present() -> Presenter[tuple[InstallSignal, float]]:
     """
     Present information from Ryujinx-install action.
     """
@@ -21,7 +22,7 @@ def present() -> Presenter[tuple[str, float]]:
 
     while True:
         match (yield):
-            case "SERVICE_CONNECT", _:
+            case InstallSignal.SERVICE_CONNECT, _:
                 animation = console.status(
                     status="[dim]Connecting to service",
                     spinner_style="dim",
@@ -29,7 +30,7 @@ def present() -> Presenter[tuple[str, float]]:
 
                 animation.start()
 
-            case "FAILED", 0:
+            case InstallSignal.FAILED, 0:
                 looping = False
 
                 animation.stop()  # type: ignore
@@ -43,7 +44,7 @@ def present() -> Presenter[tuple[str, float]]:
 
                 return console.print("Failed to connect to service.")
 
-            case "DOWNLOADING", volume:
+            case InstallSignal.DOWNLOADING, volume:
                 if not looping:
                     animation.stop()  # type: ignore
 
@@ -67,7 +68,7 @@ def present() -> Presenter[tuple[str, float]]:
 
                 animation.advance(task_id=task_id, advance=volume)  # type: ignore
 
-            case "UNPACKING", volume:
+            case InstallSignal.UNPACKING, volume:
                 animation.stop()  # type: ignore
 
                 looping = False
@@ -79,7 +80,7 @@ def present() -> Presenter[tuple[str, float]]:
 
                 animation.start()
 
-            case "FAILED", 1:
+            case InstallSignal.FAILED, 1:
                 animation.stop()  # type: ignore
 
                 if settings["json"]:
@@ -98,7 +99,7 @@ def present() -> Presenter[tuple[str, float]]:
                     sep="\n",
                 )
 
-            case Command.FINISHED:
+            case Primer.FINISHED:
                 looping = False
 
                 animation.stop()  # type: ignore
@@ -119,5 +120,11 @@ def present() -> Presenter[tuple[str, float]]:
                     }."
                 )
 
-            case Command.KILL if animation is not None:
-                return animation.stop()
+            case Primer.KILL:
+                if animation is not None:
+                    animation.stop()
+
+                return
+
+            case _:
+                pass

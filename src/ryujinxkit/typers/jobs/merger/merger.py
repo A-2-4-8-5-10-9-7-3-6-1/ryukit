@@ -1,7 +1,7 @@
 import collections.abc
 
-from ..presenters.enums.commands import Enum as Command
-from ..presenters.typing.presenter import Presenter
+from ..messages.primers import Primer
+from ..presenters.types.presenter import Presenter
 from .protocol import Protocol as Merger
 
 
@@ -44,7 +44,7 @@ def merger[
                     merger(in_=action(*args, **kwargs), pole=pole)
 
                 except KeyboardInterrupt:
-                    pole.send(Command.KILL)
+                    pole.send(Primer.KILL)
 
             except StopIteration:
                 pass

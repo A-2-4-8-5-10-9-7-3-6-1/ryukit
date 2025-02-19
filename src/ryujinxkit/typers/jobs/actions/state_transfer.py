@@ -6,13 +6,14 @@ import typing
 from ....database.connection import connect
 from ....file_access.resolver import resolver
 from ....file_access.resolver_node import ResolverNode
-from .enums.state_transfering import Enum as Operation
+from ..messages.state_transfer import StateTransferSignal
+from .enums.state_transfering import StateTransferOp as Operation
 
 
 def action(
     id_: str,
     operation: Operation,
-) -> collections.abc.Generator[tuple[str, float]]:
+) -> collections.abc.Generator[tuple[StateTransferSignal, float]]:
     """
     Transfer state between a save instance and Ryujinx.
 
@@ -37,7 +38,7 @@ def action(
             )[0]
 
         except StopIteration:
-            yield ("FAILED", 0)
+            yield (StateTransferSignal.FAILED, 0)
 
         query: collections.abc.Callable[[int], tuple[str, list[typing.Any]]]
         order: collections.abc.Callable[
@@ -76,7 +77,7 @@ def action(
                     [total, id_],
                 )
 
-        yield ("TRANSFERING", 3)
+        yield (StateTransferSignal.TRANSFERING, 3)
 
         with resolver.cache_locked(
             (ResolverNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
@@ -120,6 +121,6 @@ def action(
                     bucket.parent.mkdir(parents=True, exist_ok=True)
                     bucket.write_bytes(data=path.read_bytes())
 
-                yield ("TRANSFERING", 1)
+                yield (StateTransferSignal.TRANSFERING, 1)
 
         connection.execute(*query(total))

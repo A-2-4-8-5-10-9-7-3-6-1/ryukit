@@ -1,6 +1,6 @@
 import enum
 
 
-class Enum(str, enum.Enum):
+class StateTransferOp(str, enum.Enum):
     RESTORE = "restore"
     UPDATE = "update"

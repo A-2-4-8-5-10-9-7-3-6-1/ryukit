@@ -1,6 +1,6 @@
 from .actions.version import action
 from .merger.merger import merger
-from .presenters.typing.presenter import Presenter
+from .presenters.types.presenter import Presenter
 from .presenters.version import present
 
 

@@ -1,6 +1,6 @@
 import typing
 
-from ..presenters.typing.presenter import Presenter
+from ..presenters.types.presenter import Presenter
 
 
 class Protocol[T, I](typing.Protocol):

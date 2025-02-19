@@ -1,7 +1,7 @@
 from ....display.console import console
 from ...context.settings import settings
-from .enums.commands import Enum as Command
-from .typing.presenter import Presenter
+from ..messages.primers import Primer
+from .types.presenter import Presenter
 
 
 def present() -> Presenter[int]:
@@ -11,7 +11,7 @@ def present() -> Presenter[int]:
 
     signal = yield
 
-    if isinstance(signal, Command):
+    if isinstance(signal, Primer):
         return
 
     if settings["json"]:

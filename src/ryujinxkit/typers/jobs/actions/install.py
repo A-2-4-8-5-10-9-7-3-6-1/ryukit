@@ -7,12 +7,13 @@ import requests
 
 from ....file_access.resolver import resolver
 from ....file_access.resolver_node import ResolverNode
+from ..messages.install import InstallSignal
 
 
 def action(
     url: str,
     chunk_size: int = pow(2, 13),
-) -> collections.abc.Generator[tuple[str, float]]:
+) -> collections.abc.Generator[tuple[InstallSignal, float]]:
     """
     Install Ryujinx.
 
@@ -27,22 +28,25 @@ def action(
     }
 
     with io.BytesIO() as buffer:
-        yield ("SERVICE_CONNECT", 0)
+        yield (InstallSignal.SERVICE_CONNECT, 0)
 
         response = requests.get(url=url, stream=True)
 
         if response.status_code != 200:
-            yield ("FAILED", 0)
+            yield (InstallSignal.FAILED, 0)
 
-        yield ("DOWNLOADING", float(response.headers.get("content-length", 0)))
+        yield (
+            InstallSignal.DOWNLOADING,
+            float(response.headers.get("content-length", 0)),
+        )
 
         try:
             for chunk in response.iter_content(chunk_size=chunk_size):
-                yield ("DOWNLOADING", buffer.write(chunk))
+                yield (InstallSignal.DOWNLOADING, buffer.write(chunk))
 
             buffer.seek(0)
 
-            yield ("UNPCKING", 0)
+            yield (InstallSignal.UNPACKING, 0)
 
             with tarfile.TarFile(fileobj=buffer) as tar:
                 ryujinx_leaf: str
@@ -79,4 +83,4 @@ def action(
                             path.write_bytes(file_buffer.read())
 
         except Exception:
-            yield ("FAILED", 1)
+            yield (InstallSignal.FAILED, 1)

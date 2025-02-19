@@ -4,7 +4,9 @@ import typing
 import typer
 
 from ..database.configs import SAVE_TAG_DEFAULT
-from .jobs.actions.enums.state_transfering import Enum as Operation
+from .helpers.parsers.sort_key import parser as sort_key_parser
+from .helpers.parsers.tag import parser as tag_parser
+from .jobs.actions.enums.state_transfering import StateTransferOp as Operation
 from .jobs.create import job as create_job
 from .jobs.delete import job as delete_job
 from .jobs.export import job as export_job
@@ -12,8 +14,6 @@ from .jobs.extract import job as extract_job
 from .jobs.list import job as list_job
 from .jobs.retag import job as retag_job
 from .jobs.state_transfer import job as transfer_job
-from .parsers.sort_key import parser as sort_key_parser
-from .parsers.tag import parser as tag_parser
 
 typer_ = typer.Typer(invoke_without_command=True)
 

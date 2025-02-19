@@ -1,7 +1,7 @@
 from .actions.author import action
 from .merger.merger import merger
 from .presenters.author import present
-from .presenters.typing.presenter import Presenter
+from .presenters.types.presenter import Presenter
 
 
 @merger(action=action, presenter=present)
