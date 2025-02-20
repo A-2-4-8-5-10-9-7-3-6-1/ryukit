@@ -23,9 +23,9 @@
         {
             "command": [
                 "docker build -f ${DOCKERFILE} -t ${TAG} ${CONTEXT}",
-                "&& docker run -i --rm --mount ${BIND} ${TAG}"
+                "&& docker start -i --mount ${BIND} ${TAG}"
             ],
-            "label": "Run: development",
+            "label": "Start Container: development",
             "options": {
                 "env": {
                     "BIND": "type=bind,source=.,target=/workdir",

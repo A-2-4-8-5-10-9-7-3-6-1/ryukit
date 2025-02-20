@@ -4,10 +4,6 @@ from .types.presenter import Presenter
 
 
 def present() -> Presenter[None]:
-    """
-    Present information from the extract action.
-    """
-
     with console.status(
         status="[dim]Exporting",
         spinner_style="dim",

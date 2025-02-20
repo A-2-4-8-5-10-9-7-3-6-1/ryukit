@@ -8,6 +8,4 @@ def action() -> str:
     :returns: App's author.
     """
 
-    return f"{
-        importlib.metadata.metadata(distribution_name="ryujinxkit")["Author"]
-    }"
+    return importlib.metadata.metadata("ryujinxkit")["Author"]

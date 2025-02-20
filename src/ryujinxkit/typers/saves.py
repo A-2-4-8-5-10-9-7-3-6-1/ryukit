@@ -6,7 +6,7 @@ import typer
 from ..database.configs import SAVE_TAG_DEFAULT
 from .helpers.parsers.sort_key import parser as sort_key_parser
 from .helpers.parsers.tag import parser as tag_parser
-from .jobs.actions.enums.state_transfering import StateTransferOp as Operation
+from .jobs.actions.enums.state_transfer_op import StateTransferOp as Operation
 from .jobs.create import job as create_job
 from .jobs.delete import job as delete_job
 from .jobs.export import job as export_job
@@ -36,10 +36,10 @@ def _(
     """
 
     if ctx.invoked_subcommand is None:
-        list_job(order=keys)
+        list_job(keys)
 
 
-@typer_.command(name="create")
+@typer_.command("create")
 def _(
     tag: typing.Annotated[
         str,
@@ -54,7 +54,7 @@ def _(
     Create an empty save.
     """
 
-    create_job(tag=tag)
+    create_job(tag)
 
 
 @typer_.command(name="remove", epilog="Aliases: rm")
@@ -69,7 +69,7 @@ def _(
     Remove a save.
     """
 
-    delete_job(id_=id_)
+    delete_job(id_)
 
 
 @typer_.command(name="operate", epilog="Aliases: op")
@@ -114,7 +114,7 @@ def _(
     retag_job(id_=id_, tag=tag)
 
 
-@typer_.command(name="export")
+@typer_.command("export")
 def _(
     output: typing.Annotated[
         pathlib.Path,
@@ -125,10 +125,10 @@ def _(
     Export your saves to a tar file.
     """
 
-    export_job(output=output)
+    export_job(output)
 
 
-@typer_.command(name="extract")
+@typer_.command("extract")
 def _(
     path: typing.Annotated[
         pathlib.Path,
@@ -145,4 +145,4 @@ def _(
     Extract saves from an export.
     """
 
-    extract_job(path=path)
+    extract_job(path)

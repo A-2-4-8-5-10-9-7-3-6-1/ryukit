@@ -5,10 +5,6 @@ from .types.presenter import Presenter
 
 
 def present() -> Presenter[str]:
-    """
-    Present information from the author action.
-    """
-
     signal = yield
 
     if isinstance(signal, Primer):

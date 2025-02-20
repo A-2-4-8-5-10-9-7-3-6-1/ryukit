@@ -1,3 +1,5 @@
+import typing
+
 from ....database.configs import SAVE_TAG_DEFAULT
 from ....database.connection import connect
 
@@ -10,12 +12,13 @@ def action(tag: str = SAVE_TAG_DEFAULT) -> int:
     """
 
     with connect() as connection:
-        cursor = connection.execute(
-            """
-            INSERT INTO saves (tag)
-            VALUES (?);
-            """,
-            [tag],
+        return typing.cast(
+            int,
+            connection.execute(
+                """
+                INSERT INTO saves (tag)
+                VALUES (?);
+                """,
+                [tag],
+            ).lastrowid,
         )
-
-        return cursor.lastrowid  # type: ignore

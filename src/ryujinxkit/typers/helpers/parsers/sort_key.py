@@ -17,4 +17,4 @@ def parser(key: str) -> tuple[str, str]:
     if re.match(string=key, pattern=key_pattern) is None:
         raise ValueError
 
-    return (key[:-1], "asc" if key[-1] == "+" else "desc")
+    return key[:-1], "asc" if key[-1] == "+" else "desc"

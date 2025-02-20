@@ -8,4 +8,4 @@ def action() -> str:
     :returns: App's version.
     """
 
-    return importlib.metadata.version(distribution_name="ryujinxkit")
+    return importlib.metadata.version("ryujinxkit")

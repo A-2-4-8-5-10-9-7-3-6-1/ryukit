@@ -1,4 +1,7 @@
+import typing
+
 import rich.progress
+import rich.status
 
 from ....display.configs import UI_REFRESH_RATE
 from ....display.console import console
@@ -7,18 +10,13 @@ from ....file_access.resolver_node import ResolverNode
 from ...context.settings import settings
 from ..messages.install import InstallSignal
 from ..messages.primers import Primer
-from .animation.protocol import Protocol as Animation
 from .types.presenter import Presenter
 
 
 def present() -> Presenter[tuple[InstallSignal, float]]:
-    """
-    Present information from Ryujinx-install action.
-    """
-
-    looping: bool = False
-    animation: Animation | None = None
-    task_id: rich.progress.TaskID
+    looping = False
+    animation: rich.progress.Progress | rich.status.Status | None = None
+    task_id: rich.progress.TaskID | None = None
 
     while True:
         match (yield):
@@ -33,7 +31,7 @@ def present() -> Presenter[tuple[InstallSignal, float]]:
             case InstallSignal.FAILED, 0:
                 looping = False
 
-                animation.stop()  # type: ignore
+                typing.cast(rich.status.Status, animation).stop()
 
                 if settings["json"]:
                     return console.print_json(
@@ -45,31 +43,34 @@ def present() -> Presenter[tuple[InstallSignal, float]]:
                 return console.print("Failed to connect to service.")
 
             case InstallSignal.DOWNLOADING, volume:
-                if not looping:
-                    animation.stop()  # type: ignore
-
-                    animation = rich.progress.Progress(
-                        rich.progress.SpinnerColumn(style="dim"),
-                        "[dim]{task.description}",
-                        "[dim]({task.percentage:.1f}%)",
-                        console=console,
-                        refresh_per_second=UI_REFRESH_RATE,
-                        transient=True,
+                if looping:
+                    typing.cast(rich.progress.Progress, animation).advance(
+                        task_id=typing.cast(rich.progress.TaskID, task_id),
+                        advance=volume,
                     )
-                    task_id = animation.add_task(
-                        description="Downloading",
-                        total=volume,
-                    )
-                    looping = True
-
-                    animation.start()
 
                     continue
 
-                animation.advance(task_id=task_id, advance=volume)  # type: ignore
+                typing.cast(rich.status.Status, animation).stop()
+
+                animation = rich.progress.Progress(
+                    rich.progress.SpinnerColumn(style="dim"),
+                    "[dim]{task.description}",
+                    "[dim]({task.percentage:.1f}%)",
+                    console=console,
+                    refresh_per_second=UI_REFRESH_RATE,
+                    transient=True,
+                )
+                task_id = animation.add_task(
+                    description="Downloading",
+                    total=volume,
+                )
+                looping = True
+
+                animation.start()
 
             case InstallSignal.UNPACKING, volume:
-                animation.stop()  # type: ignore
+                typing.cast(rich.progress.Progress, animation).stop()
 
                 looping = False
                 animation = console.status(
@@ -81,7 +82,7 @@ def present() -> Presenter[tuple[InstallSignal, float]]:
                 animation.start()
 
             case InstallSignal.FAILED, 1:
-                animation.stop()  # type: ignore
+                typing.cast(rich.status.Status, animation).stop()
 
                 if settings["json"]:
                     return console.print_json(
@@ -102,7 +103,7 @@ def present() -> Presenter[tuple[InstallSignal, float]]:
             case Primer.FINISHED:
                 looping = False
 
-                animation.stop()  # type: ignore
+                typing.cast(rich.status.Status, animation).stop()
 
                 if settings["json"]:
                     return console.print_json(

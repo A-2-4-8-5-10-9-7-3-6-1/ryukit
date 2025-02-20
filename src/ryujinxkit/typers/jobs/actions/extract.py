@@ -1,4 +1,5 @@
 import collections.abc
+import datetime
 import json
 import pathlib
 import tarfile
@@ -12,6 +13,15 @@ from ....file_access.resolver_node import ResolverNode
 from ..messages.extract import ExtractSignal
 
 
+class _Entity(typing.TypedDict):
+    tag: str
+    created: datetime.date
+    updated: datetime.date
+    used: datetime.date
+    size: int
+    id: int
+
+
 def action(
     path: pathlib.Path,
 ) -> collections.abc.Generator[tuple[ExtractSignal, float]]:
@@ -19,6 +29,8 @@ def action(
     Extract saves from an export.
 
     :param path: Path to your export.
+
+    :returns: Signal generator for extract command.
     """
 
     try:
@@ -27,23 +39,23 @@ def action(
             tarfile.TarFile(name=path, stream=True) as tar,
         ):
             temp_dir = pathlib.Path(temp_dir)
-            states: collections.abc.Sequence[dict[str, typing.Any]]
+            entities: collections.abc.Sequence[_Entity]
 
             yield (ExtractSignal.EXTRACTING, 0)
 
-            tar.extractall(path=temp_dir)
+            tar.extractall(temp_dir)
 
             with (temp_dir / "entities.json").open() as buffer:
-                states = json.load(fp=buffer)
+                entities = json.load(buffer)
 
-            yield (ExtractSignal.READING, len(states))
+            yield (ExtractSignal.READING, len(entities))
 
             with connect() as connection:
-                for state in states:
+                for entity in entities:
                     save_dir = (
                         temp_dir
                         / resolver[ResolverNode.RYUJINXKIT_SAVE_FOLDER].name
-                        / str(state["id"])
+                        / str(entity["id"])
                     )
 
                     connection.execute(
@@ -51,10 +63,10 @@ def action(
                         INSERT INTO saves (tag, created, updated, used, size)
                         VALUES (:tag, :created, :updated, :used, :size);
                         """,
-                        state,
+                        entity,
                     )
 
-                    if state["size"] == 0:
+                    if entity["size"] == 0:
                         yield (ExtractSignal.READING, 1)
 
                         continue
@@ -65,7 +77,7 @@ def action(
                             str(connection.cursor().lastrowid),
                         )
                     ):
-                        for entry in save_dir.rglob(pattern="*"):
+                        for entry in save_dir.rglob("*"):
                             subpath = resolver[
                                 ResolverNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
                             ] / entry.relative_to(save_dir)
@@ -75,11 +87,11 @@ def action(
 
                                 continue
 
-                            subpath.write_bytes(data=entry.read_bytes())
+                            subpath.write_bytes(entry.read_bytes())
 
                             yield (
                                 ExtractSignal.READING,
-                                subpath.stat().st_size / state["size"],
+                                subpath.stat().st_size / entity["size"],
                             )
 
     except Exception:

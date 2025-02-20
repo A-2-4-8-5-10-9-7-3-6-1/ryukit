@@ -18,9 +18,12 @@ def connect(
     cached_statements: int = 128,
     uri: bool = False,
     autocommit: bool = True,
-) -> collections.abc.Generator[sqlite3.Connection, None, None]:
+) -> collections.abc.Generator[sqlite3.Connection]:
     """
     Get database cursor.
+
+    **Notes**:
+        - Parameters are those of a sqlite3.connect object.
 
     :returns: The cursor.
     """

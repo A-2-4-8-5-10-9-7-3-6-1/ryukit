@@ -1,16 +1,12 @@
 import collections.abc
+import typing
 
 from ..messages.primers import Primer
 from ..presenters.types.presenter import Presenter
-from .protocol import Protocol as Merger
 
 
-def _null_presenter() -> Presenter[None]:
-    """
-    A dumb presenter.
-    """
-
-    yield
+class _Merger[T, I](typing.Protocol):
+    def __call__(self, in_: T, pole: Presenter[I]) -> None: ...
 
 
 def merger[
@@ -19,9 +15,9 @@ def merger[
     I,
 ](
     action: collections.abc.Callable[P, R],
-    presenter: collections.abc.Callable[[], Presenter[I]] = _null_presenter,
+    presenter: collections.abc.Callable[[], Presenter[I]],
 ) -> collections.abc.Callable[
-    [Merger[R, I]],
+    [_Merger[R, I]],
     collections.abc.Callable[P, None],
 ]:
     """
@@ -35,13 +31,15 @@ def merger[
 
     pole = presenter()
 
-    def decorator(merger: Merger[R, I]) -> collections.abc.Callable[P, None]:
+    def decorator(
+        function: _Merger[R, I]
+    ) -> collections.abc.Callable[P, None]:
         def inner(*args: P.args, **kwargs: P.kwargs) -> None:
             try:
                 next(pole)
 
                 try:
-                    merger(in_=action(*args, **kwargs), pole=pole)
+                    function(in_=action(*args, **kwargs), pole=pole)
 
                 except KeyboardInterrupt:
                     pole.send(Primer.KILL)

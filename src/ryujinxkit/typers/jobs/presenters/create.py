@@ -5,10 +5,6 @@ from .types.presenter import Presenter
 
 
 def present() -> Presenter[int]:
-    """
-    Present information from the extract action.
-    """
-
     signal = yield
 
     if isinstance(signal, Primer):

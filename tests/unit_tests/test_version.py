@@ -15,6 +15,6 @@ def test() -> None:
     )
 
     assert result.returncode == 0
-    assert json.loads(s=result.stdout)[
-        "version"
-    ] == importlib.metadata.version(distribution_name="ryujinxkit")
+    assert json.loads(result.stdout)["version"] == importlib.metadata.version(
+        "ryujinxkit"
+    )

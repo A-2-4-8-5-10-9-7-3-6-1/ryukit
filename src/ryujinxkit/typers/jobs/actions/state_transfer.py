@@ -7,7 +7,7 @@ from ....database.connection import connect
 from ....file_access.resolver import resolver
 from ....file_access.resolver_node import ResolverNode
 from ..messages.state_transfer import StateTransferSignal
-from .enums.state_transfering import StateTransferOp as Operation
+from .enums.state_transfer_op import StateTransferOp as Operation
 
 
 def action(
@@ -19,11 +19,13 @@ def action(
 
     :param %id_%: Save-state's ID as a string.
     :param operation: Usage operation.
+
+    :returns: Signal generator for transfer commands.
     """
 
     with connect() as connection:
-        total: int = 0
-        initial_size: int = -1
+        total = 0
+        initial_size = -1
 
         try:
             initial_size = next(
@@ -106,20 +108,18 @@ def action(
                 ),
             ]:
                 members = [
-                    path
-                    for path in source.rglob(pattern="*")
-                    if not path.is_dir()
+                    path for path in source.rglob("*") if not path.is_dir()
                 ]
                 total += size(members)
 
                 if dest.exists():
-                    shutil.rmtree(path=dest)
+                    shutil.rmtree(dest)
 
                 for path in members:
                     bucket = dest / path.relative_to(source)
 
                     bucket.parent.mkdir(parents=True, exist_ok=True)
-                    bucket.write_bytes(data=path.read_bytes())
+                    bucket.write_bytes(path.read_bytes())
 
                 yield (StateTransferSignal.TRANSFERING, 1)
 

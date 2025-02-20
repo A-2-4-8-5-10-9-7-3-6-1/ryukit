@@ -17,7 +17,5 @@ def test() -> None:
     assert result.returncode == 0
     assert (
         json.loads(s=result.stdout)["author"]
-        == importlib.metadata.metadata(distribution_name="ryujinxkit")[
-            "Author"
-        ]
+        == importlib.metadata.metadata("ryujinxkit")["Author"]
     )

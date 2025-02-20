@@ -1,4 +1,5 @@
 import json
+import typing
 
 import rich.progress
 
@@ -7,18 +8,13 @@ from ....display.console import console
 from ...context.settings import settings
 from ..messages.primers import Primer
 from ..messages.state_transfer import StateTransferSignal
-from .animation.protocol import Protocol as Animation
 from .types.presenter import Presenter
 
 
 def present() -> Presenter[tuple[StateTransferSignal, float]]:
-    """
-    Present information from save-transfer actions.
-    """
-
-    looping: bool = False
-    animation: Animation | None = None
-    task_id: rich.progress.TaskID
+    looping = False
+    animation: rich.progress.Progress | None = None
+    task_id: rich.progress.TaskID | None = None
 
     while True:
         match (yield):
@@ -34,7 +30,10 @@ def present() -> Presenter[tuple[StateTransferSignal, float]]:
 
             case StateTransferSignal.TRANSFERING, volume:
                 if looping:
-                    animation.advance(task_id=task_id, advance=volume)  # type: ignore
+                    typing.cast(rich.progress.Progress, animation).advance(
+                        task_id=typing.cast(rich.progress.TaskID, task_id),
+                        advance=volume,
+                    )
 
                     continue
 
@@ -57,12 +56,12 @@ def present() -> Presenter[tuple[StateTransferSignal, float]]:
             case Primer.FINISHED:
                 looping = False
 
-                animation.stop()  # type: ignore
+                typing.cast(rich.progress.Progress, animation).stop()
 
                 if settings["json"]:
                     return console.print(
                         json.dumps(
-                            obj={
+                            {
                                 "code": "SUCCESS",
                             }
                         )

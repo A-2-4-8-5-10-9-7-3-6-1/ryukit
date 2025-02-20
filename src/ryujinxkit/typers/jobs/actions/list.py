@@ -11,6 +11,8 @@ def action(
     List saves.
 
     :param order: The order in which to sort rows.
+
+    :returns: Signal generator for list command.
     """
 
     with connect() as connection:

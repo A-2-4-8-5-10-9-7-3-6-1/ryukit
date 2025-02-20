@@ -1,5 +1,10 @@
-from .types.settings import Settings
+import typing
 
-settings: Settings = {
+
+class _Settings(typing.TypedDict):
+    json: bool
+
+
+settings: _Settings = {
     "json": False,
 }

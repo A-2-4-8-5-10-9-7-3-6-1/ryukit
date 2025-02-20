@@ -5,10 +5,6 @@ from .types.presenter import Presenter
 
 
 def present() -> Presenter[bool]:
-    """
-    Present information from the delete command.
-    """
-
     signal = yield
 
     if isinstance(signal, Primer):

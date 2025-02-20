@@ -1,23 +1,22 @@
+import typing
+
 import rich.progress
+import rich.status
+import rich.table
 
 from ....display.configs import UI_REFRESH_RATE
 from ....display.console import console
 from ...context.settings import settings
 from ..messages.extract import ExtractSignal as ExtractSignal
 from ..messages.primers import Primer
-from .animation.protocol import Protocol as Animation
 from .types.presenter import Presenter
 
 
 def present() -> Presenter[tuple[ExtractSignal, float]]:
-    """
-    Present information from the extract command.
-    """
-
-    looping: bool = False
-    animation: Animation | None = None
-    task_id: rich.progress.TaskID
-    r_total: float
+    looping = False
+    animation: rich.progress.Progress | rich.status.Status | None = None
+    task_id: rich.progress.TaskID | None = None
+    r_total: float | None = None
 
     while True:
         match (yield):
@@ -33,7 +32,7 @@ def present() -> Presenter[tuple[ExtractSignal, float]]:
             case ExtractSignal.FAILED, 0:
                 looping = False
 
-                animation.stop()  # type: ignore
+                typing.cast(rich.status.Status, animation).stop()
 
                 if settings["json"]:
                     return console.print_json(
@@ -46,11 +45,17 @@ def present() -> Presenter[tuple[ExtractSignal, float]]:
 
             case ExtractSignal.READING, volume:
                 if looping:
-                    animation.advance(task_id=task_id, advance=volume)  # type: ignore
+                    animation = typing.cast(
+                        rich.progress.Progress,
+                        animation,
+                    ).advance(
+                        task_id=typing.cast(rich.progress.TaskID, task_id),
+                        advance=volume,
+                    )
 
                     continue
 
-                animation.stop()  # type: ignore
+                typing.cast(rich.status.Status, animation).stop()
 
                 animation = rich.progress.Progress(
                     rich.progress.SpinnerColumn(style="dim"),
@@ -61,7 +66,8 @@ def present() -> Presenter[tuple[ExtractSignal, float]]:
                     transient=True,
                 )
                 task_id = animation.add_task(
-                    description="Reading", total=volume
+                    description="Reading",
+                    total=volume,
                 )
                 r_total = volume
                 looping = True
@@ -70,18 +76,19 @@ def present() -> Presenter[tuple[ExtractSignal, float]]:
 
             case Primer.FINISHED:
                 looping = False
+                r_total = typing.cast(int, r_total)
 
-                animation.stop()  # type: ignore
+                typing.cast(rich.progress.Progress, animation).stop()
 
                 if settings["json"]:
                     return console.print_json(
                         data={
                             "code": "SUCCESS",
-                            "accepted": r_total,  # type: ignore
+                            "accepted": r_total,
                         }
                     )
 
-                return console.print(f"Accepted {r_total} save instance(s).")  # type: ignore
+                return console.print(f"Accepted {r_total} save instance(s).")
 
             case Primer.KILL:
                 if animation is not None:

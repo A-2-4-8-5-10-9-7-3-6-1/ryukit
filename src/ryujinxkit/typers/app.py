@@ -1,9 +1,11 @@
+import collections
+import collections.abc
 import typing
 
 import typer
 
 from .context.settings import settings
-from .helpers.callbacks.info import decorator as info_callback
+from .helpers.decorators.info_callback import decorator as info_callback
 from .jobs.author import job as author_job
 from .jobs.install import job as install_job
 from .jobs.version import job as version_job
@@ -17,6 +19,15 @@ typer_ = typer.Typer(
 
 typer_.add_typer(typer_instance=save_typer, name="save", epilog="Aliases: sv")
 typer_.add_typer(typer_instance=save_typer, name="sv", hidden=True)
+
+
+def _update_context(
+    setting: str,
+) -> collections.abc.Callable[[typing.Any], None]:
+    def inner(arg: typing.Any) -> None:
+        settings[setting] = arg
+
+    return inner
 
 
 @typer_.callback()
@@ -35,7 +46,7 @@ def _(
         typer.Option(
             "--version",
             help="Show version and quit.",
-            callback=info_callback(job=version_job),
+            callback=info_callback(version_job),
         ),
     ] = False,
     json: typing.Annotated[
@@ -43,7 +54,7 @@ def _(
         typer.Option(
             "--json",
             help="Enable JSON output.",
-            callback=lambda x: settings.__setitem__("json", x),  # type: ignore
+            callback=_update_context("json"),
         ),
     ] = settings["json"],
     author: typing.Annotated[
@@ -51,7 +62,7 @@ def _(
         typer.Option(
             "--author",
             help="Show author and quit.",
-            callback=info_callback(job=author_job),
+            callback=info_callback(author_job),
         ),
     ] = False,
 ) -> None:
@@ -60,4 +71,4 @@ def _(
     """
 
     if ctx.invoked_subcommand is None:
-        install_job(url=url)
+        install_job(url)

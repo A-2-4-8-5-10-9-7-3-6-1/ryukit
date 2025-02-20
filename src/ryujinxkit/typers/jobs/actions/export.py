@@ -20,12 +20,12 @@ def action(output: pathlib.Path) -> None:
         tarfile.TarFile(name=output, mode="w") as tar,
         connect() as connection,
     ):
-        entities = tarfile.TarInfo(name="entities.json")
+        entities = tarfile.TarInfo("entities.json")
 
         with io.BytesIO() as buffer:
             entities.size = buffer.write(
                 json.dumps(
-                    obj=[
+                    [
                         dict(
                             zip(
                                 (
@@ -70,14 +70,12 @@ def action(output: pathlib.Path) -> None:
                 [
                     tar.add(
                         name=path,
-                        arcname=str(
-                            path.relative_to(
-                                resolver[ResolverNode.RYUJINXKIT_ROAMING_DATA]
-                            )
+                        arcname=path.relative_to(
+                            resolver[ResolverNode.RYUJINXKIT_ROAMING_DATA]
                         ),
                     )
                     for path in resolver[
                         ResolverNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER
-                    ].rglob(pattern="*")
+                    ].rglob("*")
                     if not path.is_dir()
                 ]

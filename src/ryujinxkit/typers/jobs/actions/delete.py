@@ -32,7 +32,7 @@ def action(id_: str) -> bool:
     ):
         if resolver[ResolverNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER].exists():
             shutil.rmtree(
-                path=resolver[ResolverNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER]
+                resolver[ResolverNode.RYUJINXKIT_SAVE_INSTANCE_FOLDER]
             )
 
     return True
