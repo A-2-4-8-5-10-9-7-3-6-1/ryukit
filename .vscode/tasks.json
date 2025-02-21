@@ -6,15 +6,15 @@
                 "&& docker run --rm --mount ${BIND} ${TAG}"
             ],
             "group": "build",
-            "label": "Build: release",
+            "label": "Get Dist",
             "options": {
                 "env": {
-                    "CONTEXT": ".",
                     "BIND": "type=bind,source=./dist,target=/output",
-                    "DOCKERFILE": "docker/release.Dockerfile",
+                    "CONTEXT": ".",
+                    "DOCKERFILE": "docker/dist.Dockerfile",
                     "SECRET_GITHUB_TOKEN": "id=github_token,source=./secrets/github_token",
                     "SECRET_GITHUB_USERNAME": "id=github_username,source=./secrets/github_username",
-                    "TAG": "ryujinxkit:release"
+                    "TAG": "ryujinxkit:dist"
                 }
             },
             "problemMatcher": [],
@@ -23,15 +23,15 @@
         {
             "command": [
                 "docker build -f ${DOCKERFILE} -t ${TAG} ${CONTEXT}",
-                "&& docker start -i --mount ${BIND} ${TAG}"
+                "&& docker create -i --mount ${BIND} ${TAG}"
             ],
-            "label": "Start Container: development",
+            "label": "Create Dev Container",
             "options": {
                 "env": {
                     "BIND": "type=bind,source=.,target=/workdir",
                     "CONTEXT": ".",
-                    "DOCKERFILE": "docker/development.Dockerfile",
-                    "TAG": "ryujinxkit:development"
+                    "DOCKERFILE": "docker/dev.Dockerfile",
+                    "TAG": "ryujinxkit:dev"
                 }
             },
             "problemMatcher": [],

@@ -2,10 +2,6 @@ import enum
 
 
 class ResolverNode(int, enum.Enum):
-    """
-    Resolver nodes.
-    """
-
     LOCAL_USER_DATA = 0
 
     RYUJINX_ROAMING_DATA = 1

@@ -1,12 +1,12 @@
 import importlib.metadata
 
-import hyrchy_pthresolver
+import path_resolve
 import platformdirs
 
 from .resolver_node import ResolverNode
 
-resolver = hyrchy_pthresolver.Resolver(
-    leaves={
+resolver = path_resolve.Resolver(
+    nodes={
         ResolverNode.RYUJINX_LOCAL_DATA: {
             "parent": ResolverNode.LOCAL_USER_DATA,
             "cache": True,
@@ -70,9 +70,7 @@ resolver = hyrchy_pthresolver.Resolver(
         ).user_data_path,
         ResolverNode.RYUJINXKIT_ROAMING_DATA: platformdirs.PlatformDirs(
             appname="RyujinxKit",
-            appauthor=importlib.metadata.metadata(
-                distribution_name="ryujinxkit"
-            )["Author"],
+            appauthor=importlib.metadata.metadata("ryujinxkit")["Author"],
             roaming=True,
         ).user_data_path,
     },

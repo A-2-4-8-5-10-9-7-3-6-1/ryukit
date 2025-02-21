@@ -144,8 +144,8 @@ markers = {main = "platform_system == \"Windows\"", dev = "sys_platform == \"win
 
 [[package]]
 name = "devkit"
-version = "4.0.0"
-description = "Python development packages."
+version = "4.0.1"
+description = "Packages, for Python development."
 optional = false
 python-versions = ">=3.13"
 groups = ["main"]
@@ -155,8 +155,8 @@ develop = false
 [package.source]
 type = "git"
 url = "https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git"
-reference = "v4.0.0"
-resolved_reference = "ee03cf26e1c110e205b0602089a82271d0537bb6"
+reference = "v4.0.1"
+resolved_reference = "c6b92fe85764cc22311771bdeaca32213e87e138"
 
 [[package]]
 name = "idna"
@@ -407,4 +407,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13"
-content-hash = "39c0d0d1272510149eb45d4f6729b2181908d4a0918ffd13f3bfe1012e10973f"
+content-hash = "23d02d9a342aed77833f76165ee146818fd5732ea6b9057f969d9367768a94aa"

@@ -1,19 +1,18 @@
-# project
-.ryujinxkit
-
 # python
 .venv
 **/__pycache__
-.pytest_cache
 typings
 
+# pytest
+.pytest_cache
+
 # vscode
-**/.vscode/settings.json
+.vscode/settings.json
 
 # configurations
-**/.env
+.env
 secrets
 
-# poetry
+# artifacts
 build
 dist
