@@ -1,13 +1,13 @@
-from .database.connection import connect
-from .file_access.resolver import resolver
-from .file_access.resolver_node import ResolverNode
+from .libs.fs.node import Node
+from .libs.fs.resolver import resolver
+from .services.sqlite3.connection import connect
 
 [
     resolver[node].mkdir(parents=True, exist_ok=True)
     for node in [
-        ResolverNode.RYUJINXKIT_ROAMING_DATA,
-        ResolverNode.RYUJINX_ROAMING_DATA,
-        ResolverNode.RYUJINXKIT_SAVE_FOLDER,
+        Node.RYUJINXKIT_ROAMING_DATA,
+        Node.RYUJINX_ROAMING_DATA,
+        Node.RYUJINXKIT_SAVE_FOLDER,
     ]
 ]
 
@@ -25,5 +25,3 @@ with connect() as connection:
         );
         """
     )
-
-__all__ = []

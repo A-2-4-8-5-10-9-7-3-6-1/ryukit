@@ -21,7 +21,7 @@ def test(args: Sequence[str], valid: bool) -> None:
     """
 
     result = subprocess.run(
-        args=["ryujinxkit", "sv", "create", *args],
+        args=[],
         capture_output=True,
         text=True,
     )

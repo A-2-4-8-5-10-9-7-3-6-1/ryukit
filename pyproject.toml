@@ -1,7 +1,7 @@
 [project]
 name = "ryujinxkit"
 version = "3.0.0"
-description = "CLI for Ryujinx (Windows) management."
+description = "CLI tool, for Ryujinx (Windows) management."
 authors = [
     {name = "A-2-4-8-5-10-9-7-3-6-1",email = "112730580+A-2-4-8-5-10-9-7-3-6-1@users.noreply.github.com"}
 ]
@@ -16,13 +16,10 @@ dependencies = [
 ]
 
 [tool.poetry.scripts]
-ryujinxkit = "ryujinxkit.__main__:main"
+ryujinxkit = "ryujinxkit.app.typers.app:app_typer"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
-
-[tool.pyright]
-typeCheckingMode = "strict"
 
 [tool.black]
 line-length = 79

@@ -1,1 +1,0 @@
-UI_REFRESH_RATE = 10

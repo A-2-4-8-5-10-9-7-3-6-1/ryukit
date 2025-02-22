@@ -2,20 +2,16 @@ import importlib.metadata
 import json
 import subprocess
 
+from ..decorators.execute import execute
 
-def test() -> None:
+
+@execute("ryujinxkit", "--json", "--author")
+def test_author(results: subprocess.CompletedProcess[str]) -> None:
     """
     Test the author command.
     """
 
-    result = subprocess.run(
-        args=["ryujinxkit", "--json", "--author"],
-        capture_output=True,
-        text=True,
-    )
-
-    assert result.returncode == 0
     assert (
-        json.loads(s=result.stdout)["author"]
-        == importlib.metadata.metadata("ryujinxkit")["Author"]
+        json.loads(s=results.stdout)["author"]
+        == importlib.metadata.metadata("ryujinxkit")["author"]
     )

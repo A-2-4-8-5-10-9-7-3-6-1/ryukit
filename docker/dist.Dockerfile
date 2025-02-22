@@ -5,7 +5,8 @@ ENV \
 WORKDIR /workdir
 RUN pip install --no-cache-dir poetry==2.1.1
 COPY . .
-RUN --mount=type=secret,id=github_token \
+RUN \
+    --mount=type=secret,id=github_token \
     --mount=type=secret,id=github_username \
     "$(cat /run/secrets/github_token)" \
     && export POETRY_HTTP_BASIC_DEVKIT_PASSWORD="$?" \
