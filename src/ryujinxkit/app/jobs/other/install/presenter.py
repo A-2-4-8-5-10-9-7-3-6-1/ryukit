@@ -3,13 +3,13 @@ import typing
 import rich.progress
 import rich.status
 
-from .....libs.fs.node import Node
-from .....libs.fs.resolver import resolver
-from .....libs.jobs.annotations import Presenter
-from .....libs.jobs.signals import Primer
-from .....libs.ui.configs import UI_CONFIGS
-from .....libs.ui.console import console
+from .....core.fs.node import Node
+from .....core.fs.resolver import resolver
+from .....core.ui.configs import UI_CONFIGS
+from .....core.ui.console import console
 from ....context import settings
+from ...annotations import Presenter
+from ...signals import Primer
 from .signals import InstallSignal
 
 

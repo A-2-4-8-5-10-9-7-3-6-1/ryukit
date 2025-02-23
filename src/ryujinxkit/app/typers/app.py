@@ -6,12 +6,12 @@ import typing
 
 import typer
 
-from ...libs.typers.decorators.info_callback import info_callback_decorator
-from ...libs.ui.configs import UI_CONFIGS
+from ...core.ui.configs import UI_CONFIGS
 from ..context import settings
 from ..jobs.info.author.job import author_job
 from ..jobs.info.version.job import version_job
 from ..jobs.other.install.job import install_job
+from .decorators.info_callback import info_callback_decorator
 from .saves import save_typer
 
 app_typer = typer.Typer(

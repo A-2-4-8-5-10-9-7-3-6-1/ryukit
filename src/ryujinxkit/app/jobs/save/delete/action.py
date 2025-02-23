@@ -1,7 +1,7 @@
 import shutil
 
-from .....libs.fs.node import Node
-from .....libs.fs.resolver import resolver
+from .....core.fs.node import Node
+from .....core.fs.resolver import resolver
 from .....services.sqlite3.connection import connect
 
 

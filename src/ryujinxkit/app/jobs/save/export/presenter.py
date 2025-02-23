@@ -1,6 +1,6 @@
-from .....libs.jobs.annotations import Presenter
-from .....libs.ui.configs import UI_CONFIGS
-from .....libs.ui.console import console
+from .....core.ui.configs import UI_CONFIGS
+from .....core.ui.console import console
+from ...annotations import Presenter
 
 
 def presenter() -> Presenter[None]:

@@ -3,8 +3,6 @@ import typing
 
 import typer
 
-from ...libs.typers.parsers.sort_key import sort_key_parser
-from ...libs.typers.parsers.tag import tag_parser
 from ...services.sqlite3.configs import DB_CONFIGS
 from ..jobs.save.create.job import create_job
 from ..jobs.save.delete.job import delete_job
@@ -14,6 +12,8 @@ from ..jobs.save.list.job import list_job
 from ..jobs.save.retag.job import retag_job
 from ..jobs.save.transfer.job import transfer_job
 from ..jobs.save.transfer.transfer_op import TransferOp
+from .parsers.sort_key import sort_key_parser
+from .parsers.tag import tag_parser
 
 save_typer = typer.Typer(invoke_without_command=True)
 

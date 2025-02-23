@@ -4,11 +4,11 @@ import rich.progress
 import rich.status
 import rich.table
 
-from .....libs.jobs.annotations import Presenter
-from .....libs.jobs.signals import Primer
-from .....libs.ui.configs import UI_CONFIGS
-from .....libs.ui.console import console
+from .....core.ui.configs import UI_CONFIGS
+from .....core.ui.console import console
 from ....context import settings
+from ...annotations import Presenter
+from ...signals import Primer
 from .signals import ExtractSignal
 
 

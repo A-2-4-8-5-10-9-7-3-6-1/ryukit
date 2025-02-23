@@ -3,9 +3,9 @@ import json
 import pathlib
 import tarfile
 
-from ryujinxkit.libs.fs.resolver import resolver
+from ryujinxkit.core.fs.resolver import resolver
 
-from .....libs.fs.node import Node
+from .....core.fs.node import Node
 from .....services.sqlite3.connection import connect
 
 

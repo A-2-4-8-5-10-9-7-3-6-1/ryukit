@@ -3,8 +3,8 @@ import pathlib
 import shutil
 import typing
 
-from .....libs.fs.node import Node
-from .....libs.fs.resolver import resolver
+from .....core.fs.node import Node
+from .....core.fs.resolver import resolver
 from .....services.sqlite3.connection import connect
 from .signals import StateTransferSignal
 from .transfer_op import TransferOp

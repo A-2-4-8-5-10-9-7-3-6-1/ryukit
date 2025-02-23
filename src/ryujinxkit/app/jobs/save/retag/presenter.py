@@ -1,7 +1,7 @@
-from .....libs.jobs.annotations import Presenter
-from .....libs.jobs.signals import Primer
-from .....libs.ui.console import console
+from .....core.ui.console import console
 from ....context import settings
+from ...annotations import Presenter
+from ...signals import Primer
 
 
 def presenter() -> Presenter[int]:
