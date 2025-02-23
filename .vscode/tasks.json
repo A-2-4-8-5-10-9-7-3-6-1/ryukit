@@ -2,7 +2,7 @@
     "tasks": [
         {
             "command": [
-                "docker build -f ${DOCKERFILE} -t ${TAG} --secret ${SECRET_GITHUB_USERNAME} --secret ${SECRET_GITHUB_TOKEN} ${CONTEXT}",
+                "docker build -f ${DOCKERFILE} -t ${TAG} --secret ${SECRET_GITHUB_USERNAME} --secret ${SECRET_GITHUB_TOKEN} .",
                 "&& docker run --rm --mount ${BIND} ${TAG}"
             ],
             "group": "build",
@@ -10,7 +10,6 @@
             "options": {
                 "env": {
                     "BIND": "type=bind,source=./dist,target=/output",
-                    "CONTEXT": ".",
                     "DOCKERFILE": "docker/dist.Dockerfile",
                     "SECRET_GITHUB_TOKEN": "id=github_token,source=./secrets/github_token",
                     "SECRET_GITHUB_USERNAME": "id=github_username,source=./secrets/github_username",
@@ -22,14 +21,13 @@
         },
         {
             "command": [
-                "docker build -f ${DOCKERFILE} -t ${TAG} ${CONTEXT}",
+                "docker build -f ${DOCKERFILE} -t ${TAG} .",
                 "&& docker create -i --mount ${BIND} ${TAG}"
             ],
             "label": "Create Dev Container",
             "options": {
                 "env": {
                     "BIND": "type=bind,source=.,target=/workdir",
-                    "CONTEXT": ".",
                     "DOCKERFILE": "docker/dev.Dockerfile",
                     "TAG": "ryujinxkit:dev"
                 }

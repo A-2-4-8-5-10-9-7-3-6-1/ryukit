@@ -1,10 +1,10 @@
 import typing
 
-from .....services.sqlite3.configs import DEFAULT_SAVE_TAG
+from .....services.sqlite3.configs import DB_CONFIGS
 from .....services.sqlite3.connection import connect
 
 
-def action(tag: str = DEFAULT_SAVE_TAG) -> int:
+def action(tag: str = DB_CONFIGS["defaults"]["save_tag"]) -> int:
     """
     Create a save.
 

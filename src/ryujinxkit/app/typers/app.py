@@ -9,8 +9,8 @@ import typer
 from ...libs.typers.decorators.info_callback import info_callback_decorator
 from ...libs.ui.configs import UI_CONFIGS
 from ..context import settings
-from ..jobs.app.author.job import author_job
-from ..jobs.app.version.job import version_job
+from ..jobs.info.author.job import author_job
+from ..jobs.info.version.job import version_job
 from ..jobs.other.install.job import install_job
 from .saves import save_typer
 
