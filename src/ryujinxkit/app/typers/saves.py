@@ -4,14 +4,14 @@ import typing
 import typer
 
 from ...services.sqlite3.configs import DB_CONFIGS
-from ..jobs.save.create.job import create_job
-from ..jobs.save.delete.job import delete_job
-from ..jobs.save.export.job import export_job
-from ..jobs.save.extract.job import extract_job
-from ..jobs.save.list.job import list_job
-from ..jobs.save.retag.job import retag_job
-from ..jobs.save.transfer.job import transfer_job
-from ..jobs.save.transfer.transfer_op import TransferOp
+from ..commands.save.create.command import create_command
+from ..commands.save.delete.command import delete_command
+from ..commands.save.export.command import export_command
+from ..commands.save.extract.command import extract_command
+from ..commands.save.list.command import list_command
+from ..commands.save.retag.command import retag_command
+from ..commands.save.transfer.command import transfer_command
+from ..commands.save.transfer.transfer_op import TransferOp
 from .parsers.sort_key import sort_key_parser
 from .parsers.tag import tag_parser
 
@@ -38,7 +38,7 @@ def _(
     """
 
     if ctx.invoked_subcommand is None:
-        list_job(keys)
+        list_command(keys)
 
 
 @save_typer.command("create")
@@ -56,7 +56,7 @@ def _(
     Create an empty save.
     """
 
-    create_job(tag)
+    create_command(tag)
 
 
 @save_typer.command(name="remove", epilog="Aliases: rm")
@@ -71,7 +71,7 @@ def _(
     Remove a save.
     """
 
-    delete_job(id_)
+    delete_command(id_)
 
 
 @save_typer.command(name="operate", epilog="Aliases: op")
@@ -90,7 +90,7 @@ def _(
     Operate on save instances through file transference.
     """
 
-    transfer_job(id_=id_, operation=operation)
+    transfer_command(id_=id_, operation=operation)
 
 
 @save_typer.command(name="retag", epilog="Aliases: rt")
@@ -113,7 +113,7 @@ def _(
     Change a save's tag.
     """
 
-    retag_job(id_=id_, tag=tag)
+    retag_command(id_=id_, tag=tag)
 
 
 @save_typer.command("export")
@@ -127,7 +127,7 @@ def _(
     Export your saves to a tar file.
     """
 
-    export_job(output)
+    export_command(output)
 
 
 @save_typer.command("extract")
@@ -147,4 +147,4 @@ def _(
     Extract saves from an export.
     """
 
-    extract_job(path)
+    extract_command(path)

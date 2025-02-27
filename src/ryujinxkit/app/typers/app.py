@@ -7,10 +7,10 @@ import typing
 import typer
 
 from ...core.ui.configs import UI_CONFIGS
+from ..commands.info.author.command import author_command
+from ..commands.info.version.command import version_command
+from ..commands.other.install.command import install_command
 from ..context import settings
-from ..jobs.info.author.job import author_job
-from ..jobs.info.version.job import version_job
-from ..jobs.other.install.job import install_job
 from .decorators.info_callback import info_callback_decorator
 from .saves import save_typer
 
@@ -57,13 +57,13 @@ def _(
             help="Download URL (aquired from an authority).",
             envvar="RYUJINXKIT_SERVICE",
         ),
-    ],
+    ] = "",
     version: typing.Annotated[
         bool,
         typer.Option(
             "--version",
             help="Show version and quit.",
-            callback=info_callback_decorator(version_job),
+            callback=info_callback_decorator(version_command),
         ),
     ] = False,
     json: typing.Annotated[
@@ -79,9 +79,9 @@ def _(
         typer.Option(
             "--author",
             help="Show author and quit.",
-            callback=info_callback_decorator(author_job),
+            callback=info_callback_decorator(author_command),
         ),
     ] = False,
 ) -> None:
-    if ctx.invoked_subcommand is None:
-        install_job(url)
+    if not ctx.invoked_subcommand:
+        install_command(url)

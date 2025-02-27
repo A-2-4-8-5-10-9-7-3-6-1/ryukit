@@ -3,5 +3,9 @@
         "src",
         "tests"
     ],
+    "extraPaths": [
+        "src",
+        "tests"
+    ],
     "typeCheckingMode": "strict"
 }
