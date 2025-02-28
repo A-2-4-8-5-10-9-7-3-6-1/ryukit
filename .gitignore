@@ -1,7 +1,6 @@
 # python
 .venv
 **/__pycache__
-typings
 
 # pytest
 .pytest_cache

@@ -1,14 +1,14 @@
 import importlib.metadata
 import json
 
-from ...utils.execute import execute
+from ..utils.noE_execute import noE_execute
 
 
-def test() -> None:
+def test_version() -> None:
     """
     Test the version command.
     """
 
-    assert json.loads(execute("ryujinxkit", "--json", "--version").stdout)[
+    assert json.loads(noE_execute("ryujinxkit", "--json", "--version").stdout)[
         "version"
     ] == importlib.metadata.version("ryujinxkit")

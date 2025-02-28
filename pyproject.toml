@@ -20,6 +20,7 @@ ryujinxkit = "ryujinxkit.app.typers.app:app_typer"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
+jsonschema = "^4.23.0"
 
 [tool.black]
 line-length = 79

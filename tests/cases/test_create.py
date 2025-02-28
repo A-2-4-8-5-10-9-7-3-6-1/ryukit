@@ -25,9 +25,7 @@ def test_create(args: collections.abc.Sequence[str], valid: bool) -> None:
 
     assert (
         subprocess.run(
-            args=["ryujinxkit", *args],
-            capture_output=True,
-            text=True,
+            ["ryujinxkit", "--json", "save", "create", *args]
         ).returncode
         == 0
     ) == valid

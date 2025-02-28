@@ -1,7 +1,7 @@
 import importlib.metadata
 import json
 
-from ...utils.execute import execute
+from ..utils.noE_execute import noE_execute
 
 
 def test_author() -> None:
@@ -10,7 +10,7 @@ def test_author() -> None:
     """
 
     assert (
-        json.loads(execute("ryujinxkit", "--json", "--author").stdout)[
+        json.loads(noE_execute("ryujinxkit", "--json", "--author").stdout)[
             "author"
         ]
         == importlib.metadata.metadata("ryujinxkit")["author"]
