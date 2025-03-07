@@ -4,17 +4,17 @@ import typing
 import typer
 
 from ...services.sqlite3.configs import DB_CONFIGS
-from ..commands.save.create.command import create_command
-from ..commands.save.delete.command import delete_command
-from ..commands.save.export.command import export_command
-from ..commands.save.extract.command import extract_command
-from ..commands.save.list.command import list_command
-from ..commands.save.retag.command import retag_command
-from ..commands.save.transfer.command import transfer_command
-from ..commands.save.transfer.transfer_op import TransferOp
+from ..commands.save.create import create_command
+from ..commands.save.delete import delete_command
+from ..commands.save.export import export_command
+from ..commands.save.extract import extract_command
+from ..commands.save.list import list_command
+from ..commands.save.retag import retag_command
+from ..commands.save.transfer import TransferOp, transfer_command
 from .parsers.sort_key import sort_key_parser
 from .parsers.tag import tag_parser
 
+__all__ = ["save_typer"]
 save_typer = typer.Typer(invoke_without_command=True)
 
 
@@ -46,11 +46,9 @@ def _(
     tag: typing.Annotated[
         str,
         typer.Option(
-            metavar="TAG",
-            help="A tag for your save.",
-            parser=tag_parser,
+            metavar="TAG", help="A tag for your save.", parser=tag_parser
         ),
-    ] = DB_CONFIGS["defaults"]["save_tag"]
+    ] = DB_CONFIGS["defaults"]["save_tag"],
 ) -> None:
     """
     Create an empty save.
@@ -63,9 +61,8 @@ def _(
 @save_typer.command(name="rm", hidden=True)
 def _(
     id_: typing.Annotated[
-        str,
-        typer.Argument(metavar="ID", help="The save's ID."),
-    ]
+        str, typer.Argument(metavar="ID", help="The save's ID.")
+    ],
 ) -> None:
     """
     Remove a save.
@@ -78,8 +75,7 @@ def _(
 @save_typer.command(name="op", hidden=True)
 def _(
     operation: typing.Annotated[
-        TransferOp,
-        typer.Argument(help="Operation to perform."),
+        TransferOp, typer.Argument(help="Operation to perform.")
     ],
     id_: typing.Annotated[
         str,
@@ -97,15 +93,12 @@ def _(
 @save_typer.command(name="rt", hidden=True)
 def _(
     id_: typing.Annotated[
-        str,
-        typer.Argument(metavar="ID", help="Save's ID."),
+        str, typer.Argument(metavar="ID", help="Save's ID.")
     ],
     tag: typing.Annotated[
         str,
         typer.Argument(
-            metavar="TAG",
-            help="Save's new tag.",
-            parser=tag_parser,
+            metavar="TAG", help="Save's new tag.", parser=tag_parser
         ),
     ],
 ) -> None:
@@ -119,9 +112,8 @@ def _(
 @save_typer.command("export")
 def _(
     output: typing.Annotated[
-        pathlib.Path,
-        typer.Option(help="Output-file's path."),
-    ] = pathlib.Path("ryujinxkit-saves.tar")
+        pathlib.Path, typer.Option(help="Output-file's path.")
+    ] = pathlib.Path("ryujinxkit-saves.tar"),
 ) -> None:
     """
     Export your saves to a tar file.
@@ -141,7 +133,7 @@ def _(
             resolve_path=True,
             help="Path to your extract.",
         ),
-    ]
+    ],
 ) -> None:
     """
     Extract saves from an export.

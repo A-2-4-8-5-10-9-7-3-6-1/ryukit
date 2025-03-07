@@ -1,5 +1,4 @@
 import collections.abc
-import sqlite3
 import typing
 
 import rich.box
@@ -7,11 +6,24 @@ import rich.progress
 import rich.style
 import rich.table
 
-from .....core.ui.configs import UI_CONFIGS
-from .....core.ui.console import console
-from ....context import settings
-from ...annotations import Presenter
-from ...signals import Primer
+from ....core.ui.configs import UI_CONFIGS
+from ....core.ui.console import console
+from ....services.sqlite3.connection import connect
+from ....services.sqlite3.models.save import Save
+from ...context import settings
+from ..merger import merger
+from ..signals import Primer
+
+__all__ = ["list_command"]
+
+
+class SaveRender(typing.TypedDict):
+    id: str
+    tag: str
+    created: str
+    updated: str
+    used: str | None
+    size: str
 
 
 class TableVar(typing.TypedDict):
@@ -22,17 +34,62 @@ class TableVar(typing.TypedDict):
     breathe: collections.abc.Callable[[], None]
 
 
-def presenter() -> Presenter[sqlite3.Cursor]:
-    cursor: sqlite3.Cursor | Primer
+def action(
+    order: collections.abc.Sequence[tuple[str, str]] | None = None,
+) -> collections.abc.Generator[collections.abc.Generator[SaveRender]]:
+    """
+    List saves.
 
+    :param order: The order in which to sort rows.
+
+    :returns: Signal generator for list command.
+    """
+
+    with connect() as connection:
+        yield (
+            {
+                "id": str(data["id"]),
+                "tag": data["tag"],
+                "created": data["created"].strftime("%d/%Y/%m %H:%M"),
+                "updated": data["updated"].strftime("%d/%Y/%m %H:%M"),
+                "used": data["used"]
+                and data["used"].strftime("%d/%Y/%m %H:%M"),
+                "size": f"{round(data["size"] / pow(2, 20), 2)}MB",
+            }
+            for data in map(
+                lambda x: typing.cast(Save, x),
+                connection.execute(
+                    f"""
+                    SELECT *
+                    FROM saves {
+                        f"\nORDER BY {
+                            ", ".join(
+                                f"{col} {direction.upper()}"
+                                for col, direction in order
+                            )
+                        }"
+                        if order
+                        else ""
+                    };
+                    """
+                ),
+            )
+        )
+
+
+def presenter() -> (
+    collections.abc.Generator[
+        None, collections.abc.Generator[SaveRender] | Primer
+    ]
+):
     with console.status(
         status="[dim]Collecting saves",
         spinner_style="dim",
         refresh_per_second=UI_CONFIGS["refresh_rate"],
     ):
-        cursor = yield
+        reel = yield
 
-    if isinstance(cursor, Primer):
+    if isinstance(reel, Primer):
         return
 
     quick_draw = True
@@ -93,8 +150,7 @@ def presenter() -> Presenter[sqlite3.Cursor]:
             else None
         )
         buffer["count"] = lambda: typing.cast(
-            rich.table.Table,
-            buffer["inner"],
+            rich.table.Table, buffer["inner"]
         ).row_count
 
     buffer["add"] = add
@@ -107,9 +163,9 @@ def presenter() -> Presenter[sqlite3.Cursor]:
             table["add"](no8)
 
         try:
-            [table["add"](next(cursor)) for _ in range(7 if quick_draw else 6)]
+            [table["add"](next(reel)) for _ in range(7 if quick_draw else 6)]
 
-            no8 = next(cursor)
+            no8 = next(reel)
             quick_draw = False
 
         except StopIteration:
@@ -122,11 +178,17 @@ def presenter() -> Presenter[sqlite3.Cursor]:
                 break
 
     if settings["json"]:
-        return console.print_json(
-            data={
-                "batches": table["inner"],
-            }
-        )
+        return console.print_json(data={"batches": table["inner"]})
 
     if table["count"]() == 0:
         return console.print("No save to show.")
+
+
+@merger(action=action, presenter=presenter)
+def list_command(
+    in_: collections.abc.Generator[collections.abc.Generator[SaveRender]],
+    pole: collections.abc.Generator[
+        None, collections.abc.Generator[SaveRender] | Primer
+    ],
+) -> None:
+    pole.send(next(in_))

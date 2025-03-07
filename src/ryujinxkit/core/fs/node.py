@@ -1,5 +1,7 @@
 import enum
 
+__all__ = ["Node"]
+
 
 class Node(int, enum.Enum):
     LOCAL_USER_DATA = 0

@@ -1,16 +1,14 @@
 import typing
 
+__all__ = ["DB_CONFIGS"]
 
-class _Defaults(typing.TypedDict):
+
+class ConfigDefaults(typing.TypedDict):
     save_tag: str
 
 
-class _Configs(typing.TypedDict):
-    defaults: _Defaults
+class Configs(typing.TypedDict):
+    defaults: ConfigDefaults
 
 
-DB_CONFIGS: _Configs = {
-    "defaults": {
-        "save_tag": "none",
-    },
-}
+DB_CONFIGS: Configs = {"defaults": {"save_tag": "none"}}

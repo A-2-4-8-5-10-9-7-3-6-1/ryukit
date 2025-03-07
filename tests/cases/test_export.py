@@ -28,8 +28,7 @@ def test_export() -> None:
         with (
             tarfile.open(path) as tar,
             typing.cast(
-                tarfile.ExFileObject,
-                tar.extractfile("entities.json"),
+                tarfile.ExFileObject, tar.extractfile("entities.json")
             ) as entities,
         ):
             entities_array = json.load(entities)

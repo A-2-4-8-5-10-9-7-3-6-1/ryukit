@@ -1,10 +1,10 @@
 import typing
 
+__all__ = ["settings"]
 
-class _Settings(typing.TypedDict):
+
+class Settings(typing.TypedDict):
     json: bool
 
 
-settings: _Settings = {
-    "json": False,
-}
+settings: Settings = {"json": False}

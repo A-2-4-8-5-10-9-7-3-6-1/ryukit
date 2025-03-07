@@ -5,6 +5,7 @@ import platformdirs
 
 from .node import Node
 
+__all__ = ["resolver"]
 resolver = path_resolve.Resolver(
     nodes={
         Node.RYUJINX_LOCAL_DATA: {
@@ -64,9 +65,7 @@ resolver = path_resolve.Resolver(
     basics={
         Node.LOCAL_USER_DATA: platformdirs.user_data_path(),
         Node.RYUJINX_ROAMING_DATA: platformdirs.PlatformDirs(
-            appname="Ryujinx",
-            appauthor=False,
-            roaming=True,
+            appname="Ryujinx", appauthor=False, roaming=True
         ).user_data_path,
         Node.RYUJINXKIT_ROAMING_DATA: platformdirs.PlatformDirs(
             appname="RyujinxKit",

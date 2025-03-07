@@ -1,12 +1,30 @@
+import collections
+import collections.abc
 import io
 import json
 import pathlib
 import tarfile
 
-from ryujinxkit.core.fs.resolver import resolver
+from ....core.fs.node import Node
+from ....core.fs.resolver import resolver
+from ....core.ui.configs import UI_CONFIGS
+from ....core.ui.console import console
+from ....services.sqlite3.connection import connect
+from ..merger import merger
+from ..signals import Primer
 
-from .....core.fs.node import Node
-from .....services.sqlite3.connection import connect
+__all__ = ["export_command"]
+
+
+def presenter() -> collections.abc.Generator[None, None | Primer]:
+    with console.status(
+        status="[dim]Exporting",
+        spinner_style="dim",
+        refresh_per_second=UI_CONFIGS["refresh_rate"],
+    ):
+        yield
+
+    console.print("Export completed.")
 
 
 def action(output: pathlib.Path) -> None:
@@ -77,3 +95,10 @@ def action(output: pathlib.Path) -> None:
                     ].rglob("*")
                     if not path.is_dir()
                 ]
+
+
+@merger(action=action, presenter=presenter)
+def export_command(
+    in_: None, pole: collections.abc.Generator[None, None | Primer]
+) -> None:
+    next(pole)

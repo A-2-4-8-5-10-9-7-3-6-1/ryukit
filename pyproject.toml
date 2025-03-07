@@ -24,8 +24,8 @@ jsonschema = "^4.23.0"
 
 [tool.black]
 line-length = 79
+skip-magic-trailing-comma = 1
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
-

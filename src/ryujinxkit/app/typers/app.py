@@ -1,5 +1,3 @@
-import collections
-import collections.abc
 import importlib
 import importlib.metadata
 import typing
@@ -7,13 +5,13 @@ import typing
 import typer
 
 from ...core.ui.configs import UI_CONFIGS
-from ..commands.info.author.command import author_command
-from ..commands.info.version.command import version_command
-from ..commands.other.install.command import install_command
+from ..commands.info.author import author_command
+from ..commands.info.version import version_command
+from ..commands.other.install import install_command
 from ..context import settings
-from .decorators.info_callback import info_callback_decorator
 from .saves import save_typer
 
+__all__ = ["app_typer"]
 app_typer = typer.Typer(
     name="ryujinxkit",
     invoke_without_command=True,
@@ -23,65 +21,42 @@ app_typer = typer.Typer(
 )
 
 app_typer.add_typer(
-    typer_instance=save_typer,
-    name="save",
-    epilog="Aliases: sv",
+    typer_instance=save_typer, name="save", epilog="Aliases: sv"
 )
 app_typer.add_typer(typer_instance=save_typer, name="sv", hidden=True)
 
 
-def _update_context(
-    setting: str,
-) -> collections.abc.Callable[[typing.Any], None]:
-    """
-    Get a function that modifies a context setting.
-
-    :param setting: The setting to modify.
-
-    :returns: A function for modifying the given setting.
-    """
-
-    def inner(arg: typing.Any) -> None:
-        settings[setting] = arg
-
-    return inner
-
-
 @app_typer.callback()
 def _(
-    ctx: typer.Context,
     url: typing.Annotated[
-        str,
+        str | None,
         typer.Option(
             metavar="URL",
             help="Download URL (aquired from an authority).",
             envvar="RYUJINXKIT_SERVICE",
         ),
-    ] = "",
+    ] = None,
     version: typing.Annotated[
-        bool,
-        typer.Option(
-            "--version",
-            help="Show version and quit.",
-            callback=info_callback_decorator(version_command),
-        ),
+        bool, typer.Option("--version", help="Show version and quit.")
     ] = False,
     json: typing.Annotated[
-        bool,
-        typer.Option(
-            "--json",
-            help="Enable JSON output.",
-            callback=_update_context("json"),
-        ),
+        bool, typer.Option("--json", help="Enable JSON output.")
     ] = settings["json"],
     author: typing.Annotated[
-        bool,
-        typer.Option(
-            "--author",
-            help="Show author and quit.",
-            callback=info_callback_decorator(author_command),
-        ),
+        bool, typer.Option("--author", help="Show author and quit.")
     ] = False,
 ) -> None:
-    if not ctx.invoked_subcommand:
+    settings["json"] = json
+
+    for command, use in [(version_command, version), (author_command, author)]:
+        if not use:
+            continue
+
+        command()
+
+        raise typer.Exit
+
+    if url:
         install_command(url)
+
+        raise typer.Exit

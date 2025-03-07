@@ -6,6 +6,8 @@ import typing
 from ...core.fs.node import Node
 from ...core.fs.resolver import resolver
 
+__all__ = ["connect"]
+
 
 @contextlib.contextmanager
 def connect(
@@ -20,10 +22,7 @@ def connect(
     autocommit: bool = True,
 ) -> collections.abc.Generator[sqlite3.Connection]:
     """
-    Get database cursor.
-
-    **Notes**:
-        - Parameters are those of a sqlite3.connect object.
+    Get a database cursor.
 
     :returns: The cursor.
     """
@@ -38,4 +37,6 @@ def connect(
         uri=uri,
         autocommit=autocommit,
     ) as connection:
+        connection.row_factory = sqlite3.Row
+
         yield connection
