@@ -7,6 +7,6 @@
         "src",
         "tests"
     ],
-    "typeCheckingMode": "strict",
     "reportMissingTypeStubs": "none",
+    "typeCheckingMode": "strict"
 }
