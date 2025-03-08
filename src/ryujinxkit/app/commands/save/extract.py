@@ -11,11 +11,10 @@ import rich.progress
 import rich.status
 import rich.table
 
-from ....core.fs.node import Node
-from ....core.fs.resolver import resolver
+from ....core.db.connection import connect
+from ....core.fs.resolver import Node, resolver
 from ....core.ui.configs import UI_CONFIGS
-from ....core.ui.console import console
-from ....services.sqlite3.connection import connect
+from ....core.ui.objects import console
 from ...context import settings
 from ..merger import merger
 from ..signals import Primer
@@ -96,9 +95,7 @@ def presenter() -> (
                 typing.cast(rich.progress.Progress, animation).stop()
 
                 if settings["json"]:
-                    return console.print_json(
-                        data={"code": "SUCCESS", "accepted": r_total}
-                    )
+                    return console.print_json(data={"accepted": r_total})
 
                 return console.print(f"Accepted {r_total} save instance(s).")
 
@@ -208,6 +205,6 @@ def extract_command(
         pole.send(message)
 
         if message[0] == ExtractSignal.FAILED:
-            return
+            exit(1)
 
     pole.send(Primer.FINISHED)

@@ -2,9 +2,9 @@ import collections
 import collections.abc
 import typing
 
-from ....core.ui.console import console
-from ....services.sqlite3.configs import DB_CONFIGS
-from ....services.sqlite3.connection import connect
+from ....core.db.configs import DB_CONFIGS
+from ....core.db.connection import connect
+from ....core.ui.objects import console
 from ...context import settings
 from ..merger import merger
 from ..signals import Primer

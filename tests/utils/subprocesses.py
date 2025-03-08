@@ -1,5 +1,7 @@
 import subprocess
 
+__all__ = ["noE_execute"]
+
 
 def noE_execute(*args: str) -> subprocess.CompletedProcess[str]:
     """

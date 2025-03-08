@@ -9,10 +9,9 @@ import requests
 import rich.progress
 import rich.status
 
-from ....core.fs.node import Node
-from ....core.fs.resolver import resolver
+from ....core.fs.resolver import Node, resolver
 from ....core.ui.configs import UI_CONFIGS
-from ....core.ui.console import console
+from ....core.ui.objects import console
 from ...context import settings
 from ..merger import merger
 from ..signals import Primer

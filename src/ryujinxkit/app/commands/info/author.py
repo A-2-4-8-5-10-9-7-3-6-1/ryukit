@@ -1,7 +1,7 @@
 import collections.abc
 import importlib.metadata
 
-from ....core.ui.console import console
+from ....core.ui.objects import console
 from ...context import settings
 from ..merger import merger
 from ..signals import Primer

@@ -7,7 +7,7 @@ import typer
 from ...core.ui.configs import UI_CONFIGS
 from ..commands.info.author import author_command
 from ..commands.info.version import version_command
-from ..commands.other.install import install_command
+from ..commands.misc.install import install_command
 from ..context import settings
 from .saves import save_typer
 

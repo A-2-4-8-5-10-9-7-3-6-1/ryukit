@@ -7,16 +7,19 @@ import typing
 
 import jsonschema
 
-from ..schemas.export_file import ENTITIES_ARRAY_SCHEMA
-from ..utils.noE_execute import noE_execute
+from ...schemas.export_file import ENTITIES_ARRAY_SCHEMA
+from ...utils.context_control import destroy_context
+from ...utils.subprocesses import noE_execute
+
+__all__ = []
 
 
-def test_export() -> None:
+def test_export_and_extract() -> None:
     """
-    Test the export command.
+    Test the export and extract commands.
     """
 
-    size = 10
+    size = 3
 
     [subprocess.run(["ryujinxkit", "save", "create"]) for _ in range(size)]
 
@@ -44,3 +47,12 @@ def test_export() -> None:
 
             except jsonschema.ValidationError:
                 assert False
+
+        destroy_context()
+
+        assert (
+            json.loads(
+                noE_execute("ryujinxkit", "save", "extract", str(path)).stdout
+            )["accepted"]
+            == size
+        )

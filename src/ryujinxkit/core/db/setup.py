@@ -1,5 +1,7 @@
 from .connection import connect
 
+__all__ = []
+
 with connect() as connection:
     connection.execute(
         """

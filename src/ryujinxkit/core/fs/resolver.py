@@ -1,11 +1,32 @@
+import enum
 import importlib.metadata
 
 import path_resolve
 import platformdirs
 
-from .node import Node
+__all__ = ["resolver", "Node"]
 
-__all__ = ["resolver"]
+
+class Node(int, enum.Enum):
+    LOCAL_USER_DATA = 0
+
+    RYUJINX_ROAMING_DATA = 1
+    RYUJINX_LOCAL_DATA = 2
+    RYUJINX_SYSTEM = 3
+    RYUJINX_REGISTERED = 5
+    RYUJINX_SYSTEM_SAVE = 14
+    RYUJINX_USER_SAVE = 15
+    RYUJINX_SAVE_META = 16
+
+    RYUJINXKIT_ROAMING_DATA = 6
+    RYUJINXKIT_DATABASE = 8
+    RYUJINXKIT_SAVE_FOLDER = 9
+    RYUJINXKIT_SAVE_INSTANCE_FOLDER = 10
+    RYUJINXKIT_SAVE_INSTANCE_SYSTEM_SAVE = 11
+    RYUJINXKIT_SAVE_INSTANCE_SAVE = 12
+    RYUJINXKIT_SAVE_INSTANCE_SAVE_META = 13
+
+
 resolver = path_resolve.Resolver(
     nodes={
         Node.RYUJINX_LOCAL_DATA: {

@@ -5,11 +5,10 @@ import json
 import pathlib
 import tarfile
 
-from ....core.fs.node import Node
-from ....core.fs.resolver import resolver
+from ....core.db.connection import connect
+from ....core.fs.resolver import Node, resolver
 from ....core.ui.configs import UI_CONFIGS
-from ....core.ui.console import console
-from ....services.sqlite3.connection import connect
+from ....core.ui.objects import console
 from ..merger import merger
 from ..signals import Primer
 

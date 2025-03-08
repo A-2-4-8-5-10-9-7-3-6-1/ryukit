@@ -3,8 +3,7 @@ import contextlib
 import sqlite3
 import typing
 
-from ...core.fs.node import Node
-from ...core.fs.resolver import resolver
+from ..fs.resolver import Node, resolver
 
 __all__ = ["connect"]
 

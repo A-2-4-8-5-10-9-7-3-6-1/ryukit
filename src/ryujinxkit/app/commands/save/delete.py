@@ -2,10 +2,9 @@ import collections
 import collections.abc
 import shutil
 
-from ....core.fs.node import Node
-from ....core.fs.resolver import resolver
-from ....core.ui.console import console
-from ....services.sqlite3.connection import connect
+from ....core.db.connection import connect
+from ....core.fs.resolver import Node, resolver
+from ....core.ui.objects import console
 from ...context import settings
 from ..merger import merger
 from ..signals import Primer
@@ -16,11 +15,8 @@ __all__ = ["delete_command"]
 def presenter() -> collections.abc.Generator[None, bool | Primer]:
     signal = yield
 
-    if isinstance(signal, Primer):
+    if isinstance(signal, Primer) or settings["json"]:
         return
-
-    if settings["json"]:
-        return console.print_json(data={"success": signal})
 
     if signal:
         return console.print("Save deleted.")
@@ -62,3 +58,6 @@ def delete_command(
     in_: bool, pole: collections.abc.Generator[None, bool | Primer]
 ) -> None:
     pole.send(in_)
+
+    if not in_:
+        exit(1)

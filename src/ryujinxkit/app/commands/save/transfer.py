@@ -1,37 +1,35 @@
 import collections.abc
 import enum
-import json
 import pathlib
 import shutil
 import typing
 
 import rich.progress
 
-from ....core.fs.node import Node
-from ....core.fs.resolver import resolver
+from ....core.db.connection import connect
+from ....core.fs.resolver import Node, resolver
 from ....core.ui.configs import UI_CONFIGS
-from ....core.ui.console import console
-from ....services.sqlite3.connection import connect
+from ....core.ui.objects import console
 from ...context import settings
 from ..merger import merger
 from ..signals import Primer
 
-__all__ = ["TransferOp", "transfer_command"]
+__all__ = ["TransferOperation", "transfer_command"]
 
 
-class TransferOp(str, enum.Enum):
+class TransferOperation(str, enum.Enum):
     RESTORE = "restore"
     UPDATE = "update"
 
 
-class StateTransferSignal(int, enum.Enum):
+class TransferSignal(int, enum.Enum):
     FAILED = 0
     TRANSFERING = 1
 
 
 def action(
-    id_: str, operation: TransferOp
-) -> collections.abc.Generator[tuple[StateTransferSignal, float]]:
+    id_: str, operation: TransferOperation
+) -> collections.abc.Generator[tuple[TransferSignal, float]]:
     """
     Transfer state between a save instance and Ryujinx.
 
@@ -67,7 +65,7 @@ def action(
             )[0]
 
         except StopIteration:
-            yield (StateTransferSignal.FAILED, 0)
+            yield (TransferSignal.FAILED, 0)
 
         configs: Configs = (
             {
@@ -79,7 +77,7 @@ def action(
                 "order": lambda p: tuple(map(resolver.__getitem__, p)),
                 "size": lambda _: initial_size,
             }
-            if operation == TransferOp.RESTORE
+            if operation == TransferOperation.RESTORE
             else {
                 "order": lambda p: tuple(
                     map(resolver.__getitem__, reversed(p))
@@ -95,7 +93,7 @@ def action(
             }
         )
 
-        yield (StateTransferSignal.TRANSFERING, 3)
+        yield (TransferSignal.TRANSFERING, 3)
 
         with resolver.cache_locked(
             (Node.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
@@ -131,13 +129,13 @@ def action(
                     bucket.parent.mkdir(parents=True, exist_ok=True)
                     bucket.write_bytes(path.read_bytes())
 
-                yield (StateTransferSignal.TRANSFERING, 1)
+                yield (TransferSignal.TRANSFERING, 1)
 
         connection.execute(configs["query"], {"id": id_, "total": total})
 
 
 def presenter() -> (
-    collections.abc.Generator[None, tuple[StateTransferSignal, float] | Primer]
+    collections.abc.Generator[None, tuple[TransferSignal, float] | Primer]
 ):
     looping = False
     animation: rich.progress.Progress | None = None
@@ -145,13 +143,13 @@ def presenter() -> (
 
     while True:
         match (yield):
-            case StateTransferSignal.FAILED, 0:
+            case TransferSignal.FAILED, 0:
                 if settings["json"]:
                     return console.print_json(data={"code": "ID_ISSUE"})
 
                 return console.print("Unrecognized save ID.")
 
-            case StateTransferSignal.TRANSFERING, volume:
+            case TransferSignal.TRANSFERING, volume:
                 if looping:
                     typing.cast(rich.progress.Progress, animation).advance(
                         task_id=typing.cast(rich.progress.TaskID, task_id),
@@ -181,7 +179,7 @@ def presenter() -> (
                 typing.cast(rich.progress.Progress, animation).stop()
 
                 if settings["json"]:
-                    return console.print(json.dumps({"code": "SUCCESS"}))
+                    return
 
                 return console.print("Transfer successful.")
 
@@ -197,15 +195,15 @@ def presenter() -> (
 
 @merger(action=action, presenter=presenter)
 def transfer_command(
-    in_: collections.abc.Generator[tuple[StateTransferSignal, float]],
+    in_: collections.abc.Generator[tuple[TransferSignal, float]],
     pole: collections.abc.Generator[
-        None, tuple[StateTransferSignal, float] | Primer
+        None, tuple[TransferSignal, float] | Primer
     ],
 ) -> None:
     for message in in_:
         pole.send(message)
 
-        if message[0] == StateTransferSignal.FAILED:
-            return
+        if message[0] == TransferSignal.FAILED:
+            exit(1)
 
     pole.send(Primer.FINISHED)

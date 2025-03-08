@@ -6,10 +6,10 @@ import rich.progress
 import rich.style
 import rich.table
 
+from ....core.db.connection import connect
+from ....core.db.models.save import Save
 from ....core.ui.configs import UI_CONFIGS
-from ....core.ui.console import console
-from ....services.sqlite3.connection import connect
-from ....services.sqlite3.models.save import Save
+from ....core.ui.objects import console
 from ...context import settings
 from ..merger import merger
 from ..signals import Primer
@@ -24,14 +24,6 @@ class SaveRender(typing.TypedDict):
     updated: str
     used: str | None
     size: str
-
-
-class TableVar(typing.TypedDict):
-    inner: list[list[typing.Any]] | rich.table.Table
-    add: collections.abc.Callable[[collections.abc.Iterable[typing.Any]], None]
-    reset: collections.abc.Callable[[], None]
-    count: collections.abc.Callable[[], int]
-    breathe: collections.abc.Callable[[], None]
 
 
 def action(
@@ -82,6 +74,13 @@ def presenter() -> (
         None, collections.abc.Generator[SaveRender] | Primer
     ]
 ):
+    class TableVar(typing.TypedDict):
+        inner: list[list[SaveRender]] | rich.table.Table
+        add: collections.abc.Callable[[SaveRender], None]
+        reset: collections.abc.Callable[[], None]
+        count: collections.abc.Callable[[], int]
+        breathe: collections.abc.Callable[[], None]
+
     with console.status(
         status="[dim]Collecting saves",
         spinner_style="dim",
@@ -93,15 +92,15 @@ def presenter() -> (
         return
 
     quick_draw = True
-    no8: collections.abc.Iterable[typing.Any] = []
+    no8: SaveRender | None = None
     table: TableVar | None = None
-    add: collections.abc.Callable[[collections.abc.Iterable[typing.Any]], None]
+    add: collections.abc.Callable[[SaveRender], None]
     buffer: dict[str, typing.Any] = {
         "inner": ([] if settings["json"] else None)
     }
 
     if isinstance(buffer["inner"], list):
-        inner = typing.cast(list[list[typing.Any]], buffer["inner"])
+        inner = typing.cast(list[list[SaveRender]], buffer["inner"])
         add = lambda x: inner[-1].append(x)
         buffer["reset"] = lambda: inner.append([])
         buffer["breathe"] = lambda: None
@@ -156,10 +155,10 @@ def presenter() -> (
     buffer["add"] = add
     table = typing.cast(TableVar, buffer)
 
-    while not quick_draw or no8 == []:
+    while not quick_draw or not no8:
         table["reset"]()
 
-        if no8 != []:
+        if no8:
             table["add"](no8)
 
         try:
@@ -174,7 +173,7 @@ def presenter() -> (
         finally:
             table["breathe"]()
 
-            if quick_draw and no8 == []:
+            if quick_draw and not no8:
                 break
 
     if settings["json"]:

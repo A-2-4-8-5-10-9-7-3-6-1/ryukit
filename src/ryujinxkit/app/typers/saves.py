@@ -3,14 +3,14 @@ import typing
 
 import typer
 
-from ...services.sqlite3.configs import DB_CONFIGS
+from ...core.db.configs import DB_CONFIGS
 from ..commands.save.create import create_command
 from ..commands.save.delete import delete_command
 from ..commands.save.export import export_command
 from ..commands.save.extract import extract_command
 from ..commands.save.list import list_command
 from ..commands.save.retag import retag_command
-from ..commands.save.transfer import TransferOp, transfer_command
+from ..commands.save.transfer import TransferOperation, transfer_command
 from .parsers.sort_key import sort_key_parser
 from .parsers.tag import tag_parser
 
@@ -75,7 +75,7 @@ def _(
 @save_typer.command(name="op", hidden=True)
 def _(
     operation: typing.Annotated[
-        TransferOp, typer.Argument(help="Operation to perform.")
+        TransferOperation, typer.Argument(help="Operation to perform.")
     ],
     id_: typing.Annotated[
         str,
