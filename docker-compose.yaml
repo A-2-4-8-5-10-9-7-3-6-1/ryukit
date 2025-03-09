@@ -1,15 +1,16 @@
+# ALL SERVICES ARE INTENDED FOR LOCAL USE.
+
 services:
   development:
-    build:
-      context: .
-      dockerfile: docker/development.Dockerfile
+    build: .
+    environment:
+      POETRY_VIRTUALENVS_IN_PROJECT: true
+    tty: true
     volumes:
       - .:/workdir
-    tty: true
 
-  build:
-    build:
-      context: .
-      dockerfile: docker/build.Dockerfile
+  package:
+    build: .
+    entrypoint: [ "poetry", "build" ]
     volumes:
-      - ./dist:/workdir/dist
+      - .:/workdir
