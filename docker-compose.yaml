@@ -6,8 +6,6 @@ services:
     volumes:
       - .:/workdir
     tty: true
-    environment:
-      - POETRY_VIRTUALENVS_IN_PROJECT=true
 
   build:
     build:
