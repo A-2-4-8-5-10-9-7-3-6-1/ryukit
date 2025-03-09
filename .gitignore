@@ -1,14 +1,12 @@
 # python
 .venv
-**/__pycache__
+__pycache__
 .pytest_cache
-
-# vscode
-.vscode/settings.json
 
 # configurations
 .env
 secrets
+.vscode/settings.json
 
 # artifacts
 build
