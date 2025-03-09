@@ -1,8 +1,6 @@
 # python
 .venv
 **/__pycache__
-
-# pytest
 .pytest_cache
 
 # vscode

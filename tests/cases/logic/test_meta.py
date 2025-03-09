@@ -5,9 +5,7 @@ from ...extras.ryujinxkit.models.command_jsons import (
     AuthorCommandJSON,
     VersionCommandJSON,
 )
-from ...utils.subprocesses import noE_execute
-
-__all__ = []
+from ...utils.subprocesses import NE_execute
 
 
 def test_meta() -> None:
@@ -29,5 +27,5 @@ def test_meta() -> None:
         (["--author"], author_check),
     ]:
         assert check(
-            json.loads(noE_execute("ryujinxkit", "--json", *command).stdout)
+            json.loads(NE_execute("ryujinxkit", "--json", *command).stdout)
         )

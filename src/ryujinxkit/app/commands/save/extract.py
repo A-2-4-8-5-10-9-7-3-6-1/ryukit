@@ -1,3 +1,11 @@
+"""Save-extract command.
+
+Exports
+-------
+- :func:`save_extract_command`: The save-extract command.
+"""
+
+import collections
 import collections.abc
 import datetime
 import enum
@@ -7,6 +15,7 @@ import tarfile
 import tempfile
 import typing
 
+import rich
 import rich.progress
 import rich.status
 import rich.table
@@ -16,10 +25,7 @@ from ....core.fs.resolver import Node, resolver
 from ....core.ui.configs import UI_CONFIGS
 from ....core.ui.objects import console
 from ...context import settings
-from ..merger import merger
-from ..signals import Primer
-
-__all__ = ["extract_command"]
+from ..AP_decomp import PrimitiveSignal, merger
 
 
 class ExtractSignal(int, enum.Enum):
@@ -29,7 +35,9 @@ class ExtractSignal(int, enum.Enum):
 
 
 def presenter() -> (
-    collections.abc.Generator[None, tuple[ExtractSignal, float] | Primer]
+    collections.abc.Generator[
+        None, tuple[ExtractSignal, float] | PrimitiveSignal
+    ]
 ):
     looping = False
     animation: rich.progress.Progress | rich.status.Status | None = None
@@ -88,7 +96,7 @@ def presenter() -> (
 
                 animation.start()
 
-            case Primer.FINISHED:
+            case PrimitiveSignal.FINISHED:
                 looping = False
                 r_total = typing.cast(int, r_total)
 
@@ -99,7 +107,7 @@ def presenter() -> (
 
                 return console.print(f"Accepted {r_total} save instance(s).")
 
-            case Primer.KILL:
+            case PrimitiveSignal.KILL:
                 if animation is not None:
                     animation.stop()
 
@@ -195,10 +203,10 @@ def action(
 
 
 @merger(action=action, presenter=presenter)
-def extract_command(
+def save_extract_command(
     in_: collections.abc.Generator[tuple[ExtractSignal, float]],
     pole: collections.abc.Generator[
-        None, tuple[ExtractSignal, float] | Primer
+        None, tuple[ExtractSignal, float] | PrimitiveSignal
     ],
 ) -> None:
     for message in in_:
@@ -207,4 +215,4 @@ def extract_command(
         if message[0] == ExtractSignal.FAILED:
             exit(1)
 
-    pole.send(Primer.FINISHED)
+    pole.send(PrimitiveSignal.FINISHED)

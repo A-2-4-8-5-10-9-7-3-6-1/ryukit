@@ -1,3 +1,10 @@
+"""Defines the root typer.
+
+Exports
+-------
+- :func:`app_typer`: Root typer.
+"""
+
 import importlib
 import importlib.metadata
 import typing
@@ -5,13 +12,11 @@ import typing
 import typer
 
 from ...core.ui.configs import UI_CONFIGS
-from ..commands.info.author import author_command
-from ..commands.info.version import version_command
+from ..commands.misc.info import InfoCommandSubject, info_command
 from ..commands.misc.install import install_command
 from ..context import settings
-from .saves import save_typer
+from .save import save_typer
 
-__all__ = ["app_typer"]
 app_typer = typer.Typer(
     name="ryujinxkit",
     invoke_without_command=True,
@@ -48,11 +53,14 @@ def _(
 ) -> None:
     settings["json"] = json
 
-    for command, use in [(version_command, version), (author_command, author)]:
+    for subject, use in [
+        (InfoCommandSubject.VERSION, version),
+        (InfoCommandSubject.AUTHOR, author),
+    ]:
         if not use:
             continue
 
-        command()
+        info_command(subject)
 
         raise typer.Exit
 

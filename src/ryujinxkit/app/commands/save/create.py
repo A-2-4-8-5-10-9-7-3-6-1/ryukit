@@ -1,3 +1,10 @@
+"""Save-create command.
+
+Exports
+-------
+- :func:`save_create_command`: The save-create command.
+"""
+
 import collections
 import collections.abc
 import typing
@@ -6,10 +13,7 @@ from ....core.db.configs import DB_CONFIGS
 from ....core.db.connection import connect
 from ....core.ui.objects import console
 from ...context import settings
-from ..merger import merger
-from ..signals import Primer
-
-__all__ = ["create_command"]
+from ..AP_decomp import PrimitiveSignal, merger
 
 
 def action(tag: str = DB_CONFIGS["defaults"]["save_tag"]) -> int:
@@ -34,10 +38,10 @@ def action(tag: str = DB_CONFIGS["defaults"]["save_tag"]) -> int:
         )
 
 
-def presenter() -> collections.abc.Generator[None, int | Primer]:
+def presenter() -> collections.abc.Generator[None, int | PrimitiveSignal]:
     signal = yield
 
-    if isinstance(signal, Primer):
+    if isinstance(signal, PrimitiveSignal):
         return
 
     if settings["json"]:
@@ -47,7 +51,7 @@ def presenter() -> collections.abc.Generator[None, int | Primer]:
 
 
 @merger(action=action, presenter=presenter)
-def create_command(
-    in_: int, pole: collections.abc.Generator[None, int | Primer]
+def save_create_command(
+    in_: int, pole: collections.abc.Generator[None, int | PrimitiveSignal]
 ) -> None:
     pole.send(in_)

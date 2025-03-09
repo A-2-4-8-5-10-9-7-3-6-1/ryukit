@@ -1,3 +1,11 @@
+"""Install command.
+
+Exports
+-------
+- :func:`install_command`: The install command.
+"""
+
+import collections
 import collections.abc
 import enum
 import io
@@ -6,6 +14,7 @@ import tarfile
 import typing
 
 import requests
+import rich
 import rich.progress
 import rich.status
 
@@ -13,10 +22,7 @@ from ....core.fs.resolver import Node, resolver
 from ....core.ui.configs import UI_CONFIGS
 from ....core.ui.objects import console
 from ...context import settings
-from ..merger import merger
-from ..signals import Primer
-
-__all__ = ["install_command"]
+from ..AP_decomp import PrimitiveSignal, merger
 
 
 class InstallSignal(int, enum.Enum):
@@ -27,7 +33,9 @@ class InstallSignal(int, enum.Enum):
 
 
 def presenter() -> (
-    collections.abc.Generator[None, tuple[InstallSignal, float] | Primer]
+    collections.abc.Generator[
+        None, tuple[InstallSignal, float] | PrimitiveSignal
+    ]
 ):
     looping = False
     animation: rich.progress.Progress | rich.status.Status | None = None
@@ -107,7 +115,7 @@ def presenter() -> (
                     sep="\n",
                 )
 
-            case Primer.FINISHED:
+            case PrimitiveSignal.FINISHED:
                 looping = False
 
                 typing.cast(rich.status.Status, animation).stop()
@@ -126,7 +134,7 @@ def presenter() -> (
                     }."
                 )
 
-            case Primer.KILL:
+            case PrimitiveSignal.KILL:
                 if animation is not None:
                     animation.stop()
 
@@ -213,7 +221,7 @@ def action(
 def install_command(
     in_: collections.abc.Generator[tuple[InstallSignal, float]],
     pole: collections.abc.Generator[
-        None, tuple[InstallSignal, float] | Primer
+        None, tuple[InstallSignal, float] | PrimitiveSignal
     ],
 ) -> None:
     for message in in_:
@@ -222,4 +230,4 @@ def install_command(
         if message[0] == InstallSignal.FAILED:
             return
 
-    pole.send(Primer.FINISHED)
+    pole.send(PrimitiveSignal.FINISHED)

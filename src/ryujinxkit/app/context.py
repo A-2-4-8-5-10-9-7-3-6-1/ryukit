@@ -1,6 +1,11 @@
-import typing
+"""'App context'-related symbols.
 
-__all__ = ["settings"]
+Exports
+-------
+- settings: Session settings.
+"""
+
+import typing
 
 
 class Settings(typing.TypedDict):

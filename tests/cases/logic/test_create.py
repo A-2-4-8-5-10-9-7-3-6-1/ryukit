@@ -7,9 +7,7 @@ import pytest
 import ryujinxkit.core.db.connection
 
 from ...extras.ryujinxkit.models.command_jsons import SaveCreateCommandJSON
-from ...utils.subprocesses import noE_execute
-
-__all__ = []
+from ...utils.subprocesses import NE_execute
 
 
 @pytest.mark.parametrize(
@@ -45,7 +43,7 @@ def test_create(args: collections.abc.Sequence[str]) -> None:
                     typing.cast(
                         SaveCreateCommandJSON,
                         json.loads(
-                            noE_execute(
+                            NE_execute(
                                 "ryujinxkit", "--json", "save", "create", *args
                             ).stdout
                         ),

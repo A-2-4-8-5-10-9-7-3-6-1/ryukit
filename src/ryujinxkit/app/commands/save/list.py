@@ -1,6 +1,15 @@
+"""Save-list command.
+
+Exports
+-------
+- :func:`save_list_command`: The save-list command.
+"""
+
+import collections
 import collections.abc
 import typing
 
+import rich
 import rich.box
 import rich.progress
 import rich.style
@@ -11,10 +20,7 @@ from ....core.db.models.save import Save
 from ....core.ui.configs import UI_CONFIGS
 from ....core.ui.objects import console
 from ...context import settings
-from ..merger import merger
-from ..signals import Primer
-
-__all__ = ["list_command"]
+from ..AP_decomp import PrimitiveSignal, merger
 
 
 class SaveRender(typing.TypedDict):
@@ -71,7 +77,7 @@ def action(
 
 def presenter() -> (
     collections.abc.Generator[
-        None, collections.abc.Generator[SaveRender] | Primer
+        None, collections.abc.Generator[SaveRender] | PrimitiveSignal
     ]
 ):
     class TableVar(typing.TypedDict):
@@ -88,7 +94,7 @@ def presenter() -> (
     ):
         reel = yield
 
-    if isinstance(reel, Primer):
+    if isinstance(reel, PrimitiveSignal):
         return
 
     quick_draw = True
@@ -184,10 +190,10 @@ def presenter() -> (
 
 
 @merger(action=action, presenter=presenter)
-def list_command(
+def save_list_command(
     in_: collections.abc.Generator[collections.abc.Generator[SaveRender]],
     pole: collections.abc.Generator[
-        None, collections.abc.Generator[SaveRender] | Primer
+        None, collections.abc.Generator[SaveRender] | PrimitiveSignal
     ],
 ) -> None:
     pole.send(next(in_))

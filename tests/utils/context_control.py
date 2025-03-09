@@ -2,8 +2,6 @@ import shutil
 
 import ryujinxkit.core.fs.resolver
 
-__all__ = ["destroy_context"]
-
 
 def destroy_context():
     """

@@ -1,3 +1,8 @@
+"""Database setup script.
+
+*This module has no exports.*
+"""
+
 from .connection import connect
 
 __all__ = []

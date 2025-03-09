@@ -1,3 +1,10 @@
+"""Defines a parser for sort keys, for the save-list command.
+
+Exports
+-------
+- :func:`sort_key_parser`: The sort-key parser.
+"""
+
 import re
 
 

@@ -3,9 +3,7 @@ import typing
 
 import ryujinxkit.core.db.connection
 
-from ...utils.subprocesses import noE_execute
-
-__all__ = []
+from ...utils.subprocesses import NE_execute
 
 
 def test_remove() -> None:
@@ -13,13 +11,13 @@ def test_remove() -> None:
     Test save-remove command.
     """
 
-    noE_execute(
+    NE_execute(
         "ryujinxkit",
         "save",
         "remove",
         str(
             json.loads(
-                noE_execute("ryujinxkit", "--json", "save", "create").stdout
+                NE_execute("ryujinxkit", "--json", "save", "create").stdout
             )["id"]
         ),
     )

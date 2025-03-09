@@ -1,6 +1,11 @@
-import typing
+"""UI-related configurations.
 
-__all__ = ["UI_CONFIGS"]
+Exports
+-------
+- UI_CONFIGS: UI configuration object.
+"""
+
+import typing
 
 
 class TyperConfigs(typing.TypedDict, total=False):

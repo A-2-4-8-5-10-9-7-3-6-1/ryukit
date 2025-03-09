@@ -1,10 +1,17 @@
+"""path_resolver-related definitions.
+
+Exports
+-------
+- :class:`Node`: The complete collection of file-system nodes.
+- resolver: App's resolver object.
+"""
+
 import enum
+import importlib
 import importlib.metadata
 
 import path_resolve
 import platformdirs
-
-__all__ = ["resolver", "Node"]
 
 
 class Node(int, enum.Enum):

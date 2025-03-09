@@ -1,7 +1,12 @@
+"""'Save table'-related models.
+
+Exports
+-------
+- :class:`Save`: Model for save instances.
+"""
+
 import datetime
 import typing
-
-__all__ = ["Save"]
 
 
 class Save(typing.TypedDict):

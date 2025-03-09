@@ -1,9 +1,19 @@
+"""Save-transfer command.
+
+Exports
+-------
+- :class:`TransferOperation`: Options for the save-transfer command.
+- :func:`save_transfer_command`: The save-transfer command.
+"""
+
+import collections
 import collections.abc
 import enum
 import pathlib
 import shutil
 import typing
 
+import rich
 import rich.progress
 
 from ....core.db.connection import connect
@@ -11,10 +21,7 @@ from ....core.fs.resolver import Node, resolver
 from ....core.ui.configs import UI_CONFIGS
 from ....core.ui.objects import console
 from ...context import settings
-from ..merger import merger
-from ..signals import Primer
-
-__all__ = ["TransferOperation", "transfer_command"]
+from ..AP_decomp import PrimitiveSignal, merger
 
 
 class TransferOperation(str, enum.Enum):
@@ -135,7 +142,9 @@ def action(
 
 
 def presenter() -> (
-    collections.abc.Generator[None, tuple[TransferSignal, float] | Primer]
+    collections.abc.Generator[
+        None, tuple[TransferSignal, float] | PrimitiveSignal
+    ]
 ):
     looping = False
     animation: rich.progress.Progress | None = None
@@ -173,7 +182,7 @@ def presenter() -> (
 
                 animation.start()
 
-            case Primer.FINISHED:
+            case PrimitiveSignal.FINISHED:
                 looping = False
 
                 typing.cast(rich.progress.Progress, animation).stop()
@@ -183,7 +192,7 @@ def presenter() -> (
 
                 return console.print("Transfer successful.")
 
-            case Primer.KILL:
+            case PrimitiveSignal.KILL:
                 if animation is not None:
                     animation.stop()
 
@@ -194,10 +203,10 @@ def presenter() -> (
 
 
 @merger(action=action, presenter=presenter)
-def transfer_command(
+def save_transfer_command(
     in_: collections.abc.Generator[tuple[TransferSignal, float]],
     pole: collections.abc.Generator[
-        None, tuple[TransferSignal, float] | Primer
+        None, tuple[TransferSignal, float] | PrimitiveSignal
     ],
 ) -> None:
     for message in in_:
@@ -206,4 +215,4 @@ def transfer_command(
         if message[0] == TransferSignal.FAILED:
             exit(1)
 
-    pole.send(Primer.FINISHED)
+    pole.send(PrimitiveSignal.FINISHED)

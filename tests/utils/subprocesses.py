@@ -1,9 +1,7 @@
 import subprocess
 
-__all__ = ["noE_execute"]
 
-
-def noE_execute(*args: str) -> subprocess.CompletedProcess[str]:
+def NE_execute(*args: str) -> subprocess.CompletedProcess[str]:
     """
     Execute a subprocess, doing default tests in the background.
 

@@ -4,9 +4,7 @@ import typing
 import ryujinxkit.core.db.connection
 
 from ...extras.ryujinxkit.models.command_jsons import SaveCreateCommandJSON
-from ...utils.subprocesses import noE_execute
-
-__all__ = []
+from ...utils.subprocesses import NE_execute
 
 
 def test_retag() -> None:
@@ -18,12 +16,12 @@ def test_retag() -> None:
         typing.cast(
             SaveCreateCommandJSON,
             json.loads(
-                noE_execute("ryujinxkit", "--json", "save", "create").stdout
+                NE_execute("ryujinxkit", "--json", "save", "create").stdout
             ),
         )["id"]
     )
 
-    noE_execute("ryujinxkit", "save", "retag", id_, "test-tag")
+    NE_execute("ryujinxkit", "save", "retag", id_, "test-tag")
 
     with ryujinxkit.core.db.connection.connect() as connection:
 

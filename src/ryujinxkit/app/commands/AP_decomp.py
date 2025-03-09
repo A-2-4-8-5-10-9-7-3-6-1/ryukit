@@ -1,21 +1,37 @@
+"""Symbols for the realization of the action-presenter decompoition of commands.
+
+Exports
+-------
+- :func:`merger`: The method through which actions and presenters are coupled.
+- :class:`PrimitiveSignal`: Primitive signals, for presenters.
+"""
+
 import collections.abc
+import enum
 import typing
 
-from .signals import Primer
 
-__all__ = ["merger"]
+class PrimitiveSignal(int, enum.Enum):
+    """
+    Primitive signals, for presenters.
+    """
+
+    FINISHED = 0
+    KILL = 1
 
 
 class Merger[T, I](typing.Protocol):
     def __call__(
-        self, in_: T, pole: collections.abc.Generator[typing.Any, I | Primer]
+        self,
+        in_: T,
+        pole: collections.abc.Generator[typing.Any, I | PrimitiveSignal],
     ) -> None: ...
 
 
 def merger[**P, R, I](
     action: collections.abc.Callable[P, R],
     presenter: collections.abc.Callable[
-        [], collections.abc.Generator[typing.Any, I | Primer]
+        [], collections.abc.Generator[typing.Any, I | PrimitiveSignal]
     ],
 ) -> collections.abc.Callable[
     [Merger[R, I]], collections.abc.Callable[P, None]
@@ -40,7 +56,7 @@ def merger[**P, R, I](
                     function(in_=action(*args, **kwargs), pole=pole)
 
                 except KeyboardInterrupt:
-                    pole.send(Primer.KILL)
+                    pole.send(PrimitiveSignal.KILL)
 
             except StopIteration:
                 pass

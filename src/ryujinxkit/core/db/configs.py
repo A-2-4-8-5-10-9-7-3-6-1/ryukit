@@ -1,6 +1,11 @@
-import typing
+"""Database-related configurations.
 
-__all__ = ["DB_CONFIGS"]
+Exports
+-------
+- DB_CONFIGS: Database configuration object.
+"""
+
+import typing
 
 
 class ConfigDefaults(typing.TypedDict):

@@ -1,3 +1,11 @@
+"""Defines a save-tag parser, for validating save-instance tags.
+
+Exports
+-------
+- :func:`tag_parser`: The save-tag parser.
+"""
+
+
 def tag_parser(tag: str) -> str:
     """
     Validate tags.

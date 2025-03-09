@@ -1,4 +1,3 @@
-__all__ = ["ENTITY_SCHEMA", "ENTITIES_ARRAY_SCHEMA"]
 ENTITY_SCHEMA = {
     "properties": {
         "created": {"type": "string"},

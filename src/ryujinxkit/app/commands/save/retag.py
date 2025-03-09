@@ -1,19 +1,23 @@
+"""Save-retag command.
+
+Exports
+-------
+- :func:`save_retag_command`: The save-retag command.
+"""
+
 import collections
 import collections.abc
 
 from ....core.db.connection import connect
 from ....core.ui.objects import console
 from ...context import settings
-from ..merger import merger
-from ..signals import Primer
-
-__all__ = ["retag_command"]
+from ..AP_decomp import PrimitiveSignal, merger
 
 
-def presenter() -> collections.abc.Generator[None, bool | Primer]:
+def presenter() -> collections.abc.Generator[None, bool | PrimitiveSignal]:
     signal = yield
 
-    if isinstance(signal, Primer) or settings["json"]:
+    if isinstance(signal, PrimitiveSignal) or settings["json"]:
         return
 
     if signal:
@@ -47,8 +51,8 @@ def action(id_: str, tag: str) -> bool:
 
 
 @merger(action=action, presenter=presenter)
-def retag_command(
-    in_: bool, pole: collections.abc.Generator[None, bool | Primer]
+def save_retag_command(
+    in_: bool, pole: collections.abc.Generator[None, bool | PrimitiveSignal]
 ) -> None:
     pole.send(in_)
 

@@ -1,11 +1,17 @@
+"""'Database connection'-related functions.
+
+Exports
+-------
+- :func:`connect`: Context manager for database connection.
+"""
+
+import collections
 import collections.abc
 import contextlib
 import sqlite3
 import typing
 
 from ..fs.resolver import Node, resolver
-
-__all__ = ["connect"]
 
 
 @contextlib.contextmanager

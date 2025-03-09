@@ -1,3 +1,10 @@
+"""Save-export command.
+
+Exports
+-------
+- :func:`save_export_command`: The save-export command.
+"""
+
 import collections
 import collections.abc
 import io
@@ -9,13 +16,10 @@ from ....core.db.connection import connect
 from ....core.fs.resolver import Node, resolver
 from ....core.ui.configs import UI_CONFIGS
 from ....core.ui.objects import console
-from ..merger import merger
-from ..signals import Primer
-
-__all__ = ["export_command"]
+from ..AP_decomp import PrimitiveSignal, merger
 
 
-def presenter() -> collections.abc.Generator[None, None | Primer]:
+def presenter() -> collections.abc.Generator[None, None | PrimitiveSignal]:
     with console.status(
         status="[dim]Exporting",
         spinner_style="dim",
@@ -97,7 +101,7 @@ def action(output: pathlib.Path) -> None:
 
 
 @merger(action=action, presenter=presenter)
-def export_command(
-    in_: None, pole: collections.abc.Generator[None, None | Primer]
+def save_export_command(
+    in_: None, pole: collections.abc.Generator[None, None | PrimitiveSignal]
 ) -> None:
     next(pole)

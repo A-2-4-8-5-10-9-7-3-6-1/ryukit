@@ -1,14 +1,5 @@
 import typing
 
-__all__ = [
-    "AuthorCommandJSON",
-    "VersionCommandJSON",
-    "SaveCreateCommandJSON",
-    "SaveExtractCommandJSON",
-    "SaveTransferCommandJSON",
-    "SaveListCommandJSON",
-]
-
 
 class AuthorCommandJSON(typing.TypedDict):
     author: str

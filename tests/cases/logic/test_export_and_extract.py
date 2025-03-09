@@ -9,9 +9,7 @@ import jsonschema
 
 from ...schemas.export_file import ENTITIES_ARRAY_SCHEMA
 from ...utils.context_control import destroy_context
-from ...utils.subprocesses import noE_execute
-
-__all__ = []
+from ...utils.subprocesses import NE_execute
 
 
 def test_export_and_extract() -> None:
@@ -26,7 +24,7 @@ def test_export_and_extract() -> None:
     with tempfile.TemporaryDirectory() as temp:
         path = pathlib.Path(temp) / "test.tar"
 
-        noE_execute("ryujinxkit", "save", "export", "--output", str(path))
+        NE_execute("ryujinxkit", "save", "export", "--output", str(path))
 
         with (
             tarfile.open(path) as tar,
@@ -52,7 +50,7 @@ def test_export_and_extract() -> None:
 
         assert (
             json.loads(
-                noE_execute("ryujinxkit", "save", "extract", str(path)).stdout
+                NE_execute("ryujinxkit", "save", "extract", str(path)).stdout
             )["accepted"]
             == size
         )

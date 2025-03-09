@@ -1,3 +1,8 @@
+"""File-system setup script.
+
+*This module has no exports.*
+"""
+
 from .resolver import Node, resolver
 
 __all__ = []
