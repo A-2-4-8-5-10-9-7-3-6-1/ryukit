@@ -2,7 +2,7 @@
 # Development Environment
 # -----------------------
 FROM python:3.13-slim-bullseye AS development
-ENV HADOLINT_SOURCE=https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64
+ENV HADOLINT_SOURCE=https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64
 ENV NODE_SETUP_SOURCE=https://deb.nodesource.com/setup_20.x
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apt-get update && \
