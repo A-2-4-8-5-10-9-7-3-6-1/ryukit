@@ -13,6 +13,7 @@ dependencies = [
     "rich (>=13.9.4,<14.0.0)",
     "devkit @ git+https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git@v4.0.1",
     "typer (>=0.15.1,<0.16.0)",
+    "pyright (>=1,<2)",
 ]
 
 [tool.poetry.scripts]
@@ -21,9 +22,11 @@ ryujinxkit = "ryujinxkit.app.typers.app:app_typer"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
 jsonschema = "^4.23.0"
+isort = "^6.0.1"
+pyright = "^1.1.396"
 
 [tool.black]
-line-length = 80
+line-length = 79
 skip-magic-trailing-comma = true
 
 [build-system]

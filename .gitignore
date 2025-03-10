@@ -1,7 +1,8 @@
-# python
+# generated
 .venv
 __pycache__
 .pytest_cache
+node_modules
 
 # configurations
 .env
@@ -9,8 +10,4 @@ secrets
 .vscode/settings.json
 
 # artifacts
-build
 dist
-
-# node
-node_modules

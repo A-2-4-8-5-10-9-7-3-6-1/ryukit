@@ -1,27 +1,20 @@
 {
   "tasks": [
     {
-      "label": "docker-build poetry image",
-      "type": "shell",
-      "group": "build",
-      "command": "docker",
-      "args": ["build", "--target=poetry", "-t=ryujinxkit/poetry", "."]
-    },
-    {
       "label": "build package",
       "type": "shell",
       "group": "build",
-      "dependsOn": ["docker-build poetry image"],
       "command": "docker",
       "args": [
         "run",
         "--rm",
         "--mount=type=bind,source=.,target=/app",
-        "ryujinxkit/poetry",
+        "ryujinxkit/development",
         "/bin/bash",
         "-c",
         "cd /app && poetry build"
-      ]
+      ],
+      "detail": "Uses development image."
     }
   ],
   "version": "2.0.0"

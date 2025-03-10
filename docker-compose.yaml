@@ -2,6 +2,7 @@ services:
   development:
     build:
       context: .
+      dockerfile: docker/development.dockerfile
       target: development
     image: ryujinxkit/development
     environment:
