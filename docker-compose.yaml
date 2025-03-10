@@ -1,16 +1,11 @@
-# ALL SERVICES ARE INTENDED FOR LOCAL USE.
-
 services:
   development:
-    build: .
+    build:
+      context: .
+      target: development
+    image: ryujinxkit/development
     environment:
       POETRY_VIRTUALENVS_IN_PROJECT: true
     tty: true
     volumes:
-      - .:/workdir
-
-  package:
-    build: .
-    entrypoint: [ "poetry", "build" ]
-    volumes:
-      - .:/workdir
+      - .:/app

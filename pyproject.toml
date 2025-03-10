@@ -23,7 +23,7 @@ pytest = "^8.3.4"
 jsonschema = "^4.23.0"
 
 [tool.black]
-line-length = 79
+line-length = 80
 skip-magic-trailing-comma = true
 
 [build-system]

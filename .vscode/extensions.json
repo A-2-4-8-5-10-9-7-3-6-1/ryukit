@@ -1,8 +1,11 @@
 {
-    "recommendations": [
-        "ms-python.python",
-        "ms-python.isort",
-        "ms-python.black-formatter",
-        "tamasfe.even-better-toml"
-    ]
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.isort",
+    "ms-python.black-formatter",
+    "tamasfe.even-better-toml",
+    "esbenp.prettier-vscode",
+    "redhat.vscode-yaml",
+    "exiasr.hadolint"
+  ]
 }

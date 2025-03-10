@@ -1,12 +1,6 @@
 {
-    "extraPaths": [
-        "src",
-        "tests"
-    ],
-    "include": [
-        "src",
-        "tests"
-    ],
-    "reportMissingTypeStubs": "none",
-    "typeCheckingMode": "strict"
+  "extraPaths": ["src", "tests"],
+  "include": ["src", "tests"],
+  "reportMissingTypeStubs": "none",
+  "typeCheckingMode": "strict"
 }
