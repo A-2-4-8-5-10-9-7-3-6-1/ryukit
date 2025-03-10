@@ -7,6 +7,7 @@ Exports
 
 import collections
 import collections.abc
+import datetime
 import typing
 
 import rich
@@ -48,14 +49,20 @@ def action(
             {
                 "id": str(data["id"]),
                 "tag": data["tag"],
-                "created": data["created"].strftime("%d/%Y/%m %H:%M"),
-                "updated": data["updated"].strftime("%d/%Y/%m %H:%M"),
+                "created": datetime.datetime.strptime(
+                    data["created"], "%Y-%m-%d %H:%M:%S"
+                ).strftime("%d/%Y/%m %H:%M"),
+                "updated": datetime.datetime.strptime(
+                    data["updated"], "%Y-%m-%d %H:%M:%S"
+                ).strftime("%d/%Y/%m %H:%M"),
                 "used": data["used"]
-                and data["used"].strftime("%d/%Y/%m %H:%M"),
+                and datetime.datetime.strptime(
+                    data["used"], "%Y-%m-%d %H:%M:%S"
+                ).strftime("%d/%Y/%m %H:%M"),
                 "size": f"{round(data["size"] / pow(2, 20), 2)}MB",
             }
             for data in map(
-                lambda x: typing.cast(Save, x),
+                lambda x: typing.cast(Save, dict(x)),
                 connection.execute(
                     f"""
                     SELECT *
@@ -114,7 +121,7 @@ def presenter() -> (
 
     else:
         add = lambda x: typing.cast(rich.table.Table, buffer["inner"]).add_row(
-            *x
+            x["id"], x["tag"], x["created"], x["updated"], x["used"], x["size"]
         )
         buffer["reset"] = lambda: buffer.update(
             [
