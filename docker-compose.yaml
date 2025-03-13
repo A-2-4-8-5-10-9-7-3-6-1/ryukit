@@ -1,12 +1,10 @@
 services:
   development:
     build:
-      context: .
-      dockerfile: docker/development.dockerfile
       target: development
     image: ryujinxkit/development
     environment:
       POETRY_VIRTUALENVS_IN_PROJECT: true
     tty: true
     volumes:
-      - .:/app
+      - .:/home/developer/app

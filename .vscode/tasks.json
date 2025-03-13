@@ -8,11 +8,12 @@
       "args": [
         "run",
         "--rm",
-        "--mount=type=bind,source=.,target=/app",
+        "--mount",
+        "type=bind,source=.,target=/app",
         "ryujinxkit/development",
         "/bin/bash",
         "-c",
-        "cd /app && poetry build"
+        "cd ~/app && poetry build"
       ],
       "detail": "Uses development image."
     }
