@@ -9,11 +9,10 @@
         "run",
         "--rm",
         "--mount",
-        "type=bind,source=.,target=/app",
+        "type=bind,source=.,target=/home/developer/repository",
         "ryujinxkit/development",
-        "/bin/bash",
         "-c",
-        "cd ~/app && poetry build"
+        "cd ~/repository && poetry build"
       ],
       "detail": "Uses development image."
     }

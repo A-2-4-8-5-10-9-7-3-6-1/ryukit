@@ -21,3 +21,4 @@ RUN set -e; \
     pip install --no-cache-dir poetry==2.1.1; \
     useradd -m developer -s /bin/bash;
 USER developer
+ENTRYPOINT [ "/bin/bash" ]
