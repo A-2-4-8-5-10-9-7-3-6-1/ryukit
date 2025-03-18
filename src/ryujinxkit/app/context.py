@@ -1,4 +1,4 @@
-"""'App context'-related symbols.
+"""'App-context-related symbols.
 
 Exports
 -------

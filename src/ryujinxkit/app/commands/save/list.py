@@ -87,12 +87,16 @@ def presenter() -> (
         None, collections.abc.Generator[SaveRender] | PrimitiveSignal
     ]
 ):
-    class TableVar(typing.TypedDict):
-        inner: list[list[SaveRender]] | rich.table.Table
-        add: collections.abc.Callable[[SaveRender], None]
-        reset: collections.abc.Callable[[], None]
-        count: collections.abc.Callable[[], int]
-        breathe: collections.abc.Callable[[], None]
+    TableVar = typing.TypedDict(
+        "TableVar",
+        {
+            "inner": list[list[SaveRender]] | rich.table.Table,
+            "add": collections.abc.Callable[[SaveRender], None],
+            "reset": collections.abc.Callable[[], None],
+            "count": collections.abc.Callable[[], int],
+            "breathe": collections.abc.Callable[[], None],
+        },
+    )
 
     with console.status(
         status="[dim]Collecting saves",

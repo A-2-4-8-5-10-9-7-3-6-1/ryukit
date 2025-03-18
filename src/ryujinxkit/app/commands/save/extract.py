@@ -7,7 +7,6 @@ Exports
 
 import collections
 import collections.abc
-import datetime
 import enum
 import json
 import pathlib
@@ -21,6 +20,7 @@ import rich.status
 import rich.table
 
 from ....core.db.connection import connect
+from ....core.db.models.save import Save
 from ....core.fs.resolver import Node, resolver
 from ....core.ui.configs import UI_CONFIGS
 from ....core.ui.objects import console
@@ -128,14 +128,6 @@ def action(
     :returns: Signal generator for extract command.
     """
 
-    class SaveEntity(typing.TypedDict):
-        tag: str
-        created: datetime.date
-        updated: datetime.date
-        used: datetime.date
-        size: int
-        id: int
-
     try:
         with (
             tempfile.TemporaryDirectory() as temp_dir,
@@ -148,9 +140,7 @@ def action(
             tar.extractall(temp_dir)
 
             with (temp_dir / "entities.json").open() as buffer:
-                entities: collections.abc.Sequence[SaveEntity] = json.load(
-                    buffer
-                )
+                entities: collections.abc.Sequence[Save] = json.load(buffer)
 
             yield (ExtractSignal.READING, len(entities))
 

@@ -165,10 +165,16 @@ def action(
     with io.BytesIO() as buffer:
         yield (InstallSignal.SERVICE_CONNECT, 0)
 
-        response = requests.get(url=url, stream=True)
+        try:
+            response = requests.get(url=url, stream=True)
 
-        if response.status_code != 200:
+            if response.status_code != 200:
+                yield (InstallSignal.FAILED, 0)
+
+        except requests.RequestException:
             yield (InstallSignal.FAILED, 0)
+
+            return
 
         yield (
             InstallSignal.DOWNLOADING,

@@ -45,11 +45,15 @@ def presenter() -> (
     if settings["json"]:
         return console.print_json(data=data)
 
-    class Configs(typing.TypedDict):
-        content: str
-        markup: collections.abc.Callable[[str], typing.Any] | None
+    Config = typing.TypedDict(
+        "Config",
+        {
+            "content": str,
+            "markup": collections.abc.Callable[[str], typing.Any] | None,
+        },
+    )
 
-    configs: dict[InfoCommandSubject, Configs] = {
+    config: dict[InfoCommandSubject, Config] = {
         InfoCommandSubject.VERSION: {
             "content": "(RyujinxKit) version {version}",
             "markup": None,
@@ -61,8 +65,8 @@ def presenter() -> (
     }
 
     console.print(
-        (configs[subject]["markup"] or id_)(
-            configs[subject]["content"].format(**data)
+        (config[subject]["markup"] or id_)(
+            config[subject]["content"].format(**data)
         )
     )
 

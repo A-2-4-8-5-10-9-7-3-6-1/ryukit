@@ -11,6 +11,7 @@ import io
 import json
 import pathlib
 import tarfile
+import typing
 
 from ....core.db.connection import connect
 from ....core.fs.resolver import Node, resolver
@@ -46,39 +47,28 @@ def action(output: pathlib.Path) -> None:
         with io.BytesIO() as buffer:
             entities.size = buffer.write(
                 json.dumps(
-                    [
-                        dict(
-                            zip(
-                                (
-                                    "id",
-                                    "tag",
-                                    "created",
-                                    "updated",
-                                    "used",
-                                    "size",
-                                ),
-                                record,
-                            )
-                        )
-                        for record in connection.execute(
-                            """
-                            SELECT id, tag, created, updated, used, size
-                            FROM saves;
-                            """
-                        )
-                    ]
+                    connection.execute(
+                        """
+                        SELECT id, tag, created, updated, used, size
+                        FROM saves;
+                        """
+                    ).fetchall()
                 ).encode()
             )
 
             buffer.seek(0)
-
             tar.addfile(tarinfo=entities, fileobj=buffer)
 
-        for (id_,) in connection.execute(
-            """
-            SELECT CAST(id AS TEXT)
-            FROM saves;
-            """
+        IdQueryModel = typing.TypedDict("IdQueryModel", {"id": int})
+
+        for id_ in map(
+            lambda x: str(typing.cast(IdQueryModel, x)["id"]),
+            connection.execute(
+                """
+                SELECT id
+                FROM saves;
+                """
+            ),
         ):
             with resolver.cache_locked(
                 (Node.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)

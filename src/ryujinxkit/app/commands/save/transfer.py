@@ -46,14 +46,18 @@ def action(
     :returns: Signal generator for transfer commands.
     """
 
-    class Configs(typing.TypedDict):
-        query: str
-        order: collections.abc.Callable[
-            [tuple[Node, ...]], tuple[pathlib.Path, ...]
-        ]
-        size: collections.abc.Callable[
-            [collections.abc.Iterable[pathlib.Path]], int
-        ]
+    Config = typing.TypedDict(
+        "Config",
+        {
+            "query": str,
+            "order": collections.abc.Callable[
+                [tuple[Node, ...]], tuple[pathlib.Path, ...]
+            ],
+            "size": collections.abc.Callable[
+                [collections.abc.Iterable[pathlib.Path]], int
+            ],
+        },
+    )
 
     with connect() as connection:
         total = 0
@@ -74,7 +78,7 @@ def action(
         except StopIteration:
             yield (TransferSignal.FAILED, 0)
 
-        configs: Configs = (
+        config: Config = (
             {
                 "query": """
                     UPDATE saves
@@ -106,7 +110,7 @@ def action(
             (Node.RYUJINXKIT_SAVE_INSTANCE_FOLDER, id_)
         ):
             for source, dest in map(
-                configs["order"],
+                config["order"],
                 [
                     (
                         Node.RYUJINXKIT_SAVE_INSTANCE_SYSTEM_SAVE,
@@ -125,7 +129,7 @@ def action(
                 members = [
                     path for path in source.rglob("*") if not path.is_dir()
                 ]
-                total += configs["size"](members)
+                total += config["size"](members)
 
                 if dest.exists():
                     shutil.rmtree(dest)
@@ -138,7 +142,7 @@ def action(
 
                 yield (TransferSignal.TRANSFERING, 1)
 
-        connection.execute(configs["query"], {"id": id_, "total": total})
+        connection.execute(config["query"], {"id": id_, "total": total})
 
 
 def presenter() -> (
