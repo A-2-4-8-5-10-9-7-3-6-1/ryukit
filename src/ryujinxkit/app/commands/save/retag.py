@@ -14,7 +14,7 @@ from ...context import settings
 from ..AP_decomp import PrimitiveSignal, merger
 
 
-def presenter() -> collections.abc.Generator[None, bool | PrimitiveSignal]:
+def presentation() -> collections.abc.Generator[None, bool | PrimitiveSignal]:
     signal = yield
 
     if isinstance(signal, PrimitiveSignal) or settings["json"]:
@@ -23,7 +23,7 @@ def presenter() -> collections.abc.Generator[None, bool | PrimitiveSignal]:
     if signal:
         return console.print("Tag updated.")
 
-    console.print("Unrecognized save ID.")
+    console.print("[error]Unrecognized save ID.")
 
 
 def action(id_: str, tag: str) -> bool:
@@ -50,7 +50,7 @@ def action(id_: str, tag: str) -> bool:
         )
 
 
-@merger(action=action, presenter=presenter)
+@merger(action=action, presentation=presentation)
 def save_retag_command(
     in_: bool, pole: collections.abc.Generator[None, bool | PrimitiveSignal]
 ) -> None:

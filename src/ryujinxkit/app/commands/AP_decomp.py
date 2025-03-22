@@ -30,7 +30,7 @@ class Merger[T, I](typing.Protocol):
 
 def merger[**P, R, I](
     action: collections.abc.Callable[P, R],
-    presenter: collections.abc.Callable[
+    presentation: collections.abc.Callable[
         [], collections.abc.Generator[typing.Any, I | PrimitiveSignal]
     ],
 ) -> collections.abc.Callable[
@@ -45,7 +45,7 @@ def merger[**P, R, I](
     :returns: A decorator, to collect the merger.
     """
 
-    pole = presenter()
+    pole = presentation()
 
     def decorator(function: Merger[R, I]) -> collections.abc.Callable[P, None]:
         def inner(*args: P.args, **kwargs: P.kwargs) -> None:

@@ -19,8 +19,8 @@ import rich.progress
 import rich.status
 
 from ....core.fs.resolver import Node, resolver
-from ....core.ui.configs import UI_CONFIGS
 from ....core.ui.objects import console
+from ....core.ui.styling import styled
 from ...context import settings
 from ..AP_decomp import PrimitiveSignal, merger
 
@@ -44,8 +44,8 @@ def presenter() -> (
     while True:
         match (yield):
             case InstallSignal.SERVICE_CONNECT, _:
-                animation = console.status(
-                    status="[dim]Connecting to service", spinner_style="dim"
+                animation = styled(rich.status.Status)(
+                    status="Connecting to service..."
                 )
 
                 animation.start()
@@ -60,7 +60,7 @@ def presenter() -> (
                         data={"code": "SERVICE_CONNECTION_ISSUE"}
                     )
 
-                return console.print("Failed to connect to service.")
+                return console.print("[error]Failed to connect to service.")
 
             case InstallSignal.DOWNLOADING, volume:
                 if looping:
@@ -73,16 +73,13 @@ def presenter() -> (
 
                 typing.cast(rich.status.Status, animation).stop()
 
-                animation = rich.progress.Progress(
-                    rich.progress.SpinnerColumn(style="dim"),
-                    "[dim]{task.description}",
-                    "[dim]({task.percentage:.1f}%)",
-                    console=console,
-                    refresh_per_second=UI_CONFIGS["refresh_rate"],
-                    transient=True,
+                animation = styled(rich.progress.Progress)(
+                    styled(rich.progress.SpinnerColumn)(),
+                    "{task.description}",
+                    "({task.percentage:.1f}%)",
                 )
                 task_id = animation.add_task(
-                    description="Downloading", total=volume
+                    description="Downloading Ryujinx...", total=volume
                 )
                 looping = True
 
@@ -92,10 +89,8 @@ def presenter() -> (
                 typing.cast(rich.progress.Progress, animation).stop()
 
                 looping = False
-                animation = console.status(
-                    status="[dim]Unpacking",
-                    spinner_style="dim",
-                    refresh_per_second=UI_CONFIGS["refresh_rate"],
+                animation = styled(rich.status.Status)(
+                    status="Unpacking contents..."
                 )
 
                 animation.start()
@@ -223,7 +218,7 @@ def action(
             yield (InstallSignal.FAILED, 1)
 
 
-@merger(action=action, presenter=presenter)
+@merger(action=action, presentation=presenter)
 def install_command(
     in_: collections.abc.Generator[tuple[InstallSignal, float]],
     pole: collections.abc.Generator[

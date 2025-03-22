@@ -26,7 +26,7 @@ class InfoCommandSubject(int, enum.Enum):
     AUTHOR = 1
 
 
-def presenter() -> (
+def presentation() -> (
     collections.abc.Generator[
         None,
         tuple[InfoCommandSubject, dict[str, typing.Any]] | PrimitiveSignal,
@@ -53,22 +53,21 @@ def presenter() -> (
         },
     )
 
-    config: dict[InfoCommandSubject, Config] = {
-        InfoCommandSubject.VERSION: {
-            "content": "(RyujinxKit) version {version}",
-            "markup": None,
+    config = typing.cast(
+        dict[InfoCommandSubject, Config],
+        {
+            InfoCommandSubject.VERSION: {
+                "content": "[italic][colour.primary][bold]RyujinxKit[/bold][/colour.primary][/italic] --- version {version}",
+                "markup": None,
+            },
+            InfoCommandSubject.AUTHOR: {
+                "content": "[{author}]({link})",
+                "markup": rich.markdown.Markdown,
+            },
         },
-        InfoCommandSubject.AUTHOR: {
-            "content": "[{author}]({link})",
-            "markup": rich.markdown.Markdown,
-        },
-    }
+    )[subject]
 
-    console.print(
-        (config[subject]["markup"] or id_)(
-            config[subject]["content"].format(**data)
-        )
-    )
+    console.print((config["markup"] or id_)(config["content"].format(**data)))
 
 
 def action(
@@ -97,7 +96,7 @@ def action(
             }
 
 
-@merger(action=action, presenter=presenter)
+@merger(action=action, presentation=presentation)
 def info_command(
     in_: tuple[InfoCommandSubject, dict[str, typing.Any]],
     pole: collections.abc.Generator[

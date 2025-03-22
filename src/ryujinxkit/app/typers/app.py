@@ -11,18 +11,17 @@ import typing
 
 import typer
 
-from ...core.ui.configs import UI_CONFIGS
+from ...core.ui.styling import styled
 from ..commands.misc.info import InfoCommandSubject, info_command
 from ..commands.misc.install import install_command
 from ..context import settings
 from .save import save_typer
 
-app_typer = typer.Typer(
+app_typer = styled(typer.Typer)(
     name="ryujinxkit",
     invoke_without_command=True,
     help=f"{importlib.metadata.metadata("ryujinxkit")["summary"]}"
     " Invoke without argument to install Ryujinx.",
-    **UI_CONFIGS["typer_settings"],
 )
 
 app_typer.add_typer(

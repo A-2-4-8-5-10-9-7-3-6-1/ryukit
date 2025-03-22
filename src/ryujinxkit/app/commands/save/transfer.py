@@ -18,8 +18,8 @@ import rich.progress
 
 from ....core.db.connection import connect
 from ....core.fs.resolver import Node, resolver
-from ....core.ui.configs import UI_CONFIGS
 from ....core.ui.objects import console
+from ....core.ui.styling import styled
 from ...context import settings
 from ..AP_decomp import PrimitiveSignal, merger
 
@@ -145,7 +145,7 @@ def action(
         connection.execute(config["query"], {"id": id_, "total": total})
 
 
-def presenter() -> (
+def presentation() -> (
     collections.abc.Generator[
         None, tuple[TransferSignal, float] | PrimitiveSignal
     ]
@@ -160,7 +160,7 @@ def presenter() -> (
                 if settings["json"]:
                     return console.print_json(data={"code": "ID_ISSUE"})
 
-                return console.print("Unrecognized save ID.")
+                return console.print("[error]Unrecognized save ID.")
 
             case TransferSignal.TRANSFERING, volume:
                 if looping:
@@ -171,13 +171,10 @@ def presenter() -> (
 
                     continue
 
-                animation = rich.progress.Progress(
-                    rich.progress.SpinnerColumn(style="dim"),
-                    "[dim]{task.description}",
-                    "[dim]({task.completed}/{task.total})",
-                    console=console,
-                    refresh_per_second=UI_CONFIGS["refresh_rate"],
-                    transient=True,
+                animation = styled(rich.progress.Progress)(
+                    styled(rich.progress.SpinnerColumn)(),
+                    "{task.description}",
+                    "({task.completed}/{task.total})",
                 )
                 task_id = animation.add_task(
                     description="Transfering", total=volume
@@ -206,7 +203,7 @@ def presenter() -> (
                 pass
 
 
-@merger(action=action, presenter=presenter)
+@merger(action=action, presentation=presentation)
 def save_transfer_command(
     in_: collections.abc.Generator[tuple[TransferSignal, float]],
     pole: collections.abc.Generator[

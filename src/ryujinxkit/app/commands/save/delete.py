@@ -16,7 +16,7 @@ from ...context import settings
 from ..AP_decomp import PrimitiveSignal, merger
 
 
-def presenter() -> collections.abc.Generator[None, bool | PrimitiveSignal]:
+def presentation() -> collections.abc.Generator[None, bool | PrimitiveSignal]:
     signal = yield
 
     if isinstance(signal, PrimitiveSignal) or settings["json"]:
@@ -25,12 +25,11 @@ def presenter() -> collections.abc.Generator[None, bool | PrimitiveSignal]:
     if signal:
         return console.print("Save deleted.")
 
-    console.print("Unrecognized save ID.")
+    console.print("[error]Unrecognized save ID.")
 
 
 def action(id_: str) -> bool:
-    """
-    Delete a save.
+    """Delete a save.
 
     :param id_: Save's ID.
 
@@ -57,7 +56,7 @@ def action(id_: str) -> bool:
     return True
 
 
-@merger(action=action, presenter=presenter)
+@merger(action=action, presentation=presentation)
 def save_delete_command(
     in_: bool, pole: collections.abc.Generator[None, bool | PrimitiveSignal]
 ) -> None:

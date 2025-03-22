@@ -17,8 +17,7 @@ from ..AP_decomp import PrimitiveSignal, merger
 
 
 def action(tag: str = DB_CONFIGS["defaults"]["save_tag"]) -> int:
-    """
-    Create a save.
+    """Create a save.
 
     :param tag: A tag for the save.
 
@@ -38,7 +37,7 @@ def action(tag: str = DB_CONFIGS["defaults"]["save_tag"]) -> int:
         )
 
 
-def presenter() -> collections.abc.Generator[None, int | PrimitiveSignal]:
+def presentation() -> collections.abc.Generator[None, int | PrimitiveSignal]:
     signal = yield
 
     if isinstance(signal, PrimitiveSignal):
@@ -50,7 +49,7 @@ def presenter() -> collections.abc.Generator[None, int | PrimitiveSignal]:
     console.print(f"ID: {signal}.")
 
 
-@merger(action=action, presenter=presenter)
+@merger(action=action, presentation=presentation)
 def save_create_command(
     in_: int, pole: collections.abc.Generator[None, int | PrimitiveSignal]
 ) -> None:

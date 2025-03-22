@@ -13,13 +13,14 @@ import typing
 import rich
 import rich.box
 import rich.progress
+import rich.status
 import rich.style
 import rich.table
 
 from ....core.db.connection import connect
 from ....core.db.models.save import Save
-from ....core.ui.configs import UI_CONFIGS
 from ....core.ui.objects import console
+from ....core.ui.styling import styled
 from ...context import settings
 from ..AP_decomp import PrimitiveSignal, merger
 
@@ -82,7 +83,7 @@ def action(
         )
 
 
-def presenter() -> (
+def presentation() -> (
     collections.abc.Generator[
         None, collections.abc.Generator[SaveRender] | PrimitiveSignal
     ]
@@ -98,11 +99,7 @@ def presenter() -> (
         },
     )
 
-    with console.status(
-        status="[dim]Collecting saves",
-        spinner_style="dim",
-        refresh_per_second=UI_CONFIGS["refresh_rate"],
-    ):
+    with styled(rich.status.Status)(status="Collecting saves..."):
         reel = yield
 
     if isinstance(reel, PrimitiveSignal):
@@ -131,35 +128,15 @@ def presenter() -> (
             [
                 (
                     "inner",
-                    rich.table.Table(
-                        "ID",
-                        "TAG",
-                        "CREATED",
-                        "UPDATED",
-                        "USED",
-                        "SIZE",
-                        box=rich.box.Box(
-                            box="\n".join(
-                                [
-                                    "    ",
-                                    "    ",
-                                    " -  ",
-                                    "    ",
-                                    "    ",
-                                    "    ",
-                                    "    ",
-                                    "    ",
-                                ]
-                            ),
-                            ascii=True,
-                        ),
+                    styled(rich.table.Table)(
+                        "ID", "TAG", "CREATED", "UPDATED", "USED", "SIZE"
                     ),
                 )
             ]
         )
         buffer["breathe"] = lambda: (
             (
-                console.print(buffer["inner"]),
+                console.print(buffer["inner"], style="colour.secondary"),
                 console.input() if not quick_draw else None,
             )
             if typing.cast(TableVar, buffer)["count"]() != 0
@@ -200,7 +177,7 @@ def presenter() -> (
         return console.print("No save to show.")
 
 
-@merger(action=action, presenter=presenter)
+@merger(action=action, presentation=presentation)
 def save_list_command(
     in_: collections.abc.Generator[collections.abc.Generator[SaveRender]],
     pole: collections.abc.Generator[

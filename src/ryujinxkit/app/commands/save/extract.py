@@ -22,8 +22,8 @@ import rich.table
 from ....core.db.connection import connect
 from ....core.db.models.save import Save
 from ....core.fs.resolver import Node, resolver
-from ....core.ui.configs import UI_CONFIGS
 from ....core.ui.objects import console
+from ....core.ui.styling import styled
 from ...context import settings
 from ..AP_decomp import PrimitiveSignal, merger
 
@@ -34,7 +34,7 @@ class ExtractSignal(int, enum.Enum):
     READING = 2
 
 
-def presenter() -> (
+def presentation() -> (
     collections.abc.Generator[
         None, tuple[ExtractSignal, float] | PrimitiveSignal
     ]
@@ -47,11 +47,7 @@ def presenter() -> (
     while True:
         match (yield):
             case ExtractSignal.EXTRACTING, 0:
-                animation = console.status(
-                    status="Extracting",
-                    spinner_style="dim",
-                    refresh_per_second=UI_CONFIGS["refresh_rate"],
-                )
+                animation = styled(rich.status.Status)(status="Extracting...")
 
                 animation.start()
 
@@ -65,13 +61,11 @@ def presenter() -> (
                         data={"code": "EXTRACTION_ISSUE"}
                     )
 
-                return console.print("Malformed export file.")
+                return console.print("Malformed export file.", style="error")
 
             case ExtractSignal.READING, volume:
                 if looping:
-                    animation = typing.cast(
-                        rich.progress.Progress, animation
-                    ).advance(
+                    typing.cast(rich.progress.Progress, animation).advance(
                         task_id=typing.cast(rich.progress.TaskID, task_id),
                         advance=volume,
                     )
@@ -80,16 +74,13 @@ def presenter() -> (
 
                 typing.cast(rich.status.Status, animation).stop()
 
-                animation = rich.progress.Progress(
-                    rich.progress.SpinnerColumn(style="dim"),
-                    "[dim]{task.description}",
-                    "[dim]({task.percentage:.1f}%)",
-                    console=console,
-                    refresh_per_second=UI_CONFIGS["refresh_rate"],
-                    transient=True,
+                animation = styled(rich.progress.Progress)(
+                    styled(rich.progress.SpinnerColumn)(),
+                    "{task.description}",
+                    "({task.percentage:.1f}%)",
                 )
                 task_id = animation.add_task(
-                    description="Reading", total=volume
+                    description="Reading entities...", total=volume
                 )
                 r_total = volume
                 looping = True
@@ -99,8 +90,14 @@ def presenter() -> (
             case PrimitiveSignal.FINISHED:
                 looping = False
                 r_total = typing.cast(int, r_total)
+                animation = typing.cast(rich.progress.Progress, animation)
 
-                typing.cast(rich.progress.Progress, animation).stop()
+                animation.update(
+                    task_id=typing.cast(rich.progress.TaskID, task_id),
+                    total=1,
+                    completed=1,
+                )
+                animation.stop()
 
                 if settings["json"]:
                     return console.print_json(data={"accepted": r_total})
@@ -192,7 +189,7 @@ def action(
         yield (ExtractSignal.FAILED, 0)
 
 
-@merger(action=action, presenter=presenter)
+@merger(action=action, presentation=presentation)
 def save_extract_command(
     in_: collections.abc.Generator[tuple[ExtractSignal, float]],
     pole: collections.abc.Generator[

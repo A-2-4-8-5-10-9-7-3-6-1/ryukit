@@ -11,29 +11,29 @@ import io
 import json
 import pathlib
 import tarfile
-import typing
+
+import rich
+import rich.status
 
 from ....core.db.connection import connect
 from ....core.fs.resolver import Node, resolver
-from ....core.ui.configs import UI_CONFIGS
 from ....core.ui.objects import console
+from ....core.ui.styling import styled
 from ..AP_decomp import PrimitiveSignal, merger
 
 
-def presenter() -> collections.abc.Generator[None, None | PrimitiveSignal]:
-    with console.status(
-        status="[dim]Exporting",
-        spinner_style="dim",
-        refresh_per_second=UI_CONFIGS["refresh_rate"],
-    ):
-        yield
+def presentation() -> collections.abc.Generator[None, None | PrimitiveSignal]:
+    with styled(rich.status.Status)(status="Exporting..."):
+        signal = yield
+
+    if signal != PrimitiveSignal.FINISHED:
+        return
 
     console.print("Export completed.")
 
 
 def action(output: pathlib.Path) -> None:
-    """
-    Archive saves into a tar file.
+    """Archive saves into a tar file.
 
     :param output: Output's file path.
     """
@@ -47,22 +47,25 @@ def action(output: pathlib.Path) -> None:
         with io.BytesIO() as buffer:
             entities.size = buffer.write(
                 json.dumps(
-                    connection.execute(
-                        """
-                        SELECT id, tag, created, updated, used, size
-                        FROM saves;
-                        """
-                    ).fetchall()
+                    list(
+                        map(
+                            dict,
+                            connection.execute(
+                                """
+                                SELECT id, tag, created, updated, used, size
+                                FROM saves;
+                                """
+                            ),
+                        )
+                    )
                 ).encode()
             )
 
             buffer.seek(0)
             tar.addfile(tarinfo=entities, fileobj=buffer)
 
-        IdQueryModel = typing.TypedDict("IdQueryModel", {"id": int})
-
         for id_ in map(
-            lambda x: str(typing.cast(IdQueryModel, x)["id"]),
+            lambda x: str(x["id"]),
             connection.execute(
                 """
                 SELECT id
@@ -90,7 +93,7 @@ def action(output: pathlib.Path) -> None:
                 ]
 
 
-@merger(action=action, presenter=presenter)
+@merger(action=action, presentation=presentation)
 def save_export_command(
     in_: None, pole: collections.abc.Generator[None, None | PrimitiveSignal]
 ) -> None:
