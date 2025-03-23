@@ -1,4 +1,11 @@
 {
+  "inputs": [
+    {
+      "id": "VERSION",
+      "type": "promptString",
+      "description": "Package version."
+    }
+  ],
   "tasks": [
     {
       "label": "build package",
@@ -12,7 +19,7 @@
         "type=bind,source=.,target=/home/developer/repository",
         "ryujinxkit/development",
         "-c",
-        "cd ~/repository && poetry build"
+        "cd ~/repository && poetry build --config-settings local-version=${input:VERSION}"
       ],
       "detail": "Uses development image."
     }
