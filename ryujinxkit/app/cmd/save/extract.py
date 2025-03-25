@@ -17,10 +17,10 @@ import rich.table
 import typer
 
 from ....core.db.models.save import Save
-from ....core.db.theme_applier import db_ready
+from ....core.db.theme import db_applier
 from ....core.fs.resolver import Node, resolver
 from ....core.ui.objects import console
-from ....core.ui.theme_applier import styled
+from ....core.ui.theme import ui_applier
 from ....helpers.AP_decomp import Presenter, PrimitiveSignal, merge
 from ...context.behavioural_control import settings
 from .typer import save_typer
@@ -61,7 +61,7 @@ def _presenter() -> Presenter[tuple[ExtractSignal, float]]:
     while True:
         match (yield):
             case ExtractSignal.EXTRACTING, 0:
-                animation = styled(rich.status.Status)("Extracting...")
+                animation = ui_applier(rich.status.Status)("Extracting...")
 
                 animation.start()
 
@@ -88,8 +88,8 @@ def _presenter() -> Presenter[tuple[ExtractSignal, float]]:
 
                 typing.cast(rich.status.Status, animation).stop()
 
-                animation = styled(rich.progress.Progress)(
-                    styled(rich.progress.SpinnerColumn)(),
+                animation = ui_applier(rich.progress.Progress)(
+                    ui_applier(rich.progress.SpinnerColumn)(),
                     "{task.description}",
                     "({task.percentage:.1f}%)",
                 )
@@ -152,7 +152,7 @@ def _action_dispensor(path: pathlib.Path):
 
             yield (ExtractSignal.READING, len(entities))
 
-            with db_ready(sqlite3.connect)("DATABASE") as con:
+            with db_applier(sqlite3.connect)("DATABASE") as con:
                 for entity in entities:
                     save_dir = (
                         temp_dir

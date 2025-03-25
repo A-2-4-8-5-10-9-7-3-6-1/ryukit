@@ -6,7 +6,7 @@ import typing
 
 import typer
 
-from ....core.db.theme_applier import db_ready
+from ....core.db.theme import db_applier
 from ....core.fs.resolver import Node, resolver
 from ....core.ui.objects import console
 from ....helpers.AP_decomp import Presenter, PrimitiveSignal, merge
@@ -53,7 +53,7 @@ def _action_dispensor(id_: str):
     :returns: Whether or not the operation was successful.
     """
 
-    with db_ready(sqlite3.connect)("DATABASE") as con:
+    with db_applier(sqlite3.connect)("DATABASE") as con:
         if (
             con.execute(
                 """

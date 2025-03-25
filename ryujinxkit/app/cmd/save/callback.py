@@ -2,7 +2,6 @@
 
 import collections
 import collections.abc
-import datetime
 import sqlite3
 import typing
 
@@ -15,9 +14,9 @@ import rich.table
 import typer
 
 from ....core.db.models.save import Save
-from ....core.db.theme_applier import db_ready
+from ....core.db.theme import db_applier
 from ....core.ui.objects import console
-from ....core.ui.theme_applier import styled
+from ....core.ui.theme import ui_applier
 from ....helpers.AP_decomp import Presenter, PrimitiveSignal, merge
 from ....helpers.parsers import sort_key_parser
 from ...context.behavioural_control import settings
@@ -68,28 +67,22 @@ def _action_dispensor(
     :returns: Signal generator for list command.
     """
 
-    with db_ready(sqlite3.connect)("DATABASE") as con:
+    with db_applier(sqlite3.connect)("DATABASE") as con:
         yield (
             typing.cast(
                 _SaveRender,
-                {
-                    "id": str(data["id"]),
-                    "tag": data["tag"],
-                    "created": datetime.datetime.strptime(
-                        data["created"], "%Y-%m-%d %H:%M:%S"
-                    ).strftime("%d/%Y/%m %H:%M"),
-                    "updated": datetime.datetime.strptime(
-                        data["updated"], "%Y-%m-%d %H:%M:%S"
-                    ).strftime("%d/%Y/%m %H:%M"),
-                    "used": data["used"]
-                    and datetime.datetime.strptime(
-                        data["used"], "%Y-%m-%d %H:%M:%S"
-                    ).strftime("%d/%Y/%m %H:%M"),
-                    "size": f"{round(data["size"] / pow(2, 20), 2)}MB",
+                print(data)
+                or {
+                    "id": str(data.id),
+                    "tag": data.tag,
+                    "created": data.created.strftime("%d/%Y/%m %H:%M"),
+                    "updated": data.updated.strftime("%d/%Y/%m %H:%M"),
+                    "used": data.used and data.used.strftime("%d/%Y/%m %H:%M"),
+                    "size": f"{round(data.size / pow(2, 20), 2)}MB",
                 },
             )
             for data in map(
-                lambda x: typing.cast(Save, x),
+                lambda x: Save(*x),
                 con.execute(
                     f"""
                     SELECT *
@@ -120,7 +113,7 @@ def _presenter() -> Presenter[collections.abc.Generator[_SaveRender]]:
             "breathe": collections.abc.Callable[[], None],
         },
     )
-    status = styled(rich.status.Status)("Collecting saves...")
+    status = ui_applier(rich.status.Status)("Collecting saves...")
     quick_draw = True
     no8: _SaveRender | None = None
     table: TableVar | None = None
@@ -164,7 +157,7 @@ def _presenter() -> Presenter[collections.abc.Generator[_SaveRender]]:
                         [
                             (
                                 "inner",
-                                styled(rich.table.Table)(
+                                ui_applier(rich.table.Table)(
                                     "ID",
                                     "TAG",
                                     "CREATED",

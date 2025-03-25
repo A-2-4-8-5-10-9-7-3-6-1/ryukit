@@ -1,4 +1,53 @@
-"""Component-styling utilities."""
+"""
+Theme Guide
+===========
+
+rich.progress.Progress
+----------------------
+
+Default kwargs:
+
+- refresh_per_second
+- console
+
+The preprocessor will add styling to every positional string renderable, \
+so it's recommended to use strings for text renderables.
+
+rich.progress.SpinnerColumn
+---------------------------
+
+Default kwargs:
+
+- style
+- spinner_name
+
+rich.status.Status
+------------------
+
+Default kwargs:
+
+- console
+- refresh_per_second
+- spinner
+- spinner_style
+
+The preprocessor will add styling to the "status" argument and expects it \
+to be provided positionally.
+
+rich.table.Table
+----------------
+
+Default kwargs:
+
+- box
+
+typer.Typer
+-----------
+
+Default kwargs:
+
+- rich_markup_mode
+"""
 
 import rich
 import rich.box
@@ -38,7 +87,7 @@ def _status_PPR(status: object, *rest: object, **kwargs: object):
 
 
 general = {"refresh_rate": 10}
-styled = theming.functional_theming.theme_applier(
+ui_applier = theming.functional_theming.theme_applier(
     {
         rich.progress.Progress: {
             "default_kwargs": {

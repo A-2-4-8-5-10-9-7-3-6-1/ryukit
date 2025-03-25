@@ -12,10 +12,10 @@ import rich
 import rich.progress
 import typer
 
-from ....core.db.theme_applier import db_ready
+from ....core.db.theme import db_applier
 from ....core.fs.resolver import Node, resolver
 from ....core.ui.objects import console
-from ....core.ui.theme_applier import styled
+from ....core.ui.theme import ui_applier
 from ....helpers.AP_decomp import Presenter, PrimitiveSignal, merge
 from ...context.behavioural_control import settings
 from .typer import save_typer
@@ -70,7 +70,7 @@ def _action_dispensor(id_: str, operation: TransferOperation):
         },
     )
 
-    with db_ready(sqlite3.connect)("DATABASE") as con:
+    with db_applier(sqlite3.connect)("DATABASE") as con:
         total = 0
         initial_size: int = -1
 
@@ -179,8 +179,8 @@ def _presenter() -> Presenter[tuple[_TransferSignal, float]]:
 
                     continue
 
-                animation = styled(rich.progress.Progress)(
-                    styled(rich.progress.SpinnerColumn)(),
+                animation = ui_applier(rich.progress.Progress)(
+                    ui_applier(rich.progress.SpinnerColumn)(),
                     "{task.description}",
                     "({task.completed}/{task.total})",
                 )

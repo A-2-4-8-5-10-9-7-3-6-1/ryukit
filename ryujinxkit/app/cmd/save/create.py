@@ -6,7 +6,7 @@ import typing
 import typer
 
 from ....core.db.configs import DB_CONFIGS
-from ....core.db.theme_applier import db_ready
+from ....core.db.theme import db_applier
 from ....core.ui.objects import console
 from ....helpers.AP_decomp import Presenter, PrimitiveSignal, merge
 from ....helpers.parsers import tag_parser
@@ -38,7 +38,7 @@ def _action_dispensor(tag: str):
     :returns: ID of new save.
     """
 
-    with db_ready(sqlite3.connect)("DATABASE") as con:
+    with db_applier(sqlite3.connect)("DATABASE") as con:
         yield typing.cast(
             int,
             con.execute(

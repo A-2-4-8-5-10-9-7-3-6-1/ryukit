@@ -33,6 +33,7 @@ def merge[**P, Signal](
 
     def inner(*args: P.args, **kwargs: P.kwargs):
         try:
+            next(presenter)
             presenter.send(PrimitiveSignal.START)
 
             for message in action_dispensor(*args, **kwargs):

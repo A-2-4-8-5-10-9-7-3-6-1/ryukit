@@ -11,10 +11,10 @@ import rich
 import rich.status
 import typer
 
-from ....core.db.theme_applier import db_ready
+from ....core.db.theme import db_applier
 from ....core.fs.resolver import Node, resolver
 from ....core.ui.objects import console
-from ....core.ui.theme_applier import styled
+from ....core.ui.theme import ui_applier
 from ....helpers.AP_decomp import Presenter, PrimitiveSignal, merge
 from .typer import save_typer
 
@@ -33,7 +33,7 @@ def command(
 
 
 def _presenter() -> Presenter[None]:
-    status = styled(rich.status.Status)("Exporting...")
+    status = ui_applier(rich.status.Status)("Exporting...")
     accepting = True
 
     while True:
@@ -57,7 +57,7 @@ def _action_dispensor(output: pathlib.Path):
 
     with (
         tarfile.TarFile(name=output, mode="w") as tar,
-        db_ready(sqlite3.connect)("DATABASE") as con,
+        db_applier(sqlite3.connect)("DATABASE") as con,
     ):
         entities = tarfile.TarInfo("entities.json")
 

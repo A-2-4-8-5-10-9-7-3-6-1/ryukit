@@ -15,7 +15,7 @@ import typer
 
 from ...core.fs.resolver import Node, resolver
 from ...core.ui.objects import console
-from ...core.ui.theme_applier import styled
+from ...core.ui.theme import ui_applier
 from ...helpers.AP_decomp import Presenter, PrimitiveSignal, merge
 from ..context.behavioural_control import settings
 from .typer import app_typer
@@ -69,7 +69,7 @@ def _presenter() -> Presenter[tuple[_InstallSignal, float]]:
     while True:
         match (yield):
             case _InstallSignal.SERVICE_CONNECT, _:
-                animation = styled(rich.status.Status)(
+                animation = ui_applier(rich.status.Status)(
                     "Connecting to service..."
                 )
 
@@ -98,8 +98,8 @@ def _presenter() -> Presenter[tuple[_InstallSignal, float]]:
 
                 typing.cast(rich.status.Status, animation).stop()
 
-                animation = styled(rich.progress.Progress)(
-                    styled(rich.progress.SpinnerColumn)(),
+                animation = ui_applier(rich.progress.Progress)(
+                    ui_applier(rich.progress.SpinnerColumn)(),
                     "{task.description}",
                     "({task.percentage:.1f}%)",
                 )
@@ -114,7 +114,9 @@ def _presenter() -> Presenter[tuple[_InstallSignal, float]]:
                 typing.cast(rich.progress.Progress, animation).stop()
 
                 tracking = False
-                animation = styled(rich.status.Status)("Unpacking contents...")
+                animation = ui_applier(rich.status.Status)(
+                    "Unpacking contents..."
+                )
 
                 animation.start()
 

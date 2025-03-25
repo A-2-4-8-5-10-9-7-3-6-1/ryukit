@@ -4,13 +4,15 @@ import importlib
 import importlib.resources
 import sqlite3
 
-from .theme_applier import db_ready
+from .theme import db_applier
 
-with db_ready(sqlite3.connect)("DATABASE") as _con:
-    _con.execute(
+with db_applier(sqlite3.connect)("DATABASE") as con:
+    con.executescript(
         (
             importlib.resources.files("ryujinxkit")
-            / "assests"
+            / "assets"
             / "database-setup.sql"
         ).read_text()
     )
+
+__all__ = []

@@ -5,9 +5,9 @@ import importlib.metadata
 
 import typer
 
-from ...core.ui.theme_applier import styled
+from ...core.ui.theme import ui_applier
 
-app_typer = styled(typer.Typer)(
+app_typer = ui_applier(typer.Typer)(
     name="ryujinxkit",
     invoke_without_command=True,
     help=f"{importlib.metadata.metadata("ryujinxkit")["summary"]}"
