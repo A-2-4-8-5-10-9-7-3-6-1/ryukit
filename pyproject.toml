@@ -10,9 +10,10 @@ dependencies = [
   "requests (>=2.32.3,<3.0.0)",
   "platformdirs (>=4.3.6,<5.0.0)",
   "rich (>=13.9.4,<14.0.0)",
-  "devkit @ git+https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git@v4.0.1",
   "typer (>=0.15.1,<0.16.0)",
   "pyright (>=1,<2)",
+  "file-systems @ git+https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git@v0.1.0#subdirectory=packages/file-systems",
+  "theming @ git+https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git@v0.1.0#subdirectory=packages/theming",
 ]
 dynamic = ["version"]
 
@@ -20,7 +21,7 @@ dynamic = ["version"]
 version = "0.0.0"
 
 [tool.poetry.scripts]
-ryujinxkit = "ryujinxkit.app.typers.app:app_typer"
+ryujinxkit = "ryujinxkit.app.cmd.typer:app_typer"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"

@@ -3,7 +3,6 @@ import json
 import typing
 
 import pytest
-
 import ryujinxkit.core.db.connection
 
 from ...extras.ryujinxkit.models.command_jsons import SaveCreateCommandJSON

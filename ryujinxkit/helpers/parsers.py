@@ -1,0 +1,41 @@
+"""Typer parsers."""
+
+import re
+
+
+def sort_key_parser(key: str):
+    """
+    Map a string to a column-direction pair.
+
+    :param key: Key to map.
+
+    :returns: Provided key as column-direction pair.
+
+    :raises: `ValueError` If provided key is invalid.
+    """
+
+    key_pattern = "^(id|created|tag|updated|used|size)[+-]$"
+
+    if re.match(string=key, pattern=key_pattern) is None:
+        raise ValueError
+
+    return key[:-1], "asc" if key[-1] == "+" else "desc"
+
+
+def tag_parser(tag: str):
+    """
+    Validate tags.
+
+    :param tag: Tag to be validated.
+
+    :returns: The formatted tag.
+
+    :raises: `ValueError` if the tag is invalid.
+    """
+
+    tag = tag.strip()
+
+    if tag == "" or not tag[0].isalnum() or " " in tag:
+        raise ValueError
+
+    return tag

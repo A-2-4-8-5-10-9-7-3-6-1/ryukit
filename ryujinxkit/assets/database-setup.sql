@@ -1,0 +1,11 @@
+-- ---------------------
+-- Database Setup Script
+-- ---------------------
+CREATE TABLE IF NOT EXISTS saves (
+  id INTEGER PRIMARY KEY,
+  tag VARCHAR(20) DEFAULT 'untagged' NOT NULL,
+  created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP,
+  used TIMESTAMP,
+  size INTEGER DEFAULT 0 NOT NULL
+);
