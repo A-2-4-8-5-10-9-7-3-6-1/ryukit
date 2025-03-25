@@ -221,7 +221,7 @@ develop = false
 type = "git"
 url = "https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git"
 reference = "v0.1.0"
-resolved_reference = "58179eb754ca3b8500f1944ce70b4916338cd0a9"
+resolved_reference = "ead48cce496642f388f208d71275c2657d64d62a"
 subdirectory = "packages/file-systems"
 
 [[package]]
@@ -675,7 +675,7 @@ develop = false
 type = "git"
 url = "https://github.com/A-2-4-8-5-10-9-7-3-6-1/python-devkit.git"
 reference = "v0.1.0"
-resolved_reference = "58179eb754ca3b8500f1944ce70b4916338cd0a9"
+resolved_reference = "ead48cce496642f388f208d71275c2657d64d62a"
 subdirectory = "packages/theming"
 
 [[package]]

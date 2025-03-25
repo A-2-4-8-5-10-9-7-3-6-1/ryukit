@@ -7,6 +7,7 @@
     "esbenp.prettier-vscode",
     "redhat.vscode-yaml",
     "exiasr.hadolint",
-    "ms-azuretools.vscode-docker"
+    "ms-azuretools.vscode-docker",
+    "dbcode.dbcode"
   ]
 }

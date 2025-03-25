@@ -1,6 +1,6 @@
 {
-  "extraPaths": ["ryujinxkit", "tests"],
-  "include": ["ryujinxkit", "tests"],
+  "extraPaths": ["*"],
+  "include": ["*"],
   "reportMissingTypeStubs": "none",
   "typeCheckingMode": "strict"
 }
