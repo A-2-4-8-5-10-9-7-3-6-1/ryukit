@@ -1,6 +1,5 @@
-#########################
-# Development Environment
-#########################
+# ==== Development Environment ====
+
 FROM python:3.13-slim-bullseye AS development
 ENV HADOLINT_SHA256=56de6d5e5ec427e17b74fa48d51271c7fc0d61244bf5c90e828aab8362d55010
 ENV NODESOURCE_SHA256=dd3bc508520fcdfdc8c4360902eac90cba411a7e59189a80fb61fcbea8f4199c

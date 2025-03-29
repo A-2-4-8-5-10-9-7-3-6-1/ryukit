@@ -1,0 +1,8 @@
+{
+  "$schema": "../schemas/app-configs.json",
+  "ryujinxInstallURL": null,
+  "ryujinxConfigs": {
+    "distDir": null,
+    "roamingDataDir": null
+  }
+}

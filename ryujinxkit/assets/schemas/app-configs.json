@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "ryujinxInstallURL": {
+      "type": ["string", "null"]
+    },
+    "ryujinxConfigs": {
+      "$ref": "#/definitions/ryujinxConfigs"
+    }
+  },
+  "type": "object",
+  "required": ["ryujinxInstallURL", "ryujinxConfigs"],
+  "definitions": {
+    "ryujinxConfigs": {
+      "type": "object",
+      "properties": {
+        "roamingDataDir": {
+          "type": ["string", "null"]
+        },
+        "distDir": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": ["roamingDataDir", "distDir"]
+    }
+  }
+}
