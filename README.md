@@ -1,5 +1,5 @@
 <div align="center">
-    <h1>RyujinxKit</h1>
+    <h1>RyuKit</h1>
     <p style="font-style: italic;">
         RyujinxKit is a Python package and CLI tool designed to facilitate the management of a Windows Ryujinx distribution.
     </p>

@@ -12,7 +12,7 @@ default_label = f"Save{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}"
 @context.manage_typer.command("create-save", rich_help_panel="Save Control")
 def _(
     label: typing.Annotated[
-        str, typer.Argument(help="A label for the save.", show_default=True)
+        str, typer.Argument(help="A label for the save.")
     ] = default_label,
 ):
     """Create an empty save bucket."""

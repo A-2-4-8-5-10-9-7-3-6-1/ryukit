@@ -11,18 +11,18 @@ __all__ = ["File"]
 
 # ==== File Resolution ====
 
-dynamic_paths = {
+dynamic_paths: dict[str, pathlib.Path | str] = {
     "roaming_app_data": platformdirs.PlatformDirs(
-        appname="RyujinxKit", roaming=True
+        appname="RyuKit", roaming=True
     ).user_data_path,
-    "configs_file": "~/ryujinxkit-config.json",
+    "configs_file": platformdirs.user_config_path() / "ryukit-config.json",
 }
 
-if os.environ.get("RYUJINXKIT_ENV") == "DEV":
-    dynamic_paths["roaming_app_data"] = ".ryujinxkit/roaming" / typing.cast(
+if os.environ.get("RYUKIT_ENV") == "DEV":
+    dynamic_paths["roaming_app_data"] = ".ryukit/roaming" / typing.cast(
         pathlib.Path, dynamic_paths["roaming_app_data"]
     ).relative_to(platformdirs.user_data_path(roaming=True))
-    dynamic_paths["configs_file"] = ".ryujinxkit/ryujinxkit-config.json"
+    dynamic_paths["configs_file"] = ".ryukit/ryukit-config.json"
 
 
 class File(enum.Enum):

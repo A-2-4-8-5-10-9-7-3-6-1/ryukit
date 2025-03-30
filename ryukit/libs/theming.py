@@ -4,11 +4,12 @@ Theme-setting utilities.
 Metadata
 --------
 
-- **VERSION**: 0.1.2
+- **VERSION**: 0.2.0
 """
 
 import collections
 import collections.abc
+import functools
 import typing
 
 __all__ = ["theme_applier"]
@@ -19,15 +20,19 @@ __all__ = ["theme_applier"]
 type Args = tuple[object, ...]
 type Kwargs = dict[str, object]
 type ThemedFunction[**P, R] = collections.abc.Callable[P, R]
+type FunctionReturn = object
 
 
 class Configs(typing.TypedDict, total=False):
     default_kwargs: Kwargs
     preprocessor: collections.abc.Callable[..., tuple[Args, Kwargs]]
+    postprocessor: collections.abc.Callable[[FunctionReturn], FunctionReturn]
 
 
 def theme_applier(
-    configs: dict[collections.abc.Callable[..., object], Configs] = {},
+    configs: (
+        dict[collections.abc.Callable[..., object], Configs] | None
+    ) = None,
 ):
     """
     Generate a theme-applier hook.
@@ -61,12 +66,15 @@ def theme_applier(
     Note that there's no issue with the first argument in either case, because it was not included in "default_kwargs". Overall, it's recommended to have consistency over the arguments for any function recognized by the applier; flipping between use of positional and keyword arguments might result in unintended behaviour.
     """
 
+    configs = configs or {}
+
     def applier[**P, R](
         function: collections.abc.Callable[P, R],
     ) -> ThemedFunction[P, R]:
         if function not in configs:
             return function
 
+        @functools.wraps(function)
         def inner(*args: P.args, **kwargs: P.kwargs):
             args, kwargs = typing.cast(
                 typing.Any,
@@ -79,7 +87,10 @@ def theme_applier(
             )
 
             try:
-                return function(*args, **kwargs)
+                return typing.cast(
+                    collections.abc.Callable[[R], R],
+                    configs[function].get("postprocessor", lambda x: x),
+                )(function(*args, **kwargs))
 
             except TypeError as e:
                 raise TypeError(

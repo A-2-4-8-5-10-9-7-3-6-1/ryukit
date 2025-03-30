@@ -16,12 +16,9 @@ __all__ = []
 
 @context.root_typer.callback(invoke_without_command=True)
 def _(
+    ctx: typer.Context,
     show_configs: typing.Annotated[
-        bool,
-        typer.Option("--configs", help="Show configuratoins in use and exit."),
-    ] = False,
-    version: typing.Annotated[
-        bool, typer.Option("--version", "-v", help="Show version and quit.")
+        bool, typer.Option("--configs", help="Show configurations and exit.")
     ] = False,
 ):
     "CLI for managing Ryujinx (on Windows)."
@@ -38,7 +35,7 @@ def _(
                     k: v
                     for k, v in json.loads(
                         (
-                            importlib.resources.files("ryujinxkit")
+                            importlib.resources.files("ryukit")
                             / "assets"
                             / "configs"
                             / "app-defaults.json"
@@ -57,7 +54,7 @@ def _(
             jsonschema.Draft7Validator(
                 json.loads(
                     (
-                        importlib.resources.files("ryujinxkit")
+                        importlib.resources.files("ryukit")
                         / "assets"
                         / "schemas"
                         / "app-configs.json"
@@ -77,7 +74,7 @@ def _(
     with db.theme_applier(sqlite3.connect)("DATABASE") as conn:
         conn.executescript(
             (
-                importlib.resources.files("ryujinxkit")
+                importlib.resources.files("ryukit")
                 / "assets"
                 / "database-setup.sql"
             ).read_text()
@@ -89,9 +86,20 @@ def _(
             lambda: ui.app_console.print_json(data=context.states.configs),
         ),
         (
-            version,
+            not ctx.invoked_subcommand,
             lambda: ui.app_console.print(
-                f"Ryujinx[colour.primary][bold]Kit[/bold][/colour.primary] v{importlib.metadata.version("ryujinxkit")}"
+                f"[reset][colour.primary]{
+                    (
+                        importlib.resources.files("ryukit")
+                        / "assets"
+                        / "art"
+                        / "logo.txt"
+                    ).read_text()
+                }",
+                f"VERSION {importlib.metadata.version("ryukit")}",
+                sep="\n\n",
+                end="\n\n",
+                new_line_start=True,
             ),
         ),
     ]:

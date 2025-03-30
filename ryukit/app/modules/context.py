@@ -20,7 +20,7 @@ states = StateManager()
 
 # ==== Typers ====
 
-root_typer = ui.theme_applier(typer.Typer)(name="ryujinxkit")
+root_typer = ui.theme_applier(typer.Typer)(name="ryukit")
 manage_typer = ui.theme_applier(typer.Typer)(name="manage")
 
 root_typer.add_typer(manage_typer)

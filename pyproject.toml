@@ -1,5 +1,5 @@
 [project]
-name = "ryujinxkit"
+name = "ryukit"
 description = "CLI tool, for Ryujinx (Windows) management."
 authors = [
   { name = "A-2-4-8-5-10-9-7-3-6-1", email = "112730580+A-2-4-8-5-10-9-7-3-6-1@users.noreply.github.com" },
@@ -20,7 +20,7 @@ dynamic = ["version"]
 version = "0.0.0"
 
 [tool.poetry.scripts]
-ryujinxkit = "ryujinxkit.app.cmd.typer:app_typer"
+ryukit = "ryukit.__main__:entrypoint"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
