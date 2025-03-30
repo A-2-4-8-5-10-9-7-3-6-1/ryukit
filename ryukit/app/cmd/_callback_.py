@@ -88,16 +88,19 @@ def _(
         (
             not ctx.invoked_subcommand,
             lambda: ui.app_console.print(
-                f"[reset][colour.primary]{
-                    (
+                *(
+                    f"[reset]{line[:25]}[colour.primary]{line[25:]}[/colour.primary]"
+                    for line in (
                         importlib.resources.files("ryukit")
                         / "assets"
                         / "art"
                         / "logo.txt"
-                    ).read_text()
-                }",
-                f"VERSION {importlib.metadata.version("ryukit")}",
-                sep="\n\n",
+                    )
+                    .read_text()
+                    .splitlines()
+                ),
+                f"\nVERSION {importlib.metadata.version("ryukit")}",
+                sep="\n",
                 end="\n\n",
                 new_line_start=True,
             ),
