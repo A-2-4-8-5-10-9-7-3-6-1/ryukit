@@ -2,7 +2,7 @@ services:
   development:
     build:
       target: development
-    image: ryujinxkit/development
+    image: ryukit/development
     environment:
       POETRY_VIRTUALENVS_IN_PROJECT: true
     tty: true
