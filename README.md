@@ -1,24 +1,24 @@
 <div align="center">
     <h1>RyuKit</h1>
     <p style="font-style: italic;">
-        RyujinxKit is a Python package and CLI tool designed to facilitate the management of a Windows Ryujinx distribution.
+        RyuKit is a Python package and CLI tool designed to facilitate the management of a Windows Ryujinx distribution.
     </p>
 </div>
 
 ## Installation
 
-Install RyujinxKit using pip:
+Install RyuKit using pip:
 
 ```bash
-pip install ryujinxkit
+pip install ryukit
 ```
 
 ## Usage
 
-After installation, use the `ryujinxkit` command:
+After installation, use the `ryukit` command:
 
 ```bash
-ryujinxkit --help
+ryukit --help
 ```
 
 ## Docker Support
