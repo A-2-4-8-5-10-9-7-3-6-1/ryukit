@@ -1,4 +1,6 @@
-# Todo
+<h1 align="center">TODO</h1>
 
-- Decide on database objects.
-- Decide on app commands.
+## High Priority
+
+- [ ] Decide on database objects.
+- [ ] Decide on app commands.

@@ -1,79 +1,34 @@
-# RyujinxKit
-
-RyujinxKit is a Python package designed to facilitate the management of a Windows Ryujinx distribution.
-It provides tools for handling save data, configuring settings, and automating common tasks related to Ryujinx.
-
-## Features
-
-- Install a Ryujinx distribution.
-- Manage save data (create, delete, export, ...).
-- Retrieve system and application information.
+<div align="center">
+    <h1>RyujinxKit</h1>
+    <p style="font-style: italic;">
+        RyujinxKit is a Python package and CLI tool designed to facilitate the management of a Windows Ryujinx distribution.
+    </p>
+</div>
 
 ## Installation
 
-RyujinxKit is distributed as a Python package and can be installed using [Poetry](https://python-poetry.org/) or `pip`.
+Install RyujinxKit using pip:
 
-```sh
+```bash
 pip install ryujinxkit
-```
-
-Alternatively, install from source:
-
-```sh
-git clone https://github.com/A-2-4-8-5-10-9-7-3-6-1/ryujinxkit.git
-cd ryujinxkit
-poetry install
 ```
 
 ## Usage
 
-### CLI Commands
+After installation, use the `ryujinxkit` command:
 
-RyujinxKit provides a command-line interface for easy management.
-
-```sh
+```bash
 ryujinxkit --help
 ```
 
-#### Example Commands
+## Docker Support
 
-- Install Ryujinx:
-  ```sh
-  ryujinxkit
-  ```
-- List save data:
-  ```sh
-  ryujinxkit save
-  ```
+This repository includes a `Dockerfile` and `docker-compose.yml` to define a preconfigured development environment. To build and run it:
 
-## Development
-
-### Running Tests
-
-This project uses `pytest` for testing. To run tests, execute:
-
-```sh
-pytest
+```bash
+docker-compose up --build
 ```
-
-### Linting and Formatting
-
-Code formatting is enforced using `black`, `isort`, `prettier`, and `pyright`.
-
-### Development Environment
-
-A development container service (`development`) is included in `docker-compose.yaml`,
-which automates environment setup (installing dependencies like Poetry, Git, Hadolint, etc.).
-
-### Recommended Editor
-
-It is recommended to use **VSCode** for development, as the repository contains configuration files
-optimized for it.
-
-## License
-
-This project is licensed under the terms specified in `LICENSE.md`.
 
 ## Contributing
 
-Contributions are welcome! Please check `TODO.md` for planned features and improvements.
+If you'd like to contribute, fork the repository, make your changes, and submit a pull request. Be sure to follow the coding standards and run tests before submitting.
