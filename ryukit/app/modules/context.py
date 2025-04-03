@@ -1,12 +1,15 @@
 """Context module for app commands."""
 
 import dataclasses
+import importlib
+import importlib.resources
+import json
 
 import typer
 
 from ...core import ui
 
-__all__ = ["states", "root_typer", "manage_typer"]
+__all__ = ["states", "root_typer", "manage_typer", "internal_configs"]
 
 # ==== State ====
 
@@ -17,6 +20,17 @@ class StateManager:
 
 
 states = StateManager()
+
+# ==== Information ====
+
+internal_configs: dict[str, object] = json.loads(
+    (
+        importlib.resources.files("ryukit")
+        / "assets"
+        / "configs"
+        / "internal.json"
+    ).read_bytes()
+)
 
 # ==== Typers ====
 

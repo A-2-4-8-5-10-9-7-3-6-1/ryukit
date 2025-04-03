@@ -1,5 +1,10 @@
 {
   "ryujinxInstall": {
-    "sha256Hash": "3E841A946595ABC56C02409E165C62CB8E049963B54853DC551B2918E1F25D17"
+    "sha256": "3e841a946595abc56c02409e165c62cb8e049963b54853dc551b2918e1f25d17",
+    "paths": {
+      "dist": "{distDir}",
+      "registered": "{roamingDataDir}/bis/system/Contents/registered",
+      "keys": "{roamingDataDir}/system"
+    }
   }
 }

@@ -21,7 +21,7 @@ def _(
         bool, typer.Option("--configs", help="Show configurations and exit.")
     ] = False,
 ):
-    "CLI for managing Ryujinx (on Windows)."
+    "A CLI tool for Ryujinx."
 
     [
         folder().mkdir(parents=True, exist_ok=True)
@@ -48,6 +48,29 @@ def _(
 
     context.states.configs = json.loads(fs.File.CONFIG_FILE().read_bytes())
 
+    for *key, default in [
+        (
+            "ryujinxConfigs",
+            "distDir",
+            str(
+                fs.File.LOCAL_DATA_DIR()
+                / "Ryujinx-{appVersion}-{targetSystem}"
+            ),
+        ),
+        (
+            "ryujinxConfigs",
+            "roamingDataDir",
+            str(fs.File.ROAMING_DATA_DIR() / "Ryujinx"),
+        ),
+    ]:
+        setting: dict[str, object] = context.states.configs
+        *prefix, suffix = key
+
+        for part in prefix:
+            setting = typing.cast(typing.Any, setting[part])
+
+        setting[suffix] = setting.get(suffix, None) or default
+
     try:
         typing.cast(
             typing.Any,
@@ -65,8 +88,8 @@ def _(
 
     except jsonschema.ValidationError as e:
 
-        ui.app_console.print(
-            f"[error]Malformed configuration file at {e.json_path}: {e.message}."
+        ui.console.print(
+            f"[error]Malformed configuration file: {e.message}, at {e.json_path}."
         )
 
         raise typer.Exit(1)
@@ -83,11 +106,11 @@ def _(
     for do, command in [
         (
             show_configs,
-            lambda: ui.app_console.print_json(data=context.states.configs),
+            lambda: ui.console.print_json(data=context.states.configs),
         ),
         (
             not ctx.invoked_subcommand,
-            lambda: ui.app_console.print(
+            lambda: ui.console.print(
                 *(
                     f"[reset]{line[:25]}[colour.primary]{line[25:]}[/colour.primary]"
                     for line in (

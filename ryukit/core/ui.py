@@ -12,7 +12,7 @@ import typer
 
 from ..libs import theming
 
-__all__ = ["app_console", "theme_applier"]
+__all__ = ["console", "theme_applier"]
 
 # ==== Objects ====
 
@@ -22,7 +22,7 @@ theme_extras = {
     "colour.accent": "#e68eef",
     "default": "italic",
 }
-app_console = rich.console.Console(
+console = rich.console.Console(
     theme=rich.theme.Theme(
         {
             "error": "red",
@@ -98,7 +98,7 @@ def annotate_applier[**P, R](applier: collections.abc.Callable[P, R]):
 def progress_PPR(*args: object, **kwargs: object):
     return (
         tuple(
-            isinstance(arg, str) and f"[italic][colour.secondary]{arg}" or arg
+            f"[italic][colour.secondary]{arg}" if isinstance(arg, str) else arg
             for arg in args
         ),
         kwargs,
@@ -121,13 +121,13 @@ theme_applier = annotate_applier(
                     "refresh_per_second": general_theme_settings[
                         "refresh_rate"
                     ],
-                    "console": app_console,
+                    "console": console,
                 },
                 "preprocessor": progress_PPR,
             },
             rich.status.Status: {
                 "default_kwargs": {
-                    "console": app_console,
+                    "console": console,
                     "refresh_per_second": general_theme_settings[
                         "refresh_rate"
                     ],
@@ -161,7 +161,7 @@ theme_applier = annotate_applier(
                     )
                 }
             },
-            typer.Typer: {"default_kwargs": {"rich_markup_mode": "rich"}},
+            typer.Typer: {"default_kwargs": {"rich_markup_mode": "markdown"}},
         }
     )
 )
