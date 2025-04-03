@@ -8,3 +8,4 @@
 # Low Priority
 
 - [ ] Add error messages for install-ryujinx command.
+- [ ] Write tests.
