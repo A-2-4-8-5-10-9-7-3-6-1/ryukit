@@ -48,21 +48,68 @@ def _(
 
     context.states.configs = json.loads(fs.File.CONFIG_FILE().read_bytes())
 
-    for *key, default in [
+    for do, command in [
         (
-            "ryujinxConfigs",
-            "distDir",
-            str(
-                fs.File.LOCAL_DATA_DIR()
-                / "Ryujinx-{appVersion}-{targetSystem}"
+            show_configs,
+            lambda: ui.console.print_json(data=context.states.configs),
+        ),
+        (
+            not ctx.invoked_subcommand,
+            lambda: ui.console.print(
+                *(
+                    f"[reset]{line[:25]}[colour.primary]{line[25:]}[/colour.primary]"
+                    for line in (
+                        importlib.resources.files("ryukit")
+                        / "assets"
+                        / "art"
+                        / "logo.txt"
+                    )
+                    .read_text()
+                    .splitlines()
+                ),
+                f"\nVERSION {importlib.metadata.version("ryukit")}",
+                sep="\n",
+                end="\n\n",
+                new_line_start=True,
             ),
         ),
-        (
-            "ryujinxConfigs",
-            "roamingDataDir",
-            str(fs.File.ROAMING_DATA_DIR() / "Ryujinx"),
-        ),
     ]:
+        if not do:
+            continue
+
+        command()
+
+        raise typer.Exit()
+
+    for *key, default in map(
+        lambda args: map(str, args),
+        [
+            (
+                "ryujinxConfigs",
+                "distDir",
+                fs.File.LOCAL_DATA_DIR()
+                / typing.cast(
+                    str,
+                    typing.cast(
+                        dict[str, object],
+                        context.internal_configs["ryujinxInstall"],
+                    )["defaultDistDirSuffix"],
+                ),
+            ),
+            (
+                "ryujinxConfigs",
+                "roamingDataDir",
+                fs.File.ROAMING_DATA_DIR()
+                / typing.cast(
+                    str,
+                    typing.cast(
+                        dict[str, object],
+                        context.internal_configs["ryujinxInstall"],
+                    )["defaultRoamingDirSuffix"],
+                ),
+            ),
+        ],
+    ):
         setting: dict[str, object] = context.states.configs
         *prefix, suffix = key
 
@@ -102,36 +149,3 @@ def _(
                 / "database-setup.sql"
             ).read_text()
         )
-
-    for do, command in [
-        (
-            show_configs,
-            lambda: ui.console.print_json(data=context.states.configs),
-        ),
-        (
-            not ctx.invoked_subcommand,
-            lambda: ui.console.print(
-                *(
-                    f"[reset]{line[:25]}[colour.primary]{line[25:]}[/colour.primary]"
-                    for line in (
-                        importlib.resources.files("ryukit")
-                        / "assets"
-                        / "art"
-                        / "logo.txt"
-                    )
-                    .read_text()
-                    .splitlines()
-                ),
-                f"\nVERSION {importlib.metadata.version("ryukit")}",
-                sep="\n",
-                end="\n\n",
-                new_line_start=True,
-            ),
-        ),
-    ]:
-        if not do:
-            continue
-
-        command()
-
-        raise typer.Exit()

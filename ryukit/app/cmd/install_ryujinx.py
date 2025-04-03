@@ -100,6 +100,9 @@ def _():
                     "[reset][green]:heavy_check_mark:", "Extracted files."
                 )
 
+            metadata: dict[str, object] = json.loads(
+                (temp_dir / "metadata.json").read_bytes()
+            )
             paths = {
                 "distDir": typing.cast(
                     str,
@@ -107,16 +110,14 @@ def _():
                         dict[str, object],
                         context.states.configs["ryujinxConfigs"],
                     )["distDir"],
-                ).format(
-                    **json.loads((temp_dir / "metadata.json").read_bytes())
-                ),
+                ).format(**metadata),
                 "roamingDataDir": typing.cast(
                     str,
                     typing.cast(
                         dict[str, object],
                         context.states.configs["ryujinxConfigs"],
                     )["roamingDataDir"],
-                ),
+                ).format(**metadata),
             }
 
             for source, destination in map(
@@ -134,7 +135,7 @@ def _():
                 )
 
             ui.console.print(
-                "[reset][green]:heavy_check_mark:", "Processed files."
+                "[reset][green]:heavy_check_mark:", "Organized files."
             )
             ui.console.print(
                 "[reset]:package:", f"Installed to {paths["distDir"]}."

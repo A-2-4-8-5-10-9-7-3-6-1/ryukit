@@ -5,6 +5,8 @@
       "dist": "{distDir}",
       "registered": "{roamingDataDir}/bis/system/Contents/registered",
       "keys": "{roamingDataDir}/system"
-    }
+    },
+    "defaultDistDirSuffix": "{appName}-{appVersion}-{targetSystem}",
+    "defaultRoamingDirSuffix": "{appName}"
   }
 }
