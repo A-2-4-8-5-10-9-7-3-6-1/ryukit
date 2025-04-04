@@ -32,7 +32,8 @@ def _():
 
     if not context.states.configs["ryujinxInstallURL"]:
         ui.console.print(
-            "[error]Command cannot be used without setting 'ryujinxInstallURL'. Use '--help' for more information."
+            "[error]Command cannot be used without setting 'ryujinxInstallURL'.",
+            "[error]Use '--help' for more information.",
         )
 
         raise typer.Exit(1)
@@ -64,7 +65,7 @@ def _():
                                 raise RuntimeError("CONNECTION_FAILED")
 
                             ui.console.print(
-                                "(1/3)", "Connection established."
+                                "Connection established.", "(1/3)"
                             )
                             progress.update(
                                 task_id,
@@ -77,7 +78,7 @@ def _():
                                 buffer.write(chunk)
                                 progress.advance(task_id, chunk_size)
 
-                            ui.console.print("(2/3)", "Content fetched.")
+                            ui.console.print("Content fetched.", "(2/3)")
 
                     except requests.ConnectionError:
                         raise RuntimeError("CONNECTION_FAILED")
@@ -91,7 +92,7 @@ def _():
                     ):
                         raise RuntimeError("INVALID_CONTENT")
 
-                    ui.console.print("(3/3)", "Content verified.")
+                    ui.console.print("Content verified.", "(3/3)")
 
                 with zipfile.ZipFile(buffer) as zip:
                     zip.extractall(temp_dir_str)
