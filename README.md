@@ -23,12 +23,9 @@ ryukit --help
 
 ## Docker Support
 
-This repository includes a `Dockerfile` and `docker-compose.yml` to define a preconfigured development environment. To build and run it:
+This repository includes a `Dockerfile` and `docker-compose.yml` to define a
+preconfigured development environment. To build and run it:
 
 ```bash
 docker-compose up --build
 ```
-
-## Contributing
-
-If you'd like to contribute, fork the repository, make your changes, and submit a pull request. Be sure to follow the coding standards and run tests before submitting.
