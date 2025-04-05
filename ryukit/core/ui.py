@@ -161,7 +161,7 @@ theme_applier = annotate_applier(
                     )
                 }
             },
-            typer.Typer: {"default_kwargs": {"rich_markup_mode": "markdown"}},
+            typer.Typer: {"default_kwargs": {"rich_markup_mode": "rich"}},
         }
     )
 )
