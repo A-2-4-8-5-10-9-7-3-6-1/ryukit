@@ -6,5 +6,6 @@
     "prettier-plugin-toml",
     "prettier-plugin-sql",
     "prettier-plugin-ini"
-  ]
+  ],
+  "proseWrap": "always"
 }
