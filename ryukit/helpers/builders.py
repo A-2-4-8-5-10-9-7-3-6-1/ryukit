@@ -1,105 +1,103 @@
-"""Build utilities."""
+"""App-building utilities."""
 
 import importlib
 import importlib.resources
+import pathlib
 import typing
 
 import typer
 
 __all__ = ["typer_from_dir"]
 
-# ==== FS-Typer routing ====
+# ==== FS-Typer Routing ====
+
+# NOTE: Using this function to build a typer on every app startup might result in slowdowns. Look for ways to cache the build, or return to static importing.
 
 
-def typer_from_dir(*path: str):
+def typer_from_dir(base: str, *fragments: str):
     """
     Builds a typer from a well-structured directory.
 
-    :param path: Internal path to the well-structured directory.
+    :param base: Base fragment of internal path to a well-structured directory.
+    :param fragments: Path fragments to append onto the base fragmenet.
 
     :returns: A typer corresponding to the targeted directory.
+
+    Instructions
+    ------------
+
+    This tool allows for file-based CLI routing, meaning that the structure of the resulting CLI tool is dynamically determined by the file structure of whichever directory is given via `path`. A well-structured directory is one in which every file is a module that exports a typer.Typer instance named 'app'. parser_.py files define subtypers, and their 'app' exports should be configured as such. .py files, other than parser_.py, will have their 'app' export hooked onto the nearest 'app' instance from a parser_.py file.
     """
 
-    typers: list[
-        tuple[typer.Typer | None, list[tuple[str, ...]], *tuple[str, ...]]
-    ] = [(None, [path], "ryukit")]
+    root = ("ryukit", base, *fragments)
+    stack: list[tuple[typer.Typer | None, list[tuple[str, ...]]]] = [
+        (None, [root])
+    ]
     special_files = {"typer_definition": "parser_.py"}
     app: typer.Typer | None = None
 
-    while typers:
-        app, span, *app_path = typers[-1]
+    while stack:
+        app, entries = stack[-1]
 
-        if not span or len(app_path) == 1:
-            typers.pop()
+        if not entries or entries[0] == root:
+            stack.pop()
 
-        while span:
-            *file_path, file = span.pop(0)
+        while entries:
+            *prefix, entry = entries.pop(0)
 
-            if file == special_files["typer_definition"]:
-                try:
-                    typers[-1] = (
-                        importlib.import_module(
-                            ".".join((*app_path, *file_path, file[:-3]))
-                        ).app,
-                        span,
-                        *app_path,
-                    )
+            if entry.endswith(".py"):
+                module = importlib.import_module(
+                    ".".join((*prefix, entry[:-3]))
+                )
+                parent = app
 
-                    app = typers[-1][0]
-
-                    if len(typers) < 2:
-                        continue
-
-                    typing.cast(typer.Typer, typers[-2][0]).add_typer(
-                        typing.cast(typer.Typer, app)
-                    )
-
-                except AttributeError as e:
+                if not hasattr(module, "app"):
                     raise RuntimeError(
-                        "Expected export of typer variable 'app'."
-                    ) from e
+                        f"Missing 'app' typer in {pathlib.Path(*prefix, entry)}."
+                    )
+
+                if entry == special_files["typer_definition"]:
+                    stack[-1] = (module.app, entries)
+                    app = stack[-1][0]
+
+                    if len(stack) < 2:
+                        break
+
+                    parent = stack[-2][0]
+
+                typing.cast(typer.Typer, parent).add_typer(module.app)
 
                 continue
 
-            if file.endswith(".py"):
-                try:
-                    typing.cast(typer.Typer, app).add_typer(
-                        importlib.import_module(
-                            ".".join((*app_path, *file_path, file[:-3]))
-                        ).app
-                    )
+            pending_entries: list[tuple[str, ...]] = []
 
-                except AttributeError as e:
-                    raise RuntimeError(
-                        "Expected export of typer variable 'app'."
-                    ) from e
-
-                continue
-
-            files: list[tuple[str, ...]] = []
-
-            for item in importlib.resources.contents(
-                *app_path, *file_path, file
-            ):
-                files.insert(
+            for new_entry in importlib.resources.contents(*prefix, entry):
+                pending_entries.insert(
                     (
                         0
-                        if item == special_files["typer_definition"]
-                        else 1 if item.endswith(".py") else len(files)
+                        if new_entry == special_files["typer_definition"]
+                        else (
+                            1
+                            if new_entry.endswith(".py")
+                            else len(pending_entries)
+                        )
                     ),
-                    (item,),
+                    (*prefix, entry, new_entry),
                 )
 
-            if not files or files[0][0] != special_files["typer_definition"]:
-                span.extend((*file_path, file, *item) for item in files)
+            if (
+                pending_entries
+                and pending_entries[0][-1] == special_files["typer_definition"]
+            ):
+                stack.append((None, pending_entries))
 
-                continue
+                break
 
-            typers.append((None, files, *app_path, file))
+            elif app is None:
+                raise RuntimeError(
+                    f"No root typer at {pathlib.Path(*prefix, entry)}."
+                )
 
-            break
+            entries.extend(pending_entries)
 
-    if not app:
-        raise Exception("Root parser not found.")
-
-    return app
+    return typing.cast(typer.Typer, app)
