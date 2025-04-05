@@ -3,7 +3,7 @@ import typing
 
 import typer
 
-from ....core import ui
+from ...core import ui
 
 __all__ = ["app"]
 app = ui.theme_applier(typer.Typer)()
