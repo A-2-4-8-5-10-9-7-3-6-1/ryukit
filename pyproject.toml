@@ -20,7 +20,7 @@ dynamic = ["version"]
 version = "0.0.0"
 
 [tool.poetry.scripts]
-ryukit = "ryukit.__main__:entrypoint"
+ryukit = "ryukit:start"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"

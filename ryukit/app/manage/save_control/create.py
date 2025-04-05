@@ -3,13 +3,14 @@ import typing
 
 import typer
 
-from ....modules import context
+from ....core import ui
 
-__all__ = []
+__all__ = ["app"]
+app = ui.theme_applier(typer.Typer)()
 default_label = f"Save{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}"
 
 
-@context.manage_typer.command("create-save", rich_help_panel="Save Control")
+@app.command("create-save", rich_help_panel="Save Control")
 def _(
     label: typing.Annotated[
         str, typer.Argument(help="A label for the save.")

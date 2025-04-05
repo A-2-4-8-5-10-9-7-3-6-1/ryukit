@@ -8,13 +8,13 @@ import typing
 import jsonschema
 import typer
 
-from ...core import db, fs, ui
-from ..modules import context
+from ..core import db, fs, shared, ui
 
-__all__ = []
+__all__ = ["app"]
+app = ui.theme_applier(typer.Typer)(name="ryukit")
 
 
-@context.root_typer.callback(invoke_without_command=True)
+@app.callback(invoke_without_command=True)
 def _(
     ctx: typer.Context,
     show_configs: typing.Annotated[
@@ -34,38 +34,34 @@ def _(
                 {
                     k: v
                     for k, v in json.loads(
-                        (
-                            importlib.resources.files("ryukit")
-                            / "assets"
-                            / "configs"
-                            / "app-defaults.json"
-                        ).read_bytes()
+                        importlib.resources.read_text(
+                            "ryukit",
+                            "assets",
+                            "configs",
+                            "app-defaults.json",
+                            encoding="utf-8",
+                        )
                     ).items()
                     if k != "$schema"
                 },
                 fp=buffer,
             )
 
-    context.states.configs = json.loads(fs.File.CONFIG_FILE().read_bytes())
+    shared.states.configs = json.loads(fs.File.CONFIG_FILE().read_bytes())
 
     for do, command in [
         (
             show_configs,
-            lambda: ui.console.print_json(data=context.states.configs),
+            lambda: ui.console.print_json(data=shared.states.configs),
         ),
         (
             not ctx.invoked_subcommand,
             lambda: ui.console.print(
                 *(
                     f"[reset]{line[:25]}[colour.primary]{line[25:]}[/colour.primary]"
-                    for line in (
-                        importlib.resources.files("ryukit")
-                        / "assets"
-                        / "art"
-                        / "logo.txt"
-                    )
-                    .read_text()
-                    .splitlines()
+                    for line in importlib.resources.read_text(
+                        "ryukit", "assets", "logo.txt", encoding="utf-8"
+                    ).splitlines()
                 ),
                 f"\nVERSION {importlib.metadata.version("ryukit")}",
                 sep="\n",
@@ -92,7 +88,7 @@ def _(
                     str,
                     typing.cast(
                         dict[str, object],
-                        context.internal_configs["ryujinxInstall"],
+                        shared.internal_configs["ryujinxInstall"],
                     )["defaultDistDirSuffix"],
                 ),
             ),
@@ -104,13 +100,13 @@ def _(
                     str,
                     typing.cast(
                         dict[str, object],
-                        context.internal_configs["ryujinxInstall"],
+                        shared.internal_configs["ryujinxInstall"],
                     )["defaultRoamingDirSuffix"],
                 ),
             ),
         ],
     ):
-        setting: dict[str, object] = context.states.configs
+        setting: dict[str, object] = shared.states.configs
         *prefix, suffix = key
 
         for part in prefix:
@@ -123,18 +119,18 @@ def _(
             typing.Any,
             jsonschema.Draft7Validator(
                 json.loads(
-                    (
-                        importlib.resources.files("ryukit")
-                        / "assets"
-                        / "schemas"
-                        / "app-configs.json"
-                    ).read_bytes()
+                    importlib.resources.read_text(
+                        "ryukit",
+                        "assets",
+                        "schemas",
+                        "app-configs.json",
+                        encoding="utf-8",
+                    )
                 )
             ),
-        ).validate(context.states.configs)
+        ).validate(shared.states.configs)
 
     except jsonschema.ValidationError as e:
-
         ui.console.print(
             f"[error]Malformed configuration file: {e.message}, at {e.json_path}."
         )
@@ -143,9 +139,7 @@ def _(
 
     with db.theme_applier(sqlite3.connect)("DATABASE") as conn:
         conn.executescript(
-            (
-                importlib.resources.files("ryukit")
-                / "assets"
-                / "database-setup.sql"
-            ).read_text()
+            importlib.resources.read_text(
+                "ryukit", "assets", "database-setup.sql", encoding="utf-8"
+            )
         )

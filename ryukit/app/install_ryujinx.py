@@ -12,13 +12,13 @@ import rich
 import rich.progress
 import typer
 
-from ...core import ui
-from ..modules import context
+from ..core import shared, ui
 
-__all__ = []
+__all__ = ["app"]
+app = ui.theme_applier(typer.Typer)()
 
 
-@context.root_typer.command("install-ryujinx")
+@app.command("install-ryujinx")
 def _():
     """
     Install Ryujinx from your configured source.
@@ -30,7 +30,7 @@ def _():
     **Warning**: This will overwrite pre-existing files.
     """
 
-    if not context.states.configs["ryujinxInstallURL"]:
+    if not shared.states.configs["ryujinxInstallURL"]:
         ui.console.print(
             "[error]Command cannot be used without setting 'ryujinxInstallURL'.",
             "[error]Use '--help' for more information.",
@@ -56,8 +56,7 @@ def _():
                     try:
                         with requests.get(
                             typing.cast(
-                                str,
-                                context.states.configs["ryujinxInstallURL"],
+                                str, shared.states.configs["ryujinxInstallURL"]
                             ),
                             stream=True,
                         ) as response:
@@ -65,7 +64,7 @@ def _():
                                 raise RuntimeError("CONNECTION_FAILED")
 
                             ui.console.print(
-                                "Connection established.", "(1/3)"
+                                "Established connection.", "(1/3)"
                             )
                             progress.update(
                                 task_id,
@@ -87,7 +86,7 @@ def _():
                         hashlib.sha256(buffer.getvalue()).hexdigest()
                         != typing.cast(
                             dict[str, object],
-                            context.internal_configs["ryujinxInstall"],
+                            shared.internal_configs["ryujinxInstall"],
                         )["sha256"]
                     ):
                         raise RuntimeError("INVALID_CONTENT")
@@ -109,14 +108,14 @@ def _():
                     str,
                     typing.cast(
                         dict[str, object],
-                        context.states.configs["ryujinxConfigs"],
+                        shared.states.configs["ryujinxConfigs"],
                     )["distDir"],
                 ).format(**metadata),
                 "roamingDataDir": typing.cast(
                     str,
                     typing.cast(
                         dict[str, object],
-                        context.states.configs["ryujinxConfigs"],
+                        shared.states.configs["ryujinxConfigs"],
                     )["roamingDataDir"],
                 ).format(**metadata),
             }
@@ -127,7 +126,7 @@ def _():
                     dict[str, str],
                     typing.cast(
                         dict[str, object],
-                        context.internal_configs["ryujinxInstall"],
+                        shared.internal_configs["ryujinxInstall"],
                     )["paths"],
                 ).items(),
             ):
