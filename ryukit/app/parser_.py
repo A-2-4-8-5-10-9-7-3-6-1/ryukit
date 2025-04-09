@@ -144,4 +144,7 @@ def command(
         )
 
 
-typer_builder_args: typer_builder.TyperBuilderArgs = {"command": command}
+typer_builder_args: typer_builder.TyperBuilderArgs = {
+    "command": command,
+    "typer_args": [{"invoke_without_command": True}],
+}

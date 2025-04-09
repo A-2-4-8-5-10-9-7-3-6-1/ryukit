@@ -74,16 +74,15 @@ def build_typer(base: str, *fragments: str):
             **typing.cast(
                 dict[str, typing.Any],
                 {"name": path.parent.stem.replace("_", "-"), **kwargs},
-            )
+            ),
+            callback=command,
         )
         stack[-1] = (parser, stack[-1][1])
 
         if len(stack) == 1:
             return
 
-        typing.cast(typer.Typer, stack[-2][0]).add_typer(
-            parser, callback=command
-        )
+        typing.cast(typer.Typer, stack[-2][0]).add_typer(parser)
 
     while stack:
         app, entries = stack[-1]
