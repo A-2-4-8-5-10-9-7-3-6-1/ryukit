@@ -6,6 +6,8 @@
     "tamasfe.even-better-toml",
     "esbenp.prettier-vscode",
     "redhat.vscode-yaml",
-    "dbcode.dbcode"
+    "dbcode.dbcode",
+    "ms-azuretools.vscode-docker",
+    "exiasr.hadolint"
   ]
 }
