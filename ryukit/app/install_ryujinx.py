@@ -13,13 +13,12 @@ import rich.progress
 import typer
 
 from ..core import shared, ui
+from ..helpers import typer_builder
 
-__all__ = ["app"]
-app = ui.theme_applier(typer.Typer)()
+__all__ = ["typer_builder_args"]
 
 
-@app.command("install-ryujinx")
-def _():
+def command():
     """
     Install Ryujinx from your configured source.
 
@@ -145,3 +144,6 @@ def _():
         ui.console.print(f"[error]{message}")
 
         raise typer.Exit(1)
+
+
+typer_builder_args: typer_builder.TyperBuilderArgs = {"command": command}

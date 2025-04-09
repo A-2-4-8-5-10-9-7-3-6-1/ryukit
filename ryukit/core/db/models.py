@@ -3,10 +3,10 @@
 import datetime
 import typing
 
-__all__ = ["RyujinxSaveModel", "RyujinxConfigModel"]
+__all__ = ["RyujinxSave", "RyujinxConfig"]
 
 
-class RyujinxSaveModel(typing.NamedTuple):
+class RyujinxSave(typing.NamedTuple):
     id: int
     label: str
     created: datetime.datetime
@@ -15,7 +15,7 @@ class RyujinxSaveModel(typing.NamedTuple):
     size: int
 
 
-class RyujinxConfigModel(typing.NamedTuple):
+class RyujinxConfig(typing.NamedTuple):
     id: int
     label: str
     content: dict[str, object]

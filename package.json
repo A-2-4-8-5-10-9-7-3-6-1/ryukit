@@ -1,4 +1,5 @@
 {
+  "name": "ryukit",
   "devDependencies": {
     "prettier": "^3.5.3",
     "prettier-plugin-ini": "^1.3.0",

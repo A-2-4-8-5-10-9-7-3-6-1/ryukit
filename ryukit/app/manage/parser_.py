@@ -1,13 +1,12 @@
-import typer
+from ...helpers import typer_builder
 
-from ...core import ui
-
-__all__ = ["app"]
-app = ui.theme_applier(typer.Typer)(name="manage")
+__all__ = ["typer_builder_args"]
 
 
-@app.callback()
-def _():
+def command():
     """Manage your data."""
 
     pass
+
+
+typer_builder_args: typer_builder.TyperBuilderArgs = {"command": command}

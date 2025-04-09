@@ -1,5 +1,5 @@
-from .helpers import builders
+from .helpers import typer_builder
 
 __all__ = ["start"]
 start = lambda: app()
-app = builders.typer_from_dir("app")
+app = typer_builder.build_typer("app")

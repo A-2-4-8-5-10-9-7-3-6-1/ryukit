@@ -9,13 +9,12 @@ import jsonschema
 import typer
 
 from ..core import db, fs, shared, ui
+from ..helpers import typer_builder
 
-__all__ = ["app"]
-app = ui.theme_applier(typer.Typer)(name="ryukit")
+__all__ = ["typer_builder_args"]
 
 
-@app.callback(invoke_without_command=True)
-def _(
+def command(
     ctx: typer.Context,
     show_configs: typing.Annotated[
         bool, typer.Option("--configs", help="Show configurations and exit.")
@@ -143,3 +142,6 @@ def _(
                 "ryukit", "assets", "database-setup.sql", encoding="utf-8"
             )
         )
+
+
+typer_builder_args: typer_builder.TyperBuilderArgs = {"command": command}
