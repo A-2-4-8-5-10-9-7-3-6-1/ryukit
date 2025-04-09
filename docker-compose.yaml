@@ -7,4 +7,4 @@ services:
       POETRY_VIRTUALENVS_IN_PROJECT: true
     tty: true
     volumes:
-      - .:/home/developer/repository
+      - .:/project
