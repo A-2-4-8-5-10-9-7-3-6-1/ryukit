@@ -37,7 +37,7 @@ def command(
                             "ryukit",
                             "assets",
                             "configs",
-                            "app-defaults.json",
+                            "defaults.app.json",
                             encoding="utf-8",
                         )
                     ).items()
@@ -111,7 +111,7 @@ def command(
         for part in prefix:
             setting = typing.cast(typing.Any, setting[part])
 
-        setting[suffix] = setting.get(suffix, None) or default
+        setting[suffix] = setting.get(suffix) or default
 
     try:
         typing.cast(
@@ -122,7 +122,7 @@ def command(
                         "ryukit",
                         "assets",
                         "schemas",
-                        "app-configs.json",
+                        "configs.app.json",
                         encoding="utf-8",
                     )
                 )
@@ -139,7 +139,7 @@ def command(
     with db.theme_applier(sqlite3.connect)("DATABASE") as conn:
         conn.executescript(
             importlib.resources.read_text(
-                "ryukit", "assets", "database-setup.sql", encoding="utf-8"
+                "ryukit", "assets", "setup_database.sql", encoding="utf-8"
             )
         )
 

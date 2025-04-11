@@ -1,5 +1,5 @@
 {
-  "$schema": "../schemas/app-configs.json",
+  "$schema": "../schemas/configs.app.json",
   "ryujinxInstallURL": null,
   "ryujinxConfigs": {
     "distDir": null,

@@ -24,7 +24,7 @@ def command():
 
     Before using this command, set 'ryujinxInstallURL' in ryujinxkit-config.json.
 
-    [red]WARNING: This will overwrite all pre-existing Ryujinx app files. Create a save bucket before executing this command.[/red]
+    [red]WARNING: This will overwrite all pre-existing app files. Create a save bucket before executing this command.[/red]
     """
 
     if not shared.states.configs["ryujinxInstallURL"]:

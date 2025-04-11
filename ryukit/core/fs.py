@@ -16,7 +16,7 @@ dynamic_paths: dict[str, pathlib.Path | str] = {
     "configs_file": platformdirs.user_config_path() / "ryukit-config.json",
 }
 
-if os.environ.get("RYUKIT_ENV") == "DEV":
+if os.environ.get("RYUKIT_DEV_FILES", "").lower() == "true":
     dynamic_paths |= {
         "local_data_dir": ".ryukit/local",
         "roaming_data_dir": ".ryukit/roaming",
@@ -31,7 +31,7 @@ class File(enum.Enum):
         "RyuKit"
     ).relative_to(platformdirs.user_data_path())
     CONFIG_FILE = dynamic_paths["configs_file"]
-    DATABASE = f"{ROAMING_APP_DATA}/.db"
+    DATABASE = f"{ROAMING_APP_DATA}/database.db"
 
     def __init__(self, stem: pathlib.Path | str):
         self._stem = stem
