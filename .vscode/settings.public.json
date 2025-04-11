@@ -2,6 +2,9 @@
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
+  "files.associations": {
+    ".env.template": "properties"
+  },
   "isort.importStrategy": "fromEnvironment",
   "python.testing.pytestEnabled": true,
   "black-formatter.path": ["python", "-m", "black"]
