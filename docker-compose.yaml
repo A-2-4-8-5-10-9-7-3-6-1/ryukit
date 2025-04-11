@@ -3,8 +3,6 @@ services:
     build:
       target: development
     image: ryukit/development
-    environment:
-      POETRY_VIRTUALENVS_IN_PROJECT: true
     tty: true
     volumes:
       - .:/project
