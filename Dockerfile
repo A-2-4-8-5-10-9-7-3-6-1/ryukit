@@ -20,8 +20,8 @@ RUN set -e; \
     chmod +x /usr/local/bin/nodesource; \
     nodesource; \
     apt-get install --no-install-recommends -y nodejs=20.18.3-1nodesource1; \
-    rm -r /usr/local/bin/nodesource /var/lib/apt/lists/*;
-RUN useradd -ms /bin/bash dev;
+    rm -r /usr/local/bin/nodesource /var/lib/apt/lists/*
+RUN useradd -ms /bin/bash dev
 VOLUME [ "/project" ]
 USER dev
 ENTRYPOINT [ "/bin/bash" ]
