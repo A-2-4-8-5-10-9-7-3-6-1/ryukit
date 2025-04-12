@@ -25,10 +25,7 @@ def annotate_theme[**P, R](applier: collections.abc.Callable[P, R]):
         sqlite3.connect
         ---------------
 
-        Default kwargs:
-
-        - autocommit
-        - detect_types
+        Default kwargs: autocommit, detect_types
 
         The database path is handled by the preprocessor, set it, as a positional parameter, to a placeholder ("DATABASE" is recommended).
         """

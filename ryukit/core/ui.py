@@ -4,8 +4,7 @@ import collections.abc
 
 import rich
 import rich.box
-import rich.progress
-import rich.status
+import rich.live
 import rich.table
 import rich.theme
 import typer
@@ -45,49 +44,17 @@ def annotate_applier[**P, R](applier: collections.abc.Callable[P, R]):
         Theme Guide
         ===========
 
-        rich.progress.Progress
-        ----------------------
-
-        Default kwargs:
-
-        - refresh_per_second
-        - console
-
-        The preprocessor will add styling to every positional string renderable, so it's recommended to use strings for text renderables.
-
-        rich.progress.SpinnerColumn
-        ---------------------------
-
-        Default kwargs:
-
-        - style
-        - spinner_name
-
-        rich.status.Status
-        ------------------
-
-        Default kwargs:
-
-        - console
-        - refresh_per_second
-        - spinner
-        - spinner_style
-
-        The preprocessor will add styling to the "status" argument and expects it to be provided through a keyword.
-
         rich.table.Table
         ----------------
+        Default kwargs: box
 
-        Default kwargs:
-
-        - box
+        rich.live.Live
+        --------------
+        Default kwargs: refresh_per_second
 
         typer.Typer
         -----------
-
-        Default kwargs:
-
-        - rich_markup_mode
+        Default kwargs: rich_markup_mode
         """
 
         return applier(*args, **kwargs)
@@ -95,55 +62,16 @@ def annotate_applier[**P, R](applier: collections.abc.Callable[P, R]):
     return annotated_applier
 
 
-def progress_PPR(*args: object, **kwargs: object):
-    return (
-        tuple(
-            (
-                f"[default][colour.secondary]{arg}"
-                if isinstance(arg, str)
-                else arg
-            )
-            for arg in args
-        ),
-        kwargs,
-    )
-
-
-def status_PPR(*args: object, **kwargs: object):
-    if "status" in kwargs:
-        kwargs["status"] = f"[default][colour.secondary]{kwargs["status"]}"
-
-    return (args, kwargs)
-
-
 general_theme_settings = {"refresh_rate": 10}
 theme_applier = annotate_applier(
     theming.theme_applier(
         {
-            rich.progress.Progress: {
+            rich.live.Live: {
                 "default_kwargs": {
                     "refresh_per_second": general_theme_settings[
                         "refresh_rate"
                     ],
                     "console": console,
-                },
-                "preprocessor": progress_PPR,
-            },
-            rich.status.Status: {
-                "default_kwargs": {
-                    "console": console,
-                    "refresh_per_second": general_theme_settings[
-                        "refresh_rate"
-                    ],
-                    "spinner": "aesthetic",
-                    "spinner_style": "colour.primary",
-                },
-                "preprocessor": status_PPR,
-            },
-            rich.progress.SpinnerColumn: {
-                "default_kwargs": {
-                    "style": "colour.primary",
-                    "spinner_name": "aesthetic",
                 }
             },
             rich.table.Table: {

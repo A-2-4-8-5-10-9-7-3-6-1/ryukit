@@ -43,7 +43,7 @@ def command(
     except RuntimeError:
         ui.console.print(
             "[error]Failed to apply save.",
-            "└── Is Ryujinx installed?",
+            "└── [italic]Is Ryujinx installed?",
             sep="\n",
         )
 

@@ -27,7 +27,7 @@ def command(
 
         ui.console.print(
             f"[error]Malformed configuration file; {error.message}.",
-            f"└── Error originated from {error.json_path}.",
+            f"└── [italic]Error originated from {error.json_path}.",
             sep="\n",
         )
 
