@@ -8,7 +8,8 @@ import platformdirs
 
 __all__ = ["File"]
 
-# ==== File Resolution ====
+
+# MARK: File Resolution
 
 dynamic_paths: dict[str, pathlib.Path | str] = {
     "local_data_dir": platformdirs.user_data_dir(),

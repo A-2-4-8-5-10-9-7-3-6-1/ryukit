@@ -44,6 +44,7 @@ def build_typer(base: str, *fragments: str):
     stack: list[tuple[typer.Typer | None, list[list[str]]]] = [(None, [root])]
     special_files = {"typer_definition": "parser_.py"}
     app: typer.Typer | None = None
+    null_command = lambda: None
     path: pathlib.Path
     entry: str
     prefix: list[str]
@@ -84,6 +85,46 @@ def build_typer(base: str, *fragments: str):
 
         typing.cast(typer.Typer, stack[-2][0]).add_typer(parser)
 
+    def process_file():
+        module = importlib.import_module(".".join((*prefix, entry[:-3])))
+        processor: FileProcessor = (
+            {"adder": parser_adder, "break": True}
+            if entry == special_files["typer_definition"]
+            else {
+                "adder": lambda command, kwargs: typing.cast(
+                    typer.Typer, app
+                ).command(
+                    **typing.cast(
+                        dict[str, typing.Any],
+                        {"name": entry[:-3].replace("_", "-"), **kwargs},
+                    )
+                )(
+                    command
+                ),
+                "break": False,
+            }
+        )
+
+        if not hasattr(module, "typer_builder_args"):
+            return "CONTINUE"
+
+        args: TyperBuilderArgs = module.typer_builder_args
+        args["typer_args"] = typing.cast(
+            collections.abc.Collection[collections.abc.Mapping[str, object]],
+            args.get("typer_args", []),
+        )
+
+        if len(args["typer_args"]) == 0:
+            args["typer_args"] = [{}]
+
+        for options in args["typer_args"]:
+            processor["adder"](args.get("command", null_command), options)
+
+        if processor["break"]:
+            return "BREAK"
+
+        return "CONTINUE"
+
     while stack:
         app, entries = stack[-1]
 
@@ -95,53 +136,9 @@ def build_typer(base: str, *fragments: str):
             path = pathlib.Path(*prefix, entry)
 
             if entry.endswith(".py"):
-                module = importlib.import_module(
-                    ".".join((*prefix, entry[:-3]))
-                )
-                processor: FileProcessor = (
-                    {"adder": parser_adder, "break": True}
-                    if entry == special_files["typer_definition"]
-                    else {
-                        "adder": lambda command, kwargs: typing.cast(
-                            typer.Typer, app
-                        ).command(
-                            **typing.cast(
-                                dict[str, typing.Any],
-                                {
-                                    "name": entry[:-3].replace("_", "-"),
-                                    **kwargs,
-                                },
-                            )
-                        )(
-                            command
-                        ),
-                        "break": False,
-                    }
-                )
+                action = process_file()
 
-                if not hasattr(module, "typer_builder_args"):
-                    continue
-
-                args: TyperBuilderArgs = module.typer_builder_args
-
-                args.setdefault("typer_args", [])
-
-                args["typer_args"] = typing.cast(
-                    collections.abc.Collection[
-                        collections.abc.Mapping[str, object]
-                    ],
-                    args.get("typer_args"),
-                )
-
-                if len(args["typer_args"]) == 0:
-                    args["typer_args"] = [{}]
-
-                for options in args["typer_args"]:
-                    processor["adder"](
-                        args.get("command", lambda: None), options
-                    )
-
-                if processor["break"]:
+                if action == "BREAK":
                     break
 
                 continue

@@ -8,28 +8,9 @@ CREATE TABLE IF NOT EXISTS ryujinx_saves (
   size INTEGER DEFAULT 0 NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS ryujinx_configs (
-  id INTEGER PRIMARY KEY,
-  label TEXT,
-  content JSON NOT NULL,
-  last_used TIMESTAMP,
-  created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
-
 CREATE TRIGGER IF NOT EXISTS update_ryujinx_saves_updated AFTER
 UPDATE ON ryujinx_saves FOR EACH ROW BEGIN
 UPDATE ryujinx_saves
-SET
-  updated = CURRENT_TIMESTAMP
-WHERE
-  id = OLD.id;
-
-END;
-
-CREATE TRIGGER IF NOT EXISTS update_ryujinx_configs_updated AFTER
-UPDATE ON ryujinx_configs FOR EACH ROW BEGIN
-UPDATE ryujinx_configs
 SET
   updated = CURRENT_TIMESTAMP
 WHERE

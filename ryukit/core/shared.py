@@ -7,7 +7,8 @@ import json
 
 __all__ = ["states", "internal_configs"]
 
-# ==== State ====
+
+# MARK: State Management
 
 
 @dataclasses.dataclass
@@ -17,7 +18,8 @@ class StateManager:
 
 states = StateManager()
 
-# ==== Internal Settings ====
+
+# MARK: Internal Configurations
 
 internal_configs: dict[str, object] = json.loads(
     importlib.resources.read_text(

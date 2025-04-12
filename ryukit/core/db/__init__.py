@@ -10,7 +10,8 @@ from . import models
 
 __all__ = ["models", "theme_applier"]
 
-# ==== Theming ====
+
+# MARK: Theming
 
 
 def annotate_theme[**P, R](applier: collections.abc.Callable[P, R]):

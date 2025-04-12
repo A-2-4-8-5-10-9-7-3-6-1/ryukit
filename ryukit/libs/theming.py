@@ -1,11 +1,12 @@
-"""
-Theme-setting utilities.
+# =============================================================================
+# Code provided by [PyKit](https://github.com/A-2-4-8-5-10-9-7-3-6-1/pykit.git)
+# =============================================================================
+#
+# Metadata
+# --------
+# - version: 0.2.1
 
-Metadata
---------
-
-- **VERSION**: 0.2.0
-"""
+"""Theme-setting utilities."""
 
 import collections
 import collections.abc
@@ -15,7 +16,7 @@ import typing
 __all__ = ["theme_applier"]
 
 
-# ==== Theme Appliers ====
+# MARK: Theme Appliers
 
 type Args = tuple[object, ...]
 type Kwargs = dict[str, object]

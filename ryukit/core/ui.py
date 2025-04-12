@@ -14,7 +14,7 @@ from ..libs import theming
 
 __all__ = ["console", "theme_applier"]
 
-# ==== Objects ====
+# MARK: Objects
 
 theme_extras = {
     "colour.primary": "blue",
@@ -34,7 +34,7 @@ console = rich.console.Console(
     highlight=False,
 )
 
-# ==== Theming ====
+# MARK: Theming
 
 
 def annotate_applier[**P, R](applier: collections.abc.Callable[P, R]):
