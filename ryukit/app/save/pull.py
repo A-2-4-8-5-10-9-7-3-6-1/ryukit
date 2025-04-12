@@ -20,4 +20,7 @@ def command(
     """Pull data from Ryujinx into a save bucket."""
 
 
-typer_builder_args: typer_builder.TyperBuilderArgs = {"command": command}
+typer_builder_args: typer_builder.TyperBuilderArgs = {
+    "command": command,
+    "typer_args": [{"rich_help_panel": "Data Flow Commands"}],
+}

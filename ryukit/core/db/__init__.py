@@ -39,7 +39,7 @@ def annotate_theme[**P, R](applier: collections.abc.Callable[P, R]):
 
 
 def sql_connect_PPR(database: object, *rest: object, **kwargs: object):
-    return ((fs.File.DATABASE(), *rest), kwargs)
+    return ((fs.File.DATABASE_FILE(), *rest), kwargs)
 
 
 theme_applier = annotate_theme(

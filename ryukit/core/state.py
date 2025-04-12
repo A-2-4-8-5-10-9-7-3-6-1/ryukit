@@ -1,4 +1,4 @@
-"""Objects shared amongst commands."""
+"""Utilities for managing shared command state."""
 
 import dataclasses
 import importlib
@@ -8,7 +8,7 @@ import json
 __all__ = ["states", "internal_configs"]
 
 
-# MARK: State Management
+# MARK: Mutable State
 
 
 @dataclasses.dataclass
@@ -19,10 +19,14 @@ class StateManager:
 states = StateManager()
 
 
-# MARK: Internal Configurations
+# MARK: Internal State
 
 internal_configs: dict[str, object] = json.loads(
     importlib.resources.read_text(
-        "ryukit", "assets", "configs", "internal.json", encoding="utf-8"
+        "ryukit",
+        "assets",
+        "configs",
+        "internal-configs.json",
+        encoding="utf-8",
     )
 )

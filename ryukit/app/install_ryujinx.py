@@ -12,7 +12,7 @@ import rich
 import rich.progress
 import typer
 
-from ..core import shared, ui
+from ..core import fs, state, ui
 from ..helpers import typer_builder
 
 __all__ = ["typer_builder_args"]
@@ -24,10 +24,10 @@ def command():
 
     Before using this command, set 'ryujinxInstallURL' in ryujinxkit-config.json.
 
-    [red]WARNING: This will overwrite all pre-existing app files. Create a save bucket before executing this command.[/red]
+    [yellow]:warning:[/yellow] This will overwrite all pre-existing app files. Create a save bucket before executing.
     """
 
-    if not shared.states.configs["ryujinxInstallURL"]:
+    if not state.states.configs["ryujinxInstallURL"]:
         ui.console.print(
             "[error]Command cannot be used without setting 'ryujinxInstallURL'.",
             "[error]Use '--help' for more information.",
@@ -53,7 +53,7 @@ def command():
                     try:
                         with requests.get(
                             typing.cast(
-                                str, shared.states.configs["ryujinxInstallURL"]
+                                str, state.states.configs["ryujinxInstallURL"]
                             ),
                             stream=True,
                         ) as response:
@@ -83,7 +83,7 @@ def command():
                         hashlib.sha256(buffer.getvalue()).hexdigest()
                         != typing.cast(
                             dict[str, object],
-                            shared.internal_configs["ryujinxInstall"],
+                            state.internal_configs["ryujinxInstall"],
                         )["sha256"]
                     ):
                         raise RuntimeError("INVALID_CONTENT")
@@ -105,14 +105,14 @@ def command():
                     str,
                     typing.cast(
                         dict[str, object],
-                        shared.states.configs["ryujinxConfigs"],
+                        state.states.configs["ryujinxConfigs"],
                     )["distDir"],
                 ).format(**metadata),
                 "roamingDataDir": typing.cast(
                     str,
                     typing.cast(
                         dict[str, object],
-                        shared.states.configs["ryujinxConfigs"],
+                        state.states.configs["ryujinxConfigs"],
                     )["roamingDataDir"],
                 ).format(**metadata),
             }
@@ -123,7 +123,7 @@ def command():
                     dict[str, str],
                     typing.cast(
                         dict[str, object],
-                        shared.internal_configs["ryujinxInstall"],
+                        state.internal_configs["ryujinxInstall"],
                     )["paths"],
                 ).items(),
             ):
@@ -135,7 +135,22 @@ def command():
                 "[reset][green]:heavy_check_mark:", "Organized files."
             )
             ui.console.print(
-                "[reset]:package:", f"Installed to {paths["distDir"]}."
+                "[reset]:package:", f"Installed Ryujinx to {paths["distDir"]}."
+            )
+
+            state_file_content: dict[str, object] = json.loads(
+                fs.File.STATE_FILE().read_bytes()
+            )
+            state_file_content["ryujinx"] = {
+                **typing.cast(
+                    dict[str, object], state_file_content["ryujinx"]
+                ),
+                "meta": metadata,
+            }
+
+            fs.File.STATE_FILE().write_text(json.dumps(state_file_content))
+            ui.console.print(
+                "\nExistence of Ryujinx on your system has been noted."
             )
 
     except RuntimeError as e:

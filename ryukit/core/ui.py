@@ -20,7 +20,7 @@ theme_extras = {
     "colour.primary": "blue",
     "colour.secondary": "none",
     "colour.accent": "#e68eef",
-    "default": "italic",
+    "default": "none",
 }
 console = rich.console.Console(
     theme=rich.theme.Theme(
@@ -98,7 +98,11 @@ def annotate_applier[**P, R](applier: collections.abc.Callable[P, R]):
 def progress_PPR(*args: object, **kwargs: object):
     return (
         tuple(
-            f"[italic][colour.secondary]{arg}" if isinstance(arg, str) else arg
+            (
+                f"[default][colour.secondary]{arg}"
+                if isinstance(arg, str)
+                else arg
+            )
             for arg in args
         ),
         kwargs,
@@ -107,7 +111,7 @@ def progress_PPR(*args: object, **kwargs: object):
 
 def status_PPR(*args: object, **kwargs: object):
     if "status" in kwargs:
-        kwargs["status"] = f"[italic][colour.secondary]{kwargs["status"]}"
+        kwargs["status"] = f"[default][colour.secondary]{kwargs["status"]}"
 
     return (args, kwargs)
 

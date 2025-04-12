@@ -8,7 +8,7 @@ import typing
 import jsonschema
 import typer
 
-from ..core import db, fs, shared, ui
+from ..core import db, fs, state, ui
 from ..helpers import typer_builder
 
 __all__ = ["typer_builder_args"]
@@ -22,10 +22,12 @@ def command(
 ):
     "A CLI tool for Ryujinx."
 
-    [
-        folder().mkdir(parents=True, exist_ok=True)
-        for folder in [fs.File.ROAMING_APP_DATA]
-    ]
+    fs.File.ROAMING_APP_DATA_DIR().mkdir(parents=True, exist_ok=True)
+
+    if not fs.File.STATE_FILE().exists():
+        fs.File.STATE_FILE().write_bytes(
+            importlib.resources.read_binary("ryukit", "assets", "state.json")
+        )
 
     if not fs.File.CONFIG_FILE().exists():
         with fs.File.CONFIG_FILE().open("w") as buffer:
@@ -37,7 +39,7 @@ def command(
                             "ryukit",
                             "assets",
                             "configs",
-                            "defaults.app.json",
+                            "default-app-configs.json",
                             encoding="utf-8",
                         )
                     ).items()
@@ -46,12 +48,12 @@ def command(
                 fp=buffer,
             )
 
-    shared.states.configs = json.loads(fs.File.CONFIG_FILE().read_bytes())
+    state.states.configs = json.loads(fs.File.CONFIG_FILE().read_bytes())
 
     for do, command in [
         (
             show_configs,
-            lambda: ui.console.print_json(data=shared.states.configs),
+            lambda: ui.console.print_json(data=state.states.configs),
         ),
         (
             not ctx.invoked_subcommand,
@@ -87,7 +89,7 @@ def command(
                     str,
                     typing.cast(
                         dict[str, object],
-                        shared.internal_configs["ryujinxInstall"],
+                        state.internal_configs["ryujinxInstall"],
                     )["defaultDistDirSuffix"],
                 ),
             ),
@@ -99,13 +101,13 @@ def command(
                     str,
                     typing.cast(
                         dict[str, object],
-                        shared.internal_configs["ryujinxInstall"],
+                        state.internal_configs["ryujinxInstall"],
                     )["defaultRoamingDirSuffix"],
                 ),
             ),
         ],
     ):
-        setting: dict[str, object] = shared.states.configs
+        setting: dict[str, object] = state.states.configs
         *prefix, suffix = key
 
         for part in prefix:
@@ -122,16 +124,16 @@ def command(
                         "ryukit",
                         "assets",
                         "schemas",
-                        "configs.app.json",
+                        "app-configs.schema.json",
                         encoding="utf-8",
                     )
                 )
             ),
-        ).validate(shared.states.configs)
+        ).validate(state.states.configs)
 
     except jsonschema.ValidationError as e:
         ui.console.print(
-            f"[error]Malformed configuration file: {e.message}, at {e.json_path}."
+            f"[error]Malformed configuration file: {e.message}. This error came from {e.json_path}."
         )
 
         raise typer.Exit(1)

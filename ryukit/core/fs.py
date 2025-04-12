@@ -28,16 +28,18 @@ if os.environ.get("RYUKIT_DEV_FILES", "").lower() == "true":
 class File(enum.Enum):
     LOCAL_DATA_DIR = dynamic_paths["local_data_dir"]
     ROAMING_DATA_DIR = dynamic_paths["roaming_data_dir"]
-    ROAMING_APP_DATA = ROAMING_DATA_DIR / platformdirs.user_data_path(
+    ROAMING_APP_DATA_DIR = ROAMING_DATA_DIR / platformdirs.user_data_path(
         "RyuKit"
     ).relative_to(platformdirs.user_data_path())
     CONFIG_FILE = dynamic_paths["configs_file"]
-    DATABASE = f"{ROAMING_APP_DATA}/database.db"
+    DATABASE_FILE = f"{ROAMING_APP_DATA_DIR}/database"
+    SAVE_INSTANCE_FOLDER = f"{ROAMING_APP_DATA_DIR}/saves/{"{instance_id}"}"
+    STATE_FILE = ROAMING_APP_DATA_DIR / "state"
 
     def __init__(self, stem: pathlib.Path | str):
         self._stem = stem
 
-    def __call__(self, **kwargs: str):
+    def __call__(self, **kwargs: object):
         """
         Generate file path.
 

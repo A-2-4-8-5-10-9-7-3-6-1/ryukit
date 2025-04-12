@@ -8,5 +8,12 @@
     },
     "defaultDistDirSuffix": "{appName}-{appVersion}-{targetSystem}",
     "defaultRoamingDirSuffix": "{appName}"
+  },
+  "saveBuckets": {
+    "flow": {
+      "meta": "{roamingDataDir}/bis/user/saveMeta",
+      "user": "{roamingDataDir}/bis/user/save",
+      "system": "{roamingDataDir}/bis/system/save"
+    }
   }
 }
