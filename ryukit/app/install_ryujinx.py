@@ -12,7 +12,7 @@ import rich
 import rich.progress
 import typer
 
-from ..core import fs, state, ui
+from ..core import runtime, ui
 from ..helpers import typer_builder
 
 __all__ = ["typer_builder_args"]
@@ -20,17 +20,18 @@ __all__ = ["typer_builder_args"]
 
 def command():
     """
-    Install Ryujinx from your configured source.
+    Install Ryujinx.
 
     Before using this command, set 'ryujinxInstallURL' in ryujinxkit-config.json.
 
-    [yellow]:warning:[/yellow] This will overwrite all pre-existing app files. Create a save bucket before executing.
+    [yellow]:warning:[/yellow] This will overwrite pre-existing app files. Proceed with caution.
     """
 
-    if not state.states.configs["ryujinxInstallURL"]:
+    if not runtime.context.configs["ryujinxInstallURL"]:
         ui.console.print(
             "[error]Command cannot be used without setting 'ryujinxInstallURL'.",
-            "[error]Use '--help' for more information.",
+            "└── Use '--help' for more information.",
+            sep="\n",
         )
 
         raise typer.Exit(1)
@@ -53,7 +54,8 @@ def command():
                     try:
                         with requests.get(
                             typing.cast(
-                                str, state.states.configs["ryujinxInstallURL"]
+                                str,
+                                runtime.context.configs["ryujinxInstallURL"],
                             ),
                             stream=True,
                         ) as response:
@@ -74,7 +76,7 @@ def command():
                                 buffer.write(chunk)
                                 progress.advance(task_id, chunk_size)
 
-                            ui.console.print("Content fetched.", "(2/3)")
+                            ui.console.print("Fetched content.", "(2/3)")
 
                     except requests.ConnectionError:
                         raise RuntimeError("CONNECTION_FAILED")
@@ -83,12 +85,12 @@ def command():
                         hashlib.sha256(buffer.getvalue()).hexdigest()
                         != typing.cast(
                             dict[str, object],
-                            state.internal_configs["ryujinxInstall"],
+                            runtime.context.internal_layer["ryujinxInstall"],
                         )["sha256"]
                     ):
                         raise RuntimeError("INVALID_CONTENT")
 
-                    ui.console.print("Content verified.", "(3/3)")
+                    ui.console.print("Verified content.", "(3/3)")
 
                 with zipfile.ZipFile(buffer) as zip:
                     zip.extractall(temp_dir_str)
@@ -105,14 +107,14 @@ def command():
                     str,
                     typing.cast(
                         dict[str, object],
-                        state.states.configs["ryujinxConfigs"],
+                        runtime.context.configs["ryujinxConfigs"],
                     )["distDir"],
                 ).format(**metadata),
                 "roamingDataDir": typing.cast(
                     str,
                     typing.cast(
                         dict[str, object],
-                        state.states.configs["ryujinxConfigs"],
+                        runtime.context.configs["ryujinxConfigs"],
                     )["roamingDataDir"],
                 ).format(**metadata),
             }
@@ -123,7 +125,7 @@ def command():
                     dict[str, str],
                     typing.cast(
                         dict[str, object],
-                        state.internal_configs["ryujinxInstall"],
+                        runtime.context.internal_layer["ryujinxInstall"],
                     )["paths"],
                 ).items(),
             ):
@@ -131,26 +133,20 @@ def command():
                     temp_dir / source, destination, dirs_exist_ok=True
                 )
 
-            ui.console.print(
-                "[reset][green]:heavy_check_mark:", "Organized files."
-            )
-            ui.console.print(
-                "[reset]:package:", f"Installed Ryujinx to {paths["distDir"]}."
-            )
-
-            state_file_content: dict[str, object] = json.loads(
-                fs.File.STATE_FILE().read_bytes()
-            )
-            state_file_content["ryujinx"] = {
+            runtime.context.persistence_layer["ryujinx"] = {
                 **typing.cast(
-                    dict[str, object], state_file_content["ryujinx"]
+                    dict[str, object],
+                    runtime.context.persistence_layer["ryujinx"],
                 ),
                 "meta": metadata,
             }
 
-            fs.File.STATE_FILE().write_text(json.dumps(state_file_content))
             ui.console.print(
-                "\nExistence of Ryujinx on your system has been noted."
+                "[reset][green]:heavy_check_mark:",
+                "Organized files.",
+                "\n[reset]:package:",
+                f"Installed Ryujinx to {paths["distDir"]}.",
+                "\nExistence of Ryujinx on your system has been noted.",
             )
 
     except RuntimeError as e:

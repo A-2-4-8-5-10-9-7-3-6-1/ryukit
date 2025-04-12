@@ -42,14 +42,14 @@ def command(
 
     except RuntimeError:
         ui.console.print(
-            "[error]Could not deploy your save.",
-            "Is Ryujinx installed?",
+            "[error]Failed to apply save.",
+            "└── Is Ryujinx installed?",
             sep="\n",
         )
 
         raise typer.Exit(1)
 
-    ui.console.print("Save deployed.")
+    ui.console.print("Save applied.")
 
 
 typer_builder_args: typer_builder.TyperBuilderArgs = {

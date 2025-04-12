@@ -16,7 +16,9 @@ def command(
     ids: typing.Annotated[
         list[int],
         typer.Argument(
-            metavar="ID...", help="IDs of to-be-deleted save buckets."
+            metavar="ID...",
+            help="The IDs of your to-be-deleted save buckets.",
+            show_default=False,
         ),
     ],
 ):
