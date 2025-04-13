@@ -52,7 +52,4 @@ def command(
     ui.console.print("Save applied.")
 
 
-typer_builder_args: typer_builder.TyperBuilderArgs = {
-    "command": command,
-    "typer_args": [{"rich_help_panel": "Data Flow Commands"}],
-}
+typer_builder_args: typer_builder.TyperBuilderArgs = {"command": command}

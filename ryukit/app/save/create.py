@@ -38,7 +38,4 @@ def command(
     ui.console.print(f"Created save bucket '{label}' with ID {id_}.")
 
 
-typer_builder_args: typer_builder.TyperBuilderArgs = {
-    "command": command,
-    "typer_args": [{"rich_help_panel": "Life Cycle Commands"}],
-}
+typer_builder_args: typer_builder.TyperBuilderArgs = {"command": command}

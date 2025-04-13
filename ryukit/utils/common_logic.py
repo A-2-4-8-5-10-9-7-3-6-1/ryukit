@@ -19,9 +19,9 @@ def channel_save_bucket(bucket_id: int, *, upstream: bool):
     :raises RuntimeError: If Ryujinx is not installed.
     """
 
-    rotate: collections.abc.Callable[
-        [collections.abc.Sequence[str]], collections.abc.Iterable[str]
-    ] = ((lambda x: x) if upstream else reversed[str])
+    def rotate[T](values: collections.abc.Sequence[T]):
+        return (iter if upstream else reversed)(values)
+
     ryujinxInfo = typing.cast(
         dict[str, object], runtime.context.persistence_layer["ryujinx"]
     )
@@ -29,23 +29,27 @@ def channel_save_bucket(bucket_id: int, *, upstream: bool):
     if not ryujinxInfo["meta"]:
         raise RuntimeError("Couldn't detect Ryujinx.")
 
+    ryujinxInfo["meta"] = typing.cast(dict[str, object], ryujinxInfo["meta"])
+    ryujinxInfo["ryujinxConfigs"] = typing.cast(
+        dict[str, object], runtime.context.configs["ryujinxConfigs"]
+    )
+
     for source, dest in map(
-        lambda pair: (
-            fs.File.SAVE_INSTANCE_FOLDER(instance_id=bucket_id) / next(pair),
-            pathlib.Path(
-                next(pair).format(
-                    **typing.cast(dict[str, object], ryujinxInfo["meta"]),
-                    **typing.cast(
-                        dict[str, object],
-                        runtime.context.configs["ryujinxConfigs"],
-                    ),
-                )
-            ),
-        ),
+        rotate,
         map(
-            iter,
+            lambda x: list(map(pathlib.Path, x)),
             map(
-                rotate,
+                lambda pair, r_conf=ryujinxInfo[
+                    "ryujinxConfigs"
+                ], meta=ryujinxInfo["meta"]: (
+                    str(
+                        fs.File.SAVE_INSTANCE_FOLDER(instance_id=bucket_id)
+                        / pair[0]
+                    )
+                    .format(**r_conf)
+                    .format(**meta),
+                    pair[1].format(**r_conf).format(**meta),
+                ),
                 typing.cast(
                     dict[str, str],
                     typing.cast(
@@ -62,4 +66,4 @@ def channel_save_bucket(bucket_id: int, *, upstream: bool):
         if not source.exists():
             continue
 
-        shutil.copy(source, dest)
+        shutil.copytree(source, dest)

@@ -1,8 +1,11 @@
+import sqlite3
 import typing
 
 import typer
 
+from ...core import db, fs, ui
 from ...helpers import typer_builder
+from ...utils import common_logic
 
 __all__ = ["typer_builder_args"]
 
@@ -19,8 +22,58 @@ def command(
 ):
     """Pull data from Ryujinx into a save bucket."""
 
+    with db.theme_applier(sqlite3.connect)("DATABASE") as conn:
+        if not conn.execute(
+            """
+            SELECT
+                COUNT(*)
+            FROM
+                ryujinx_saves
+            WHERE
+                id = :id
+            """,
+            {"id": id_},
+        ).fetchone()[0]:
+            ui.console.print("[error]No such save.")
 
-typer_builder_args: typer_builder.TyperBuilderArgs = {
-    "command": command,
-    "typer_args": [{"rich_help_panel": "Data Flow Commands"}],
-}
+            raise typer.Exit(1)
+
+        try:
+            common_logic.channel_save_bucket(id_, upstream=False)
+
+        except RuntimeError:
+            ui.console.print(
+                "[error]Failed to apply save.",
+                "└── [italic]Is Ryujinx installed?",
+                sep="\n",
+            )
+
+            raise typer.Exit(1)
+
+        size = sum(
+            path.stat().st_size if path.is_file() else 0
+            for path in fs.File.SAVE_INSTANCE_FOLDER(instance_id=id_).glob(
+                "**"
+            )
+        )
+
+        conn.execute(
+            """
+            UPDATE
+                ryujinx_saves
+            SET
+                size = :size
+            WHERE
+                id = :id
+            """,
+            {"id": id_, "size": size},
+        )
+
+    ui.console.print(
+        "Updated bucket.",
+        f"└── [italic]Bucket is now of size {size / pow(2, 20):.1f}MB.",
+        sep="\n",
+    )
+
+
+typer_builder_args: typer_builder.TyperBuilderArgs = {"command": command}

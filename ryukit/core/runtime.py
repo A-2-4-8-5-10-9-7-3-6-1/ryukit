@@ -55,12 +55,8 @@ def with_context[**P, R](process: collections.abc.Callable[P, R]):
         context.configs = json.loads(
             fs.File.CONFIG_FILE().read_bytes()
             if fs.File.CONFIG_FILE().exists()
-            else importlib.resources.read_text(
-                "ryukit",
-                "assets",
-                "configs",
-                "default-app-configs.json",
-                encoding="utf-8",
+            else importlib.resources.read_binary(
+                "ryukit", "assets", "configs", "default-app-configs.json"
             )
         )
 
