@@ -30,12 +30,12 @@ def command(
             INSERT INTO 
                 ryujinx_saves (label)
             VALUES 
-                (:label)
+                (:label);
             """,
             {"label": label},
         ).lastrowid
 
-    ui.console.print(f"Created save bucket '{label}' with ID {id_}.")
+    ui.console.print(f"Createds bucket '{label}' with ID {id_}.")
 
 
 typer_builder_args: typer_builder.TyperBuilderArgs = {"command": command}

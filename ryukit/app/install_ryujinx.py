@@ -3,6 +3,7 @@ import collections.abc
 import hashlib
 import io
 import json
+import math
 import pathlib
 import shutil
 import tempfile
@@ -17,7 +18,7 @@ import rich.table
 import typer
 
 from ..core import runtime, ui
-from ..utils import typer_builder
+from ..utils import calculator, typer_builder
 
 __all__ = ["typer_builder_args"]
 
@@ -73,10 +74,7 @@ def command():
                     )
                     and None,
                 }
-                chunk_size = pow(2, 20)
-                spinner = ui.theme_applier(rich.spinner.Spinner)(
-                    "dots", style="colour.primary"
-                )
+                chunk_size = pow(2, 10)
 
                 with ui.theme_applier(rich.live.Live)(
                     task_table["render"]
@@ -87,7 +85,12 @@ def command():
                         rich.table.Table, task_table["render"]
                     )
 
-                    task_table["render"].add_row(spinner, " Connecting...")
+                    task_table["render"].add_row(
+                        ui.theme_applier(rich.spinner.Spinner)(
+                            "dots2", style="blue"
+                        ),
+                        " Connecting...",
+                    )
 
                     with requests.get(
                         typing.cast(
@@ -98,16 +101,21 @@ def command():
                         if response.status_code != 200:
                             raise requests.ConnectionError
 
-                        total = float(response.headers["content-length"])
+                        total = int(response.headers["content-length"])
                         progress = 0
                         content = response.iter_content(chunk_size)
+                        parts = 20
+                        total_mb = calculator.megabytes(total)
 
-                        while (percent := progress / total) < 1:
+                        while (percent := progress / total * 100) < 100:
+                            beads = int(percent / math.ceil(100 / parts))
                             task_table["refresh"]()
                             task_table["render"].add_row(
-                                spinner,
-                                " Downloading files...",
-                                f" ({percent * 100:.1f}%)",
+                                f"[blue][{
+                                    "".join("=" if beads - i != 1 else ">" for i in range(beads))
+                                }{" " * (parts - beads)}][/] Downloading files... [green]{
+                                    calculator.megabytes(int(percent * total / 100)):.1f
+                                }MB[/][dim] / {total_mb:.1f}MB"
                             )
                             buffer.write(next(content))
 

@@ -22,15 +22,15 @@ def channel_save_bucket(bucket_id: int, *, upstream: bool):
     def rotate[T](values: collections.abc.Sequence[T]):
         return (iter if upstream else reversed)(values)
 
-    ryujinxInfo = typing.cast(
+    ryujinx_info = typing.cast(
         dict[str, object], runtime.context.persistence_layer["ryujinx"]
     )
 
-    if not ryujinxInfo["meta"]:
+    if not ryujinx_info["meta"]:
         raise RuntimeError("Couldn't detect Ryujinx.")
 
-    ryujinxInfo["meta"] = typing.cast(dict[str, object], ryujinxInfo["meta"])
-    ryujinxInfo["ryujinxConfigs"] = typing.cast(
+    ryujinx_info["meta"] = typing.cast(dict[str, object], ryujinx_info["meta"])
+    ryujinx_info["ryujinxConfigs"] = typing.cast(
         dict[str, object], runtime.context.configs["ryujinxConfigs"]
     )
 
@@ -39,16 +39,16 @@ def channel_save_bucket(bucket_id: int, *, upstream: bool):
         map(
             lambda x: list(map(pathlib.Path, x)),
             map(
-                lambda pair, r_conf=ryujinxInfo[
+                lambda pair, ryujinx_config=ryujinx_info[
                     "ryujinxConfigs"
-                ], meta=ryujinxInfo["meta"]: (
+                ], meta=ryujinx_info["meta"]: (
                     str(
                         fs.File.SAVE_INSTANCE_FOLDER(instance_id=bucket_id)
                         / pair[0]
                     )
-                    .format(**r_conf)
+                    .format(**ryujinx_config)
                     .format(**meta),
-                    pair[1].format(**r_conf).format(**meta),
+                    pair[1].format(**ryujinx_config).format(**meta),
                 ),
                 typing.cast(
                     dict[str, str],

@@ -28,7 +28,7 @@ def command(
             FROM
                 ryujinx_saves
             WHERE
-                id = :id
+                id = :id;
             """,
             {"id": id_},
         ).fetchone()[0]:
@@ -36,17 +36,29 @@ def command(
 
             raise typer.Exit(1)
 
-    try:
-        common_logic.channel_save_bucket(id_, upstream=True)
+        try:
+            common_logic.channel_save_bucket(id_, upstream=True)
 
-    except RuntimeError:
-        ui.console.print(
-            "[error]Failed to apply save.",
-            "└── [italic]Is Ryujinx installed?",
-            sep="\n",
+        except RuntimeError:
+            ui.console.print(
+                "[error]Failed to apply save.",
+                "└── [italic]Is Ryujinx installed?",
+                sep="\n",
+            )
+
+            raise typer.Exit(1)
+
+        conn.execute(
+            """
+            UPDATE
+                ryujinx_saves
+            SET
+                last_used = CURRENT_TIMESTAMP
+            WHERE
+                id = :id;
+            """,
+            {"id": id_},
         )
-
-        raise typer.Exit(1)
 
     ui.console.print("Save applied.")
 

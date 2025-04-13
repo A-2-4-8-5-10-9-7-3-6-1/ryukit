@@ -4,7 +4,7 @@ import typing
 import typer
 
 from ...core import db, fs, ui
-from ...utils import common_logic, typer_builder
+from ...utils import calculator, common_logic, typer_builder
 
 __all__ = ["typer_builder_args"]
 
@@ -29,7 +29,7 @@ def command(
             FROM
                 ryujinx_saves
             WHERE
-                id = :id
+                id = :id;
             """,
             {"id": id_},
         ).fetchone()[0]:
@@ -63,14 +63,14 @@ def command(
             SET
                 size = :size
             WHERE
-                id = :id
+                id = :id;
             """,
             {"id": id_, "size": size},
         )
 
     ui.console.print(
         "Updated bucket.",
-        f"└── [italic]Bucket is now of size {size / pow(2, 20):.1f}MB.",
+        f"└── [italic]Bucket is now of size {calculator.megabytes(size):.1f}MB.",
         sep="\n",
     )
 

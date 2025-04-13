@@ -15,22 +15,8 @@ __all__ = ["console", "theme_applier"]
 
 # MARK: Objects
 
-theme_extras = {
-    "colour.primary": "blue",
-    "colour.secondary": "none",
-    "colour.accent": "#e68eef",
-    "default": "none",
-}
 console = rich.console.Console(
-    theme=rich.theme.Theme(
-        {
-            "error": "red",
-            "markdown.link_url": theme_extras["colour.accent"],
-            **theme_extras,
-        }
-    ),
-    style="default",
-    highlight=False,
+    theme=rich.theme.Theme({"error": "red"}), highlight=False
 )
 
 # MARK: Theming

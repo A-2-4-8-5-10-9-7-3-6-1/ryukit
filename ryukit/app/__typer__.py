@@ -42,7 +42,7 @@ def command(
             not ctx.invoked_subcommand,
             lambda: ui.console.print(
                 *(
-                    f"[reset]{line[:25]}[colour.primary]{line[25:]}[/colour.primary]"
+                    f"[blue]{line[:25]}[/][red]{line[25:]}[/]"
                     for line in importlib.resources.read_text(
                         "ryukit", "assets", "logo.txt", encoding="utf-8"
                     ).splitlines()
