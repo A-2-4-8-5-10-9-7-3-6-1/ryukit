@@ -7,7 +7,7 @@ import typer
 from ryukit.core import ui
 
 from ...core import db, fs
-from ...helpers import typer_builder
+from ...utils import typer_builder
 
 __all__ = ["typer_builder_args"]
 

@@ -7,7 +7,7 @@ import typer
 from ryukit.core import ui
 
 from ...core import db
-from ...helpers import typer_builder
+from ...utils import typer_builder
 
 __all__ = ["typer_builder_args"]
 default_label = f"Save{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}"
