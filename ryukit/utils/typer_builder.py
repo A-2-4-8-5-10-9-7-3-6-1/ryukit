@@ -33,7 +33,7 @@ def build_typer(base: str, *fragments: str):
     Instructions
     ------------
 
-    This tool allows for file-based CLI routing, meaning that the structure of the resulting CLI tool is dynamically determined by the file structure of whichever directory is given via `path`. A well-structured directory is one in which every file is a module that exports a typer.Typer instance named 'app'. parser_.py files define subtypers, and their 'app' exports should be configured as such. .py files, other than parser_.py, will have their 'app' export hooked onto the nearest 'app' instance from a parser_.py file.
+    This tool allows for file-based CLI routing, meaning that the structure of the resulting CLI tool is dynamically determined by the file structure of whichever directory is given via `path`. A well-structured directory is one in which every file is a module that exports a typer.Typer instance named 'app'. __typer__.py files define subtypers, and their 'app' exports should be configured as such. .py files, other than __typer__.py, will have their 'app' export hooked onto the nearest 'app' instance from a __typer__.py file.
 
     Note
     ----
@@ -42,7 +42,7 @@ def build_typer(base: str, *fragments: str):
 
     root = ["ryukit", base, *fragments]
     stack: list[tuple[typer.Typer | None, list[list[str]]]] = [(None, [root])]
-    special_files = {"typer_definition": "parser_.py"}
+    special_files = {"typer_definition": "__typer__.py"}
     app: typer.Typer | None = None
     null_command = lambda: None
     path: pathlib.Path
@@ -62,13 +62,13 @@ def build_typer(base: str, *fragments: str):
         },
     )
 
-    def parser_adder(
+    def typer_adder(
         command: collections.abc.Callable[..., object],
         kwargs: collections.abc.Mapping[str, typing.Any],
     ):
         if path.stem == special_files["typer_definition"] and stack[-1][0]:
             raise RuntimeError(
-                f"Attempted to add a Typer multiple times in {path}, a Typer cannot have aliases."
+                f"Attempted to aliase a Typer in {path}. A Typer cannot have aliases."
             )
 
         parser = ui.theme_applier(typer.Typer)(
@@ -100,7 +100,7 @@ def build_typer(base: str, *fragments: str):
                     ".".join((*prefix, entry[:-3]))
                 )
                 processor: FileProcessor = (
-                    {"adder": parser_adder, "break": True}
+                    {"adder": typer_adder, "break": True}
                     if entry == special_files["typer_definition"]
                     else {
                         "adder": lambda command, kwargs: typing.cast(
