@@ -3,7 +3,7 @@ import typing
 
 import typer
 
-from ...core import db, ui
+from ...core import db, presentation
 from ...utils import common_logic, typer_builder
 
 __all__ = ["typer_builder_args"]
@@ -32,7 +32,7 @@ def command(
             """,
             {"id": id_},
         ).fetchone()[0]:
-            ui.console.print("[error]No such save.")
+            presentation.console.print("[error]No such save.")
 
             raise typer.Exit(1)
 
@@ -40,7 +40,7 @@ def command(
             common_logic.channel_save_bucket(id_, upstream=True)
 
         except RuntimeError:
-            ui.console.print(
+            presentation.console.print(
                 "[error]Failed to apply save.",
                 "└── [italic]Is Ryujinx installed?",
                 sep="\n",
@@ -60,7 +60,7 @@ def command(
             {"id": id_},
         )
 
-    ui.console.print("Save applied.")
+    presentation.console.print("Save applied.")
 
 
 typer_builder_args: typer_builder.TyperBuilderArgs = {"command": command}

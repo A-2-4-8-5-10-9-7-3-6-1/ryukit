@@ -1,4 +1,4 @@
-"""UI definitions."""
+"""Presentation-layer definitions."""
 
 import collections.abc
 
@@ -14,6 +14,7 @@ from ..libs import theming
 __all__ = ["console", "theme_applier"]
 
 # MARK: Objects
+
 
 console = rich.console.Console(
     theme=rich.theme.Theme({"error": "red"}), highlight=False

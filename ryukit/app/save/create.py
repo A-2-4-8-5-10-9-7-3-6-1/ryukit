@@ -4,7 +4,7 @@ import typing
 
 import typer
 
-from ryukit.core import ui
+from ryukit.core import presentation
 
 from ...core import db
 from ...utils import typer_builder
@@ -35,7 +35,7 @@ def command(
             {"label": label},
         ).lastrowid
 
-    ui.console.print(f"Createds bucket '{label}' with ID {id_}.")
+    presentation.console.print(f"Createds bucket '{label}' with ID {id_}.")
 
 
 typer_builder_args: typer_builder.TyperBuilderArgs = {"command": command}

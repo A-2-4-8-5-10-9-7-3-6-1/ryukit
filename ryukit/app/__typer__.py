@@ -6,7 +6,7 @@ import typing
 import jsonschema
 import typer
 
-from ..core import runtime, ui
+from ..core import presentation, runtime
 from ..utils import typer_builder
 
 __all__ = ["typer_builder_args"]
@@ -25,7 +25,7 @@ def command(
             jsonschema.ValidationError, runtime.context.goo["error"]
         )
 
-        ui.console.print(
+        presentation.console.print(
             f"[error]Malformed configuration file; {error.message}.",
             f"└── [italic]Error originated from {error.json_path}.",
             sep="\n",
@@ -36,11 +36,13 @@ def command(
     for do, command in [
         (
             show_configs,
-            lambda: ui.console.print_json(data=runtime.context.configs),
+            lambda: presentation.console.print_json(
+                data=runtime.context.configs
+            ),
         ),
         (
             not ctx.invoked_subcommand,
-            lambda: ui.console.print(
+            lambda: presentation.console.print(
                 *(
                     f"[blue]{line[:25]}[/][red]{line[25:]}[/]"
                     for line in importlib.resources.read_text(

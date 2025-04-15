@@ -17,7 +17,7 @@ import rich.spinner
 import rich.table
 import typer
 
-from ..core import runtime, ui
+from ..core import presentation, runtime
 from ..utils import calculator, typer_builder
 
 __all__ = ["typer_builder_args"]
@@ -33,7 +33,7 @@ def command():
     """
 
     if not runtime.context.configs["ryujinxInstallURL"]:
-        ui.console.print(
+        presentation.console.print(
             "[error]Command cannot be used without setting 'ryujinxInstallURL'.",
             "└── [italic]Use '--help' for more information.",
             sep="\n",
@@ -60,7 +60,9 @@ def command():
                     "refresh": lambda: (
                         task_table.update(
                             {
-                                "render": ui.theme_applier(rich.table.Table)(
+                                "render": presentation.theme_applier(
+                                    rich.table.Table
+                                )(
                                     show_header=False,
                                     box=None,
                                     pad_edge=False,
@@ -76,7 +78,7 @@ def command():
                 }
                 chunk_size = pow(2, 10)
 
-                with ui.theme_applier(rich.live.Live)(
+                with presentation.theme_applier(rich.live.Live)(
                     task_table["render"]
                 ) as live:
                     task_table["refresh"]()
@@ -86,7 +88,7 @@ def command():
                     )
 
                     task_table["render"].add_row(
-                        ui.theme_applier(rich.spinner.Spinner)(
+                        presentation.theme_applier(rich.spinner.Spinner)(
                             "dots2", style="blue"
                         ),
                         " Connecting...",
@@ -139,7 +141,7 @@ def command():
                 raise RuntimeError("CONNECTION_FAILED")
 
             except Exception:
-                ui.console.print(
+                presentation.console.print(
                     "[error]Unrecognized download content.",
                     "└── [italic]Where'd you get your link?",
                     sep="\n",
@@ -147,14 +149,14 @@ def command():
 
                 raise typer.Exit(1)
 
-            ui.console.print(
+            presentation.console.print(
                 "[reset][green]:heavy_check_mark:", "Verified content."
             )
 
             with zipfile.ZipFile(buffer) as zip:
                 zip.extractall(temp_dir_str)
 
-            ui.console.print(
+            presentation.console.print(
                 "[reset][green]:heavy_check_mark:", "Extracted files."
             )
 
@@ -190,7 +192,7 @@ def command():
         ):
             shutil.copytree(temp_dir / source, destination, dirs_exist_ok=True)
 
-        ui.console.print(
+        presentation.console.print(
             "[reset][green]:heavy_check_mark:", "Organized files."
         )
 
@@ -201,7 +203,7 @@ def command():
             "meta": metadata,
         }
 
-        ui.console.print(
+        presentation.console.print(
             "[reset][green]:heavy_check_mark:",
             "Noted installation.",
             "\n[reset]:package:",

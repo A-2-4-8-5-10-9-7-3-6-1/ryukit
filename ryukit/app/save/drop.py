@@ -4,7 +4,7 @@ import typing
 
 import typer
 
-from ryukit.core import ui
+from ryukit.core import presentation
 
 from ...core import db, fs
 from ...utils import typer_builder
@@ -60,7 +60,7 @@ def command(
 
         shutil.rmtree(fs.File.SAVE_INSTANCE_FOLDER(instance_id=id_))
 
-    ui.console.print(f"Deleted {deleted} bucket(s).")
+    presentation.console.print(f"Deleted {deleted} bucket(s).")
 
 
 typer_builder_args: typer_builder.TyperBuilderArgs = {"command": command}

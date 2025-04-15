@@ -9,9 +9,9 @@ import typing
 
 import typer
 
-from ..core import ui
+from ..core import presentation
 
-__all__ = ["build_typer", "TyperBuilderArgs"]
+__all__ = ["build", "TyperBuilderArgs"]
 
 
 class TyperBuilderArgs(typing.TypedDict, total=False):
@@ -21,23 +21,24 @@ class TyperBuilderArgs(typing.TypedDict, total=False):
     command: collections.abc.Callable[..., object]
 
 
-def build_typer(base: str, *fragments: str):
+def build(base: str, *fragments: str):
     """
     Builds a typer from a well-structured directory.
 
+    This tool allows for file-based CLI routing, meaning that the structure of the resulting typer object's commands will resemble that of the files within the indicated directory. Those file which are required for the CLI must export a 'typer_builder_args' variable, and they are processed as follows:
+
+    - __typer__.py files: These files indicate typers and sub-typers in the CLI. Within 'typer_builder_args': 'command' defines a callback of the typer, while 'typer_args' is a collection containing up to one dict entry --- arguments to forward to the `typer.Typer` invocation.
+    - Other .py files: These files define leaf-level commands for the CLI. Each will be placed under their *nearest* typer instance, the one corresponding to the most-immediate directory containing a __typer__.py file. The 'command' field in 'typer_builder_args' will be the implementation of the command, whilst the 'typer_args' field will be a collection of dicts --- each providing arguments for a `typer.Typer.command` call, and each representing an alias for the same command.
+
+    Note that if in either case 'typer_args' is excluded from 'typer_builder_args', or no entry in 'typer_args' contains a 'name' field, then the spawned object will be given a name that reflects that of the file it's defined in.
+
     :param base: Base fragment of internal path to a well-structured directory.
-    :param fragments: Path fragments to append onto the base fragmenet.
+    :param fragments: Path fragments to append onto the base fragment.
 
     :returns: A typer corresponding to the targeted directory.
 
-    Instructions
-    ------------
-
-    This tool allows for file-based CLI routing, meaning that the structure of the resulting CLI tool is dynamically determined by the file structure of whichever directory is given via `path`. A well-structured directory is one in which every file is a module that exports a typer.Typer instance named 'app'. __typer__.py files define subtypers, and their 'app' exports should be configured as such. .py files, other than __typer__.py, will have their 'app' export hooked onto the nearest 'app' instance from a __typer__.py file.
-
-    Note
-    ----
-    Using this function to build a typer on every app startup might result in slowdowns. Look for ways to cache the build, or return to static importing.
+    :raises RuntimeError: If the provided directory has no immediate __typer__.py file.
+    :raises RuntimeError: If aliasing is attempted in a __typer__.py file.
     """
 
     root = ["ryukit", base, *fragments]
@@ -68,10 +69,10 @@ def build_typer(base: str, *fragments: str):
     ):
         if path.stem == special_files["typer_definition"] and stack[-1][0]:
             raise RuntimeError(
-                f"Attempted to aliase a Typer in {path}. A Typer cannot have aliases."
+                f"Attempted to aliase in {path}. A Typer cannot have aliases."
             )
 
-        parser = ui.theme_applier(typer.Typer)(
+        parser = presentation.theme_applier(typer.Typer)(
             **typing.cast(
                 dict[str, typing.Any],
                 {"name": path.parent.stem.replace("_", "-"), **kwargs},
@@ -134,9 +135,9 @@ def build_typer(base: str, *fragments: str):
                 if len(args["typer_args"]) == 0:
                     args["typer_args"] = [{}]
 
-                for options in args["typer_args"]:
+                for alias in args["typer_args"]:
                     processor["adder"](
-                        args.get("command", null_command), options
+                        args.get("command", null_command), alias
                     )
 
                 if processor["break"]:
@@ -169,7 +170,7 @@ def build_typer(base: str, *fragments: str):
                 break
 
             elif app is None:
-                raise RuntimeError(f"No root Typer at {path}.")
+                raise RuntimeError(f"Missing root Typer at {path}.")
 
             entries.extend(pending_entries)
 

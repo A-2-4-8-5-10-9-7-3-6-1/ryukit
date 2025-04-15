@@ -3,7 +3,7 @@ import typing
 
 import typer
 
-from ...core import db, fs, ui
+from ...core import db, fs, presentation
 from ...utils import calculator, common_logic, typer_builder
 
 __all__ = ["typer_builder_args"]
@@ -33,7 +33,7 @@ def command(
             """,
             {"id": id_},
         ).fetchone()[0]:
-            ui.console.print("[error]No such save.")
+            presentation.console.print("[error]No such save.")
 
             raise typer.Exit(1)
 
@@ -41,7 +41,7 @@ def command(
             common_logic.channel_save_bucket(id_, upstream=False)
 
         except RuntimeError:
-            ui.console.print(
+            presentation.console.print(
                 "[error]Failed to apply save.",
                 "└── [italic]Is Ryujinx installed?",
                 sep="\n",
@@ -68,7 +68,7 @@ def command(
             {"id": id_, "size": size},
         )
 
-    ui.console.print(
+    presentation.console.print(
         "Updated bucket.",
         f"└── [italic]Bucket is now of size {calculator.megabytes(size):.1f}MB.",
         sep="\n",
