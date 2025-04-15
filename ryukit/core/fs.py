@@ -32,20 +32,20 @@ class File(enum.Enum):
         "RyuKit"
     ).relative_to(platformdirs.user_data_path())
     CONFIG_FILE = dynamic_paths["configs_file"]
-    DATABASE_FILE = f"{ROAMING_APP_DATA_DIR}/database"
+    DATABASE_FILE = f"{ROAMING_APP_DATA_DIR}/db"
     SAVE_INSTANCE_FOLDER = f"{ROAMING_APP_DATA_DIR}/saves/{"{instance_id}"}"
-    STATE_FILE = ROAMING_APP_DATA_DIR / "state"
+    STATE_FILE = ROAMING_APP_DATA_DIR / "configs"
 
     def __init__(self, stem: pathlib.Path | str):
         self._stem = stem
 
     def __call__(self, **kwargs: object):
         """
-        Generate file path.
+        Generate path to corresponding file-system object.
 
         :param kwargs: Keywords for path construction.
 
-        :returns: The path corresponding to the `File` object.
+        :returns: Path corresponding to file-system object.
         """
 
         if isinstance(self._stem, pathlib.Path):

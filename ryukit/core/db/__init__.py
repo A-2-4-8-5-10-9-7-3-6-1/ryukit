@@ -3,12 +3,13 @@
 import collections
 import collections.abc
 import sqlite3
+import typing
 
 from ...libs import theming
 from .. import fs
 from . import models
 
-__all__ = ["models", "theme_applier"]
+__all__ = ["models", "theme"]
 
 
 # MARK: Theming
@@ -17,17 +18,12 @@ __all__ = ["models", "theme_applier"]
 def annotate_theme[**P, R](applier: collections.abc.Callable[P, R]):
     def annotated_applier(*args: P.args, **kwargs: P.kwargs) -> R:
         """
-        Hook for setting parameter defaults for database functions.
+        Sets defaults for database-oriented functions.
 
         Theme Guide
-        ===========
+        -----------
 
-        sqlite3.connect
-        ---------------
-
-        Default kwargs: autocommit, detect_types
-
-        The database path is handled by the preprocessor, set it, as a positional parameter, to a placeholder ("DATABASE" is recommended).
+        - sqlite3.connect(defaults=[autocommit]): Database paths are automatically handled. Set the 'database' parameter, via keyword argument, to a string like 'DATABASE'.
         """
 
         return applier(*args, **kwargs)
@@ -35,16 +31,22 @@ def annotate_theme[**P, R](applier: collections.abc.Callable[P, R]):
     return annotated_applier
 
 
-def sql_connect_PPR(database: object, *rest: object, **kwargs: object):
+def sql_connect_preprocessor(
+    database: object, *rest: object, **kwargs: object
+):
     return ((fs.File.DATABASE_FILE(), *rest), kwargs)
 
 
-theme_applier = annotate_theme(
+theme = annotate_theme(
     theming.theme_applier(
         {
             sqlite3.connect: {
-                "default_kwargs": {"autocommit": True, "detect_types": 1},
-                "preprocessor": sql_connect_PPR,
+                "default_kwargs": {"autocommit": True},
+                "preprocessor": sql_connect_preprocessor,
+                "postprocessor": lambda conn: typing.cast(
+                    sqlite3.Connection, conn
+                ).__setattr__("row_factory", sqlite3.Row)
+                or conn,
             }
         }
     )

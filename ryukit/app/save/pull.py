@@ -1,6 +1,7 @@
 import sqlite3
 import typing
 
+import rich
 import typer
 
 from ...core import db, fs, presentation
@@ -21,7 +22,9 @@ def command(
 ):
     """Pull data from Ryujinx into a save bucket."""
 
-    with db.theme_applier(sqlite3.connect)("DATABASE") as conn:
+    console = presentation.theme(rich.console.Console)()
+
+    with db.theme(sqlite3.connect)("DATABASE") as conn:
         if not conn.execute(
             """
             SELECT
@@ -33,7 +36,7 @@ def command(
             """,
             {"id": id_},
         ).fetchone()[0]:
-            presentation.console.print("[error]No such save.")
+            console.print("[error]No such save.")
 
             raise typer.Exit(1)
 
@@ -41,7 +44,7 @@ def command(
             common_logic.channel_save_bucket(id_, upstream=False)
 
         except RuntimeError:
-            presentation.console.print(
+            console.print(
                 "[error]Failed to apply save.",
                 "└── [italic]Is Ryujinx installed?",
                 sep="\n",
@@ -68,11 +71,11 @@ def command(
             {"id": id_, "size": size},
         )
 
-    presentation.console.print(
+    console.print(
         "Updated bucket.",
         f"└── [italic]Bucket is now of size {calculator.megabytes(size):.1f}MB.",
         sep="\n",
     )
 
 
-typer_builder_args: typer_builder.TyperBuilderArgs = {"command": command}
+typer_builder_args: typer_builder.BuilderArgs = {"command": command}

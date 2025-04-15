@@ -2,6 +2,7 @@ import datetime
 import sqlite3
 import typing
 
+import rich
 import typer
 
 from ryukit.core import presentation
@@ -24,7 +25,9 @@ def command(
     [blue]:information:[/blue] The created bucket will be empty. You'll use the save-pull command to populate it.
     """
 
-    with db.theme_applier(sqlite3.connect)("DATABASE") as conn:
+    console = presentation.theme(rich.console.Console)()
+
+    with db.theme(sqlite3.connect)("DATABASE") as conn:
         id_ = conn.execute(
             """
             INSERT INTO 
@@ -35,7 +38,7 @@ def command(
             {"label": label},
         ).lastrowid
 
-    presentation.console.print(f"Createds bucket '{label}' with ID {id_}.")
+    console.print(f"Bucket '{label}' created with ID {id_}.")
 
 
-typer_builder_args: typer_builder.TyperBuilderArgs = {"command": command}
+typer_builder_args: typer_builder.BuilderArgs = {"command": command}

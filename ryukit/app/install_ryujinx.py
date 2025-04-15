@@ -32,8 +32,10 @@ def command():
     [yellow]:warning:[/] This will overwrite pre-existing app files. Proceed with caution.
     """
 
+    console = presentation.theme(rich.console.Console)()
+
     if not runtime.context.configs["ryujinxInstallURL"]:
-        presentation.console.print(
+        console.print(
             "[error]Command cannot be used without setting 'ryujinxInstallURL'.",
             "└── [italic]Use '--help' for more information.",
             sep="\n",
@@ -60,9 +62,7 @@ def command():
                     "refresh": lambda: (
                         task_table.update(
                             {
-                                "render": presentation.theme_applier(
-                                    rich.table.Table
-                                )(
+                                "render": presentation.theme(rich.table.Table)(
                                     show_header=False,
                                     box=None,
                                     pad_edge=False,
@@ -78,7 +78,7 @@ def command():
                 }
                 chunk_size = pow(2, 10)
 
-                with presentation.theme_applier(rich.live.Live)(
+                with presentation.theme(rich.live.Live)(
                     task_table["render"]
                 ) as live:
                     task_table["refresh"]()
@@ -88,7 +88,7 @@ def command():
                     )
 
                     task_table["render"].add_row(
-                        presentation.theme_applier(rich.spinner.Spinner)(
+                        presentation.theme(rich.spinner.Spinner)(
                             "dots2", style="blue"
                         ),
                         " Connecting...",
@@ -141,7 +141,7 @@ def command():
                 raise RuntimeError("CONNECTION_FAILED")
 
             except Exception:
-                presentation.console.print(
+                console.print(
                     "[error]Unrecognized download content.",
                     "└── [italic]Where'd you get your link?",
                     sep="\n",
@@ -149,16 +149,12 @@ def command():
 
                 raise typer.Exit(1)
 
-            presentation.console.print(
-                "[reset][green]:heavy_check_mark:", "Verified content."
-            )
+            console.print("[green]:heavy_check_mark:", "Verified content.")
 
             with zipfile.ZipFile(buffer) as zip:
                 zip.extractall(temp_dir_str)
 
-            presentation.console.print(
-                "[reset][green]:heavy_check_mark:", "Extracted files."
-            )
+            console.print("[green]:heavy_check_mark:", "Extracted files.")
 
         metadata: dict[str, object] = json.loads(
             (temp_dir / "metadata.json").read_bytes()
@@ -192,9 +188,7 @@ def command():
         ):
             shutil.copytree(temp_dir / source, destination, dirs_exist_ok=True)
 
-        presentation.console.print(
-            "[reset][green]:heavy_check_mark:", "Organized files."
-        )
+        console.print("[green]:heavy_check_mark:", "Organized files.")
 
         runtime.context.persistence_layer["ryujinx"] = {
             **typing.cast(
@@ -203,12 +197,11 @@ def command():
             "meta": metadata,
         }
 
-        presentation.console.print(
-            "[reset][green]:heavy_check_mark:",
-            "Noted installation.",
-            "\n[reset]:package:",
-            f"Ryujinx was installed to {paths["distDir"]}.",
+        console.print(
+            "[green]:heavy_check_mark:[/] Noted installation.",
+            f":package: Ryujinx installed to {paths["distDir"]}.",
+            sep="\n",
         )
 
 
-typer_builder_args: typer_builder.TyperBuilderArgs = {"command": command}
+typer_builder_args: typer_builder.BuilderArgs = {"command": command}

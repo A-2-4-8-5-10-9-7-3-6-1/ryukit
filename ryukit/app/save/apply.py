@@ -1,6 +1,7 @@
 import sqlite3
 import typing
 
+import rich
 import typer
 
 from ...core import db, presentation
@@ -20,7 +21,9 @@ def command(
     [yellow]:warning:[/yellow] This will overwrite files for Ryujinx. Unless certain, save your data.
     """
 
-    with db.theme_applier(sqlite3.connect)("DATABASE") as conn:
+    console = presentation.theme(rich.console.Console)()
+
+    with db.theme(sqlite3.connect)("DATABASE") as conn:
         if not conn.execute(
             """
             SELECT
@@ -32,7 +35,7 @@ def command(
             """,
             {"id": id_},
         ).fetchone()[0]:
-            presentation.console.print("[error]No such save.")
+            console.print("[error]No such save.")
 
             raise typer.Exit(1)
 
@@ -40,7 +43,7 @@ def command(
             common_logic.channel_save_bucket(id_, upstream=True)
 
         except RuntimeError:
-            presentation.console.print(
+            console.print(
                 "[error]Failed to apply save.",
                 "└── [italic]Is Ryujinx installed?",
                 sep="\n",
@@ -60,7 +63,7 @@ def command(
             {"id": id_},
         )
 
-    presentation.console.print("Save applied.")
+    console.print("Save applied.")
 
 
-typer_builder_args: typer_builder.TyperBuilderArgs = {"command": command}
+typer_builder_args: typer_builder.BuilderArgs = {"command": command}

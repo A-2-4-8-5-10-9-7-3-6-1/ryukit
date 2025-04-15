@@ -4,6 +4,7 @@ import importlib.resources
 import typing
 
 import jsonschema
+import rich
 import typer
 
 from ..core import presentation, runtime
@@ -20,12 +21,14 @@ def command(
 ):
     "A CLI tool for Ryujinx."
 
+    console = presentation.theme(rich.console.Console)()
+
     if "error" in runtime.context.goo:
         error = typing.cast(
             jsonschema.ValidationError, runtime.context.goo["error"]
         )
 
-        presentation.console.print(
+        console.print(
             f"[error]Malformed configuration file; {error.message}.",
             f"└── [italic]Error originated from {error.json_path}.",
             sep="\n",
@@ -36,13 +39,11 @@ def command(
     for do, command in [
         (
             show_configs,
-            lambda: presentation.console.print_json(
-                data=runtime.context.configs
-            ),
+            lambda: console.print_json(data=runtime.context.configs),
         ),
         (
             not ctx.invoked_subcommand,
-            lambda: presentation.console.print(
+            lambda: console.print(
                 *(
                     f"[blue]{line[:25]}[/][red]{line[25:]}[/]"
                     for line in importlib.resources.read_text(
@@ -64,7 +65,7 @@ def command(
         raise typer.Exit()
 
 
-typer_builder_args: typer_builder.TyperBuilderArgs = {
+typer_builder_args: typer_builder.BuilderArgs = {
     "command": command,
     "typer_args": [{"invoke_without_command": True}],
 }

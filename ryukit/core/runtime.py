@@ -60,6 +60,8 @@ def with_context[**P, R](process: collections.abc.Callable[P, R]):
             )
         )
 
+        context.configs.pop("$schema", None)
+
         try:
             typing.cast(
                 typing.Any,
@@ -124,11 +126,11 @@ def with_context[**P, R](process: collections.abc.Callable[P, R]):
             fs.File.STATE_FILE().read_bytes()
             if fs.File.STATE_FILE().exists()
             else importlib.resources.read_binary(
-                "ryukit", "assets", "state.json"
+                "ryukit", "assets", "configs", "initial-state.json"
             )
         )
 
-        with db.theme_applier(sqlite3.connect)("DATABASE") as conn:
+        with db.theme(sqlite3.connect)("DATABASE") as conn:
             conn.executescript(
                 importlib.resources.read_text(
                     "ryukit", "assets", "setup_database.sql", encoding="utf-8"
@@ -143,14 +145,7 @@ def with_context[**P, R](process: collections.abc.Callable[P, R]):
                 json.dumps(context.persistence_layer)
             )
             fs.File.CONFIG_FILE().write_text(
-                json.dumps(
-                    {
-                        k: v
-                        for k, v in context.configs.items()
-                        if k != "$schema"
-                    },
-                    indent=2,
-                )
+                json.dumps(context.configs, indent=2)
             )
 
     return inner

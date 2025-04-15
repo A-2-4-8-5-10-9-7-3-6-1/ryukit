@@ -27,7 +27,7 @@ def channel_save_bucket(bucket_id: int, *, upstream: bool):
     )
 
     if not ryujinx_info["meta"]:
-        raise RuntimeError("Couldn't detect Ryujinx.")
+        raise RuntimeError("Couldn't locate Ryujinx.")
 
     ryujinx_info["meta"] = typing.cast(dict[str, object], ryujinx_info["meta"])
     ryujinx_info["ryujinxConfigs"] = typing.cast(

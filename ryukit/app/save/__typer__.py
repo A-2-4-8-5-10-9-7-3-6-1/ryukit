@@ -7,4 +7,4 @@ def command():
     "Manage your save buckets."
 
 
-typer_builder_args: typer_builder.TyperBuilderArgs = {"command": command}
+typer_builder_args: typer_builder.BuilderArgs = {"command": command}

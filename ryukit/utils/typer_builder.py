@@ -11,10 +11,10 @@ import typer
 
 from ..core import presentation
 
-__all__ = ["build", "TyperBuilderArgs"]
+__all__ = ["build", "BuilderArgs"]
 
 
-class TyperBuilderArgs(typing.TypedDict, total=False):
+class BuilderArgs(typing.TypedDict, total=False):
     typer_args: collections.abc.Collection[
         collections.abc.Mapping[str, object]
     ]
@@ -72,7 +72,7 @@ def build(base: str, *fragments: str):
                 f"Attempted to aliase in {path}. A Typer cannot have aliases."
             )
 
-        parser = presentation.theme_applier(typer.Typer)(
+        parser = presentation.theme(typer.Typer)(
             **typing.cast(
                 dict[str, typing.Any],
                 {"name": path.parent.stem.replace("_", "-"), **kwargs},
@@ -124,7 +124,7 @@ def build(base: str, *fragments: str):
                 if not hasattr(module, "typer_builder_args"):
                     continue
 
-                args: TyperBuilderArgs = module.typer_builder_args
+                args: BuilderArgs = module.typer_builder_args
                 args["typer_args"] = typing.cast(
                     collections.abc.Collection[
                         collections.abc.Mapping[str, object]

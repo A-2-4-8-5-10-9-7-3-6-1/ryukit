@@ -2,6 +2,7 @@ import shutil
 import sqlite3
 import typing
 
+import rich
 import typer
 
 from ryukit.core import presentation
@@ -28,9 +29,10 @@ def command(
     [yellow]:warning:[/yellow] There's no going back...
     """
 
+    console = presentation.theme(rich.console.Console)()
     question_marks = ", ".join("?" for _ in range(len(ids)))
 
-    with db.theme_applier(sqlite3.connect)("DATABASE") as conn:
+    with db.theme(sqlite3.connect)("DATABASE") as conn:
         deleted: int
         (deleted,) = conn.execute(
             f"""
@@ -60,7 +62,7 @@ def command(
 
         shutil.rmtree(fs.File.SAVE_INSTANCE_FOLDER(instance_id=id_))
 
-    presentation.console.print(f"Deleted {deleted} bucket(s).")
+    console.print(f"Deleted {deleted} bucket(s).")
 
 
-typer_builder_args: typer_builder.TyperBuilderArgs = {"command": command}
+typer_builder_args: typer_builder.BuilderArgs = {"command": command}
