@@ -11,18 +11,17 @@ from ...core import db
 from ...utils import typer_builder
 
 __all__ = ["typer_builder_args"]
-default_label = f"Save{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}"
 
 
 def command(
     label: typing.Annotated[
         str, typer.Argument(help="A label for your save.")
-    ] = default_label,
+    ] = f"Save{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}",
 ):
     """
     Create a save bucket.
 
-    [blue]:information:[/blue] The created bucket will be empty. You'll use the save-pull command to populate it.
+    The created bucket will be empty. You'll use the save-pull command to populate it.
     """
 
     console = presentation.theme(rich.console.Console)()
