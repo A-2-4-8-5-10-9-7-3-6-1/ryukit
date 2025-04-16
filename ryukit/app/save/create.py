@@ -16,7 +16,7 @@ __all__ = ["typer_builder_args"]
 def command(
     label: typing.Annotated[
         str, typer.Argument(help="A label for your save.")
-    ] = f"Save{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}",
+    ] = f"save{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}",
 ):
     """
     Create a save bucket.

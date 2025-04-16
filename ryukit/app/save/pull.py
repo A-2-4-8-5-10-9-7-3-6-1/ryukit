@@ -24,22 +24,12 @@ def command(
 
     console = presentation.theme(rich.console.Console)()
 
+    if not common_logic.save_bucket_exists(id_):
+        console.print("[error]Unrecognized ID.")
+
+        raise typer.Exit(1)
+
     with db.theme(sqlite3.connect)("DATABASE") as conn:
-        if not conn.execute(
-            """
-            SELECT
-                COUNT(*)
-            FROM
-                ryujinx_saves
-            WHERE
-                id = :id;
-            """,
-            {"id": id_},
-        ).fetchone()[0]:
-            console.print("[error]No such save.")
-
-            raise typer.Exit(1)
-
         try:
             common_logic.channel_save_bucket(id_, upstream=False)
 

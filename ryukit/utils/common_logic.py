@@ -1,12 +1,13 @@
-"""Implementations for common command logic."""
+"""Implementations of common command logic."""
 
 import collections
 import collections.abc
 import pathlib
 import shutil
+import sqlite3
 import typing
 
-from ..core import fs, runtime
+from ..core import db, fs, runtime
 
 
 def channel_save_bucket(bucket_id: int, *, upstream: bool):
@@ -67,3 +68,27 @@ def channel_save_bucket(bucket_id: int, *, upstream: bool):
             continue
 
         shutil.copytree(source, dest)
+
+
+def save_bucket_exists(id_: int):
+    """
+    Check whether or not a save bucket exists.
+
+    :param id_: The save bucket's ID.
+    """
+
+    with db.theme(sqlite3.connect)("DATABASE") as conn:
+        return (
+            conn.execute(
+                """
+            SELECT
+                COUNT(*)
+            FROM
+                ryujinx_saves
+            WHERE
+                id = :id;
+            """,
+                {"id": id_},
+            ).fetchone()[0]
+            != 0
+        )
