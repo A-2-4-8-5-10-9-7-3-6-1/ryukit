@@ -57,25 +57,7 @@ theme = annotate_applier(
                     "refresh_per_second": common_settings["refresh_rate"]
                 }
             },
-            rich.table.Table: {
-                "default_kwargs": {
-                    "box": rich.box.Box(
-                        box="\n".join(
-                            [
-                                "    ",
-                                "    ",
-                                " -  ",
-                                "    ",
-                                "    ",
-                                "    ",
-                                "    ",
-                                "    ",
-                            ]
-                        ),
-                        ascii=True,
-                    )
-                }
-            },
+            rich.table.Table: {"default_kwargs": {"box": rich.box.SIMPLE}},
             typer.Typer: {"default_kwargs": {"rich_markup_mode": "rich"}},
         }
     )

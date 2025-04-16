@@ -31,7 +31,16 @@ def command(
     keywords = keywords or []
     pad = "" if wildcards else "%"
     table = presentation.theme(rich.table.Table)(
-        "ID", "LABEL", "CREATED", "UPDATED", "LAST USED", "SIZE"
+        presentation.theme(rich.table.Column)(
+            "ID", justify="center", style="bold"
+        ),
+        presentation.theme(rich.table.Column)("LABEL"),
+        presentation.theme(rich.table.Column)("CREATED"),
+        presentation.theme(rich.table.Column)("UPDATED"),
+        presentation.theme(rich.table.Column)("LAST USED"),
+        presentation.theme(rich.table.Column)(
+            "SIZE", justify="center", style="blue"
+        ),
     )
     console = presentation.theme(rich.console.Console)()
 
@@ -69,7 +78,7 @@ def command(
                             """
                             for i in range(len(keywords))
                         )
-                    };
+                    }
                     """,
                     {f"t{i}": word.lower() for i, word in enumerate(keywords)},
                 ),
@@ -83,7 +92,7 @@ def command(
                         row["label"],
                         row["created"],
                         row["updated"],
-                        row["last_used"] or "[dim]Never",
+                        row["last_used"] or "[italic dim]Never...",
                         f"{calculator.megabytes(row["size"]):.1f}MB",
                     ),
                 )

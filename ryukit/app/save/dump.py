@@ -59,7 +59,7 @@ def command(
                     )
 
         with io.BytesIO(json.dumps(saves).encode()) as save_buffer:
-            info = tar.tarinfo("metadata")
+            info = tar.tarinfo("index")
             info.size = len(save_buffer.getvalue())
 
             tar.addfile(info, save_buffer)
