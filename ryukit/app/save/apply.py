@@ -1,18 +1,18 @@
-import sqlite3
 import typing
 
-import rich
 import typer
 
-from ...core import db, presentation
-from ...utils import common_logic, typer_builder
+from ...core import db, display
+from ...utils import common_logic
+from . import __typer__
 
-__all__ = ["typer_builder_args"]
+__all__ = []
 
 
-def command(
-    id_: typing.Annotated[
-        int, typer.Argument(metavar="ID", help="ID of bucket to deploy from.")
+@__typer__.save.command(name="apply")
+def _(
+    bucket: typing.Annotated[
+        int, typer.Argument(help="ID of bucket to apply.")
     ],
 ):
     """
@@ -21,26 +21,19 @@ def command(
     [yellow]:warning:[/yellow] This will overwrite files for Ryujinx. Unless certain, save your data.
     """
 
-    console = presentation.theme(rich.console.Console)()
-
-    if not common_logic.save_bucket_exists(id_):
-        console.print("[error]Unrecognized ID.")
-
+    if not common_logic.save_bucket_exists(bucket):
+        display.console.print("[error]Unrecognized ID.")
         raise typer.Exit(1)
-
-    with db.theme(sqlite3.connect)("DATABASE") as conn:
+    with db.connect() as conn:
         try:
-            common_logic.channel_save_bucket(id_, upstream=True)
-
+            common_logic.channel_save_bucket(bucket, upstream=True)
         except RuntimeError:
-            console.print(
+            display.console.print(
                 "[error]Failed to apply save.",
                 "└── [italic]Is Ryujinx installed?",
                 sep="\n",
             )
-
             raise typer.Exit(1)
-
         conn.execute(
             """
             UPDATE
@@ -50,10 +43,6 @@ def command(
             WHERE
                 id = :id;
             """,
-            {"id": id_},
+            {"id": bucket},
         )
-
-    console.print("Save applied.")
-
-
-typer_builder_args: typer_builder.BuilderArgs = {"command": command}
+    display.console.print("Save applied.")

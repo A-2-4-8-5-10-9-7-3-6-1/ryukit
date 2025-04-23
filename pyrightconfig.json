@@ -1,6 +1,7 @@
 {
   "extraPaths": ["*"],
   "include": ["*"],
+  "exclude": ["ryukit.spec"],
   "reportMissingTypeStubs": "none",
   "typeCheckingMode": "strict"
 }

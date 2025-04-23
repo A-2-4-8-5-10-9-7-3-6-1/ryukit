@@ -4,7 +4,6 @@ import collections
 import collections.abc
 import pathlib
 import shutil
-import sqlite3
 import typing
 
 from ..core import db, fs, runtime
@@ -16,7 +15,6 @@ def channel_save_bucket(bucket_id: int, *, upstream: bool):
 
     :param upstream: Set as true to channel from the bucket to Ryujinx, and as false to do the reverse.
     :param bucket_id: ID belonging to the subject save bucket.
-
     :raises RuntimeError: If Ryujinx is not installed.
     """
 
@@ -26,15 +24,12 @@ def channel_save_bucket(bucket_id: int, *, upstream: bool):
     ryujinx_info = typing.cast(
         dict[str, object], runtime.context.persistence_layer["ryujinx"]
     )
-
     if not ryujinx_info["meta"]:
         raise RuntimeError("Couldn't locate Ryujinx.")
-
     ryujinx_info["meta"] = typing.cast(dict[str, object], ryujinx_info["meta"])
     ryujinx_info["ryujinxConfigs"] = typing.cast(
         dict[str, object], runtime.context.configs["ryujinxConfigs"]
     )
-
     for source, dest in map(
         rotate,
         map(
@@ -63,10 +58,8 @@ def channel_save_bucket(bucket_id: int, *, upstream: bool):
     ):
         if dest.exists():
             shutil.rmtree(dest)
-
         if not source.exists():
             continue
-
         shutil.copytree(source, dest)
 
 
@@ -77,17 +70,17 @@ def save_bucket_exists(id_: int):
     :param id_: The save bucket's ID.
     """
 
-    with db.theme(sqlite3.connect)("DATABASE") as conn:
+    with db.connect() as conn:
         return (
             conn.execute(
                 """
-            SELECT
-                COUNT(*)
-            FROM
-                ryujinx_saves
-            WHERE
-                id = :id;
-            """,
+                SELECT
+                    COUNT(*)
+                FROM
+                    ryujinx_saves
+                WHERE
+                    id = :id;
+                """,
                 {"id": id_},
             ).fetchone()[0]
             != 0

@@ -4,6 +4,8 @@ __pycache__
 .pytest_cache
 .ryukit
 node_modules
+build
+nuitka-crash-report.xml
 
 # configurations
 .env

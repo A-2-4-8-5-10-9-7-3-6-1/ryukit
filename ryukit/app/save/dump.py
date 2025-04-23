@@ -1,7 +1,6 @@
 import io
 import json
 import pathlib
-import sqlite3
 import tarfile
 import typing
 
@@ -9,20 +8,19 @@ import rich
 import rich.status
 import typer
 
-from ...core import db, fs, presentation
-from ...utils import typer_builder
+from ...core import db, display, fs
+from . import __typer__
 
-__all__ = ["typer_builder_args"]
+__all__ = []
 
 
-def command(
-    file: typing.Annotated[
-        pathlib.Path, typer.Argument(help="Name for dump file.")
+@__typer__.save.command(name="dump")
+def _(
+    into: typing.Annotated[
+        pathlib.Path, typer.Argument(help="Where to dump your buckets.")
     ] = pathlib.Path("ryukit.saves.dmp"),
 ):
     """Dump your save buckets into a recovery file."""
-
-    console = presentation.theme(rich.console.Console)()
 
     with (
         io.BytesIO() as buffer,
@@ -32,8 +30,7 @@ def command(
         ),
     ):
         saves: list[db.models.RyujinxSave] = []
-
-        with db.theme(sqlite3.connect)("DATABASE") as conn:
+        with db.connect() as conn:
             for save in map(
                 lambda x: typing.cast(db.models.RyujinxSave, x),
                 map(
@@ -49,7 +46,6 @@ def command(
                 ),
             ):
                 saves.append(save)
-
                 if fs.File.SAVE_INSTANCE_FOLDER(
                     instance_id=save["id"]
                 ).exists():
@@ -57,17 +53,10 @@ def command(
                         fs.File.SAVE_INSTANCE_FOLDER(instance_id=save["id"]),
                         arcname=f"save{save["id"]}",
                     )
-
         with io.BytesIO(json.dumps(saves).encode()) as save_buffer:
             info = tar.tarinfo("index")
             info.size = len(save_buffer.getvalue())
-
             tar.addfile(info, save_buffer)
-
-        file.parent.mkdir(exist_ok=True)
-        file.write_bytes(buffer.getvalue())
-
-    console.print(f"Dump file created at {file}.")
-
-
-typer_builder_args: typer_builder.BuilderArgs = {"command": command}
+        into.parent.mkdir(exist_ok=True)
+        into.write_bytes(buffer.getvalue())
+    display.console.print(f"Dump file created at {into}.")

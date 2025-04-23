@@ -3,7 +3,8 @@
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
   "files.associations": {
-    ".env.template": "properties"
+    ".env.template": "properties",
+    "ryukit.spec": "python"
   },
   "isort.importStrategy": "fromEnvironment",
   "python.testing.pytestEnabled": true,

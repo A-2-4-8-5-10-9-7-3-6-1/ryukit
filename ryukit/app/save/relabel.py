@@ -1,39 +1,29 @@
-import sqlite3
 import typing
 
-import rich
 import typer
 
-from ryukit.core import presentation
+from ...core import db, display
+from ...utils import common_logic
+from . import __typer__
 
-from ...core import db
-from ...utils import common_logic, typer_builder
-
-__all__ = ["typer_builder_args"]
+__all__ = []
 
 
-def command(
-    id_: typing.Annotated[
-        int,
-        typer.Argument(
-            metavar="ID", help="ID of bucket to update.", show_default=False
-        ),
+@__typer__.save.command(name="relabel")
+def _(
+    bucket: typing.Annotated[
+        int, typer.Argument(help="ID of bucket to update.", show_default=False)
     ],
-    label: typing.Annotated[
-        str,
-        typer.Argument(help="A new label for the bucket.", show_default=False),
+    set_to: typing.Annotated[
+        str, typer.Option(help="New label for the bucket.", show_default=False)
     ],
 ):
     """Relabel an existing bucket."""
 
-    console = presentation.theme(rich.console.Console)()
-
-    if not common_logic.save_bucket_exists(id_):
-        console.print("[error]Unrecognized ID.")
-
+    if not common_logic.save_bucket_exists(bucket):
+        display.console.print("[error]Unrecognized ID.")
         raise typer.Exit(1)
-
-    with db.theme(sqlite3.connect)("DATABASE") as conn:
+    with db.connect() as conn:
         conn.execute(
             """
             UPDATE
@@ -43,10 +33,6 @@ def command(
             WHERE
                 id = :id;
             """,
-            {"label": label, "id": id_},
+            {"label": set_to, "id": bucket},
         )
-
-    console.print("Label updated.")
-
-
-typer_builder_args: typer_builder.BuilderArgs = {"command": command}
+    display.console.print("Label updated.")

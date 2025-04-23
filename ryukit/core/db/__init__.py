@@ -2,52 +2,40 @@
 
 import collections
 import collections.abc
+import functools
 import sqlite3
-import typing
+from typing import Callable
 
-from ...libs import theming
 from .. import fs
 from . import models
 
-__all__ = ["models", "theme"]
+__all__ = ["models", "connect"]
 
 
-# MARK: Theming
+def tuned[**P, R](func: Callable[P, R]):
+    """
+    Appends a tuning stage to the end of a function.
+
+    :param func: The function to extend.
+
+    :returns: The extended function.
+    """
+
+    def do(tune: collections.abc.Callable[[R], object]) -> Callable[P, R]:
+        @functools.wraps(func)
+        def inner(*args: P.args, **kwargs: P.kwargs):
+            arg = func(*args, **kwargs)
+            tune(arg)
+            return arg
+
+        return inner
+
+    if func == sqlite3.connect:
+        return do(lambda conn: setattr(conn, "row_factory", sqlite3.Row))
+
+    return func
 
 
-def annotate_theme[**P, R](applier: collections.abc.Callable[P, R]):
-    def annotated_applier(*args: P.args, **kwargs: P.kwargs) -> R:
-        """
-        Sets defaults for database-oriented functions.
-
-        Theme Guide
-        -----------
-
-        - sqlite3.connect(defaults=[autocommit]): Database paths are automatically handled. Set the 'database' parameter, via keyword argument, to a string like 'DATABASE'.
-        """
-
-        return applier(*args, **kwargs)
-
-    return annotated_applier
-
-
-def sql_connect_preprocessor(
-    database: object, *rest: object, **kwargs: object
-):
-    return ((fs.File.DATABASE_FILE(), *rest), kwargs)
-
-
-theme = annotate_theme(
-    theming.theme_applier(
-        {
-            sqlite3.connect: {
-                "default_kwargs": {"autocommit": True},
-                "preprocessor": sql_connect_preprocessor,
-                "postprocessor": lambda conn: typing.cast(
-                    sqlite3.Connection, conn
-                ).__setattr__("row_factory", sqlite3.Row)
-                or conn,
-            }
-        }
-    )
+connect = functools.partial(
+    tuned(sqlite3.connect), autocommit=True, database=fs.File.DATABASE_FILE()
 )

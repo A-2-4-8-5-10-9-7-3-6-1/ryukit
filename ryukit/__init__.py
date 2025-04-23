@@ -1,6 +1,5 @@
+from . import app
 from .core import runtime
-from .utils import typer_builder
 
 __all__ = ["start"]
-start = lambda: runtime.with_context(app)()
-app = typer_builder.build("app")
+start = lambda: runtime.with_context(app.app)()

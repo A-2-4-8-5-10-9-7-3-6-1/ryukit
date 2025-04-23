@@ -1,54 +1,42 @@
-import sqlite3
 import typing
 
-import rich
 import typer
 
-from ...core import db, fs, presentation
-from ...utils import calculator, common_logic, typer_builder
+from ...core import db, display, fs
+from ...utils import calculator, common_logic
+from . import __typer__
 
-__all__ = ["typer_builder_args"]
+__all__ = []
 
 
-def command(
-    id_: typing.Annotated[
+@__typer__.save.command(name="pull")
+def _(
+    into: typing.Annotated[
         int,
-        typer.Argument(
-            metavar="ID",
-            help="ID of bucket bucket to pull into.",
-            show_default=False,
-        ),
+        typer.Argument(help="ID of bucket to pull into.", show_default=False),
     ],
 ):
     """Pull data from Ryujinx into a save bucket."""
 
-    console = presentation.theme(rich.console.Console)()
-
-    if not common_logic.save_bucket_exists(id_):
-        console.print("[error]Unrecognized ID.")
-
+    if not common_logic.save_bucket_exists(into):
+        display.console.print("[error]Unrecognized ID.")
         raise typer.Exit(1)
-
-    with db.theme(sqlite3.connect)("DATABASE") as conn:
+    with db.connect() as conn:
         try:
-            common_logic.channel_save_bucket(id_, upstream=False)
-
+            common_logic.channel_save_bucket(into, upstream=False)
         except RuntimeError:
-            console.print(
+            display.console.print(
                 "[error]Failed to apply save.",
                 "└── [italic]Is Ryujinx installed?",
                 sep="\n",
             )
-
             raise typer.Exit(1)
-
         size = sum(
             path.stat().st_size if path.is_file() else 0
-            for path in fs.File.SAVE_INSTANCE_FOLDER(instance_id=id_).glob(
+            for path in fs.File.SAVE_INSTANCE_FOLDER(instance_id=into).glob(
                 "**"
             )
         )
-
         conn.execute(
             """
             UPDATE
@@ -58,14 +46,10 @@ def command(
             WHERE
                 id = :id;
             """,
-            {"id": id_, "size": size},
+            {"id": into, "size": size},
         )
-
-    console.print(
+    display.console.print(
         "Updated bucket.",
         f"└── [italic]Bucket is now of size {calculator.megabytes(size):.1f}MB.",
         sep="\n",
     )
-
-
-typer_builder_args: typer_builder.BuilderArgs = {"command": command}

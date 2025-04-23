@@ -1,23 +1,19 @@
 import shutil
-import sqlite3
 import typing
 
-import rich
 import typer
 
-from ryukit.core import presentation
+from ...core import db, display, fs
+from . import __typer__
 
-from ...core import db, fs
-from ...utils import typer_builder
-
-__all__ = ["typer_builder_args"]
+__all__ = []
 
 
-def command(
-    ids: typing.Annotated[
+@__typer__.save.command(name="drop")
+def _(
+    buckets: typing.Annotated[
         list[int],
         typer.Argument(
-            metavar="ID...",
             help="The IDs of your to-be-deleted save buckets.",
             show_default=False,
         ),
@@ -29,10 +25,8 @@ def command(
     [yellow]:warning:[/yellow] There's no going back...
     """
 
-    console = presentation.theme(rich.console.Console)()
-    question_marks = ", ".join("?" for _ in range(len(ids)))
-
-    with db.theme(sqlite3.connect)("DATABASE") as conn:
+    question_marks = ", ".join("?" for _ in range(len(buckets)))
+    with db.connect() as conn:
         deleted: int
         (deleted,) = conn.execute(
             f"""
@@ -43,9 +37,8 @@ def command(
             WHERE
                 id IN ({question_marks});
             """,
-            ids,
+            buckets,
         ).fetchone()
-
         conn.execute(
             f"""
             DELETE FROM 
@@ -53,16 +46,11 @@ def command(
             WHERE
                 id IN ({question_marks});
             """,
-            ids,
+            buckets,
         )
-
-    for id_ in ids:
-        if not fs.File.SAVE_INSTANCE_FOLDER(instance_id=id_).exists():
-            continue
-
+    any(
         shutil.rmtree(fs.File.SAVE_INSTANCE_FOLDER(instance_id=id_))
-
-    console.print(f"Deleted {deleted} bucket(s).")
-
-
-typer_builder_args: typer_builder.BuilderArgs = {"command": command}
+        for id_ in buckets
+        if not fs.File.SAVE_INSTANCE_FOLDER(instance_id=id_).exists()
+    )
+    display.console.print(f"Deleted {deleted} bucket(s).")

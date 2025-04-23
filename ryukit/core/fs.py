@@ -7,17 +7,12 @@ import pathlib
 import platformdirs
 
 __all__ = ["File"]
-
-
-# MARK: File Resolution
-
 dynamic_paths: dict[str, pathlib.Path | str] = {
     "local_data_dir": platformdirs.user_data_dir(),
     "roaming_data_dir": platformdirs.user_data_dir(roaming=True),
     "configs_file": platformdirs.user_config_path() / "ryukit-config.json",
 }
-
-if os.environ.get("RYUKIT_DEV_FILES", "").lower() == "true":
+if os.environ.get("DEV_FILES", "").lower() == "true":
     dynamic_paths |= {
         "local_data_dir": ".ryukit/local",
         "roaming_data_dir": ".ryukit/roaming",
@@ -50,5 +45,4 @@ class File(enum.Enum):
 
         if isinstance(self._stem, pathlib.Path):
             return self._stem
-
         return pathlib.Path(self._stem.format(**kwargs))

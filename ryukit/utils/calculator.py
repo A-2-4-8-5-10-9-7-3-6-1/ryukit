@@ -6,7 +6,6 @@ def megabytes(byte_total: int):
     Converts bytes to megabytes.
 
     :param byte_total: Quantity of bytes to convert.
-
     :returns: Provided byte-total in megabytes.
     """
 

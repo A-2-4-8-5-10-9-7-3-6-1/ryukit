@@ -1,10 +1,12 @@
-from ...utils import typer_builder
+import typer
 
-__all__ = ["typer_builder_args"]
+from .. import __typer__
+
+__all__ = ["save"]
+save = typer.Typer(name="save")
+__typer__.app.add_typer(save)
 
 
+@save.callback()
 def command():
     "Manage your save buckets."
-
-
-typer_builder_args: typer_builder.BuilderArgs = {"command": command}

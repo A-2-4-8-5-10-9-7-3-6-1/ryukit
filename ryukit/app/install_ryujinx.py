@@ -17,13 +17,15 @@ import rich.spinner
 import rich.table
 import typer
 
-from ..core import presentation, runtime
-from ..utils import calculator, typer_builder
+from ..core import display, runtime
+from ..utils import calculator
+from . import __typer__
 
-__all__ = ["typer_builder_args"]
+__all__ = []
 
 
-def command():
+@__typer__.app.command(name="install_ryujinx")
+def _():
     """
     Install Ryujinx.
 
@@ -32,17 +34,13 @@ def command():
     [yellow]:warning:[/] This will overwrite pre-existing app files. Proceed with caution.
     """
 
-    console = presentation.theme(rich.console.Console)()
-
     if not runtime.context.configs["ryujinxInstallURL"]:
-        console.print(
+        display.console.print(
             "[error]Command cannot be used without setting 'ryujinxInstallURL'.",
             "└── [italic]Use '--help' for more information.",
             sep="\n",
         )
-
         raise typer.Exit(1)
-
     TaskTable = typing.TypedDict(
         "TaskTable",
         {
@@ -50,10 +48,8 @@ def command():
             "render": None | rich.table.Table,
         },
     )
-
     with tempfile.TemporaryDirectory() as temp_dir_str:
         temp_dir = pathlib.Path(temp_dir_str)
-
         with io.BytesIO() as buffer:
             try:
                 live: None | rich.live.Live = None
@@ -62,7 +58,7 @@ def command():
                     "refresh": lambda: (
                         task_table.update(
                             {
-                                "render": presentation.theme(rich.table.Table)(
+                                "render": display.Table(
                                     show_header=False,
                                     box=None,
                                     pad_edge=False,
@@ -77,23 +73,15 @@ def command():
                     and None,
                 }
                 chunk_size = pow(2, 10)
-
-                with presentation.theme(rich.live.Live)(
-                    task_table["render"]
-                ) as live:
+                with display.Live(task_table["render"]) as live:
                     task_table["refresh"]()
-
                     task_table["render"] = typing.cast(
                         rich.table.Table, task_table["render"]
                     )
-
                     task_table["render"].add_row(
-                        presentation.theme(rich.spinner.Spinner)(
-                            "dots2", style="blue"
-                        ),
+                        rich.spinner.Spinner("dots2", style="blue"),
                         " Connecting...",
                     )
-
                     with requests.get(
                         typing.cast(
                             str, runtime.context.configs["ryujinxInstallURL"]
@@ -102,13 +90,11 @@ def command():
                     ) as response:
                         if response.status_code != 200:
                             raise requests.ConnectionError
-
                         total = int(response.headers["content-length"])
                         progress = 0
                         content = response.iter_content(chunk_size)
                         parts = 20
                         total_mb = calculator.megabytes(total)
-
                         while (percent := progress / total * 100) < 100:
                             beads = int(percent / math.ceil(100 / parts))
                             task_table["refresh"]()
@@ -120,9 +106,7 @@ def command():
                                 }MB[/][dim] / {total_mb:.1f}MB"
                             )
                             buffer.write(next(content))
-
                             progress += chunk_size
-
                         task_table["refresh"]()
                         task_table["render"].add_row(
                             "[green]:heavy_check_mark:[/] Downloaded files."
@@ -136,26 +120,23 @@ def command():
                     )["sha256"]
                 ):
                     raise Exception
-
             except requests.ConnectionError:
                 raise RuntimeError("CONNECTION_FAILED")
-
             except Exception:
-                console.print(
+                display.console.print(
                     "[error]Unrecognized download content.",
                     "└── [italic]Where'd you get your link?",
                     sep="\n",
                 )
-
                 raise typer.Exit(1)
-
-            console.print("[green]:heavy_check_mark:", "Verified content.")
-
+            display.console.print(
+                "[green]:heavy_check_mark:", "Verified content."
+            )
             with zipfile.ZipFile(buffer) as zip:
                 zip.extractall(temp_dir_str)
-
-            console.print("[green]:heavy_check_mark:", "Extracted files.")
-
+            display.console.print(
+                "[green]:heavy_check_mark:", "Extracted files."
+            )
         metadata: dict[str, object] = json.loads(
             (temp_dir / "metadata.json").read_bytes()
         )
@@ -175,33 +156,28 @@ def command():
                 )["roamingDataDir"],
             ).format(**metadata),
         }
-
-        for source, destination in map(
-            lambda pair: (pair[0], pathlib.Path(pair[1].format(**paths))),
-            typing.cast(
-                dict[str, str],
-                typing.cast(
-                    dict[str, object],
-                    runtime.context.internal_layer["ryujinxInstall"],
-                )["paths"],
-            ).items(),
-        ):
+        any(
             shutil.copytree(temp_dir / source, destination, dirs_exist_ok=True)
-
-        console.print("[green]:heavy_check_mark:", "Organized files.")
-
+            for source, destination in map(
+                lambda pair: (pair[0], pathlib.Path(pair[1].format(**paths))),
+                typing.cast(
+                    dict[str, str],
+                    typing.cast(
+                        dict[str, object],
+                        runtime.context.internal_layer["ryujinxInstall"],
+                    )["paths"],
+                ).items(),
+            )
+        )
+        display.console.print("[green]:heavy_check_mark:", "Organized files.")
         runtime.context.persistence_layer["ryujinx"] = {
             **typing.cast(
                 dict[str, object], runtime.context.persistence_layer["ryujinx"]
             ),
             "meta": metadata,
         }
-
-        console.print(
+        display.console.print(
             "[green]:heavy_check_mark:[/] Noted installation.",
             f":package: Ryujinx installed to {paths["distDir"]}.",
             sep="\n",
         )
-
-
-typer_builder_args: typer_builder.BuilderArgs = {"command": command}
