@@ -14,10 +14,13 @@ RUN apt-get update; \
     /usr/local/bin/nodesource \
     /usr/local/bin/hadolint; \
     nodesource; \
-    apt-get -y install --no-install-recommends nodejs=20.18.3-1nodesource1; \
+    apt-get -y install --no-install-recommends \
+    nodejs=20.18.3-1nodesource1; \
     apt-get -y purge curl; \
     apt-get -y autoremove; \
-    rm -r /usr/local/bin/nodesource /var/lib/apt/lists/*; \
+    rm -r \
+    /usr/local/bin/nodesource \
+    /var/lib/apt/lists/*; \
     useradd -ms /bin/bash dev
 USER dev
 WORKDIR /project
