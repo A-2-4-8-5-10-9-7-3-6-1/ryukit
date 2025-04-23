@@ -5,7 +5,25 @@
 
 ## Installation
 
-...
+Use a Python package installer to download a package from the
+[releases section](https://github.com/A-2-4-8-5-10-9-7-3-6-1/ryukit/releases),
+for example:
+
+```sh
+pipx install https://github.com/A-2-4-8-5-10-9-7-3-6-1/ryukit/releases/download/v3.0.0/ryukit-3.0.0.tar.gz
+```
+
+You may then use it like:
+
+```sh
+python -m ryukit
+```
+
+or if the binary is in your PATH:
+
+```sh
+ryukit
+```
 
 ## Development
 

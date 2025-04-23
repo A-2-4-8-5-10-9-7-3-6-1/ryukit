@@ -1,32 +1,23 @@
 """File-system definitions."""
 
 import enum
-import os
 import pathlib
 
 import platformdirs
 
 __all__ = ["File"]
-dynamic_paths: dict[str, pathlib.Path | str] = {
-    "local_data_dir": platformdirs.user_data_dir(),
-    "roaming_data_dir": platformdirs.user_data_dir(roaming=True),
-    "configs_file": platformdirs.user_config_path() / "ryukit-config.json",
-}
-if os.environ.get("DEV_FILES", "").lower() == "true":
-    dynamic_paths |= {
-        "local_data_dir": ".ryukit/local",
-        "roaming_data_dir": ".ryukit/roaming",
-        "configs_file": ".ryukit/ryukit-config.json",
-    }
 
 
 class File(enum.Enum):
-    LOCAL_DATA_DIR = dynamic_paths["local_data_dir"]
-    ROAMING_DATA_DIR = dynamic_paths["roaming_data_dir"]
-    ROAMING_APP_DATA_DIR = ROAMING_DATA_DIR / platformdirs.user_data_path(
-        "RyuKit"
-    ).relative_to(platformdirs.user_data_path())
-    CONFIG_FILE = dynamic_paths["configs_file"]
+    LOCAL_DATA_DIR = platformdirs.user_data_dir()
+    ROAMING_DATA_DIR = platformdirs.user_data_dir(roaming=True)
+    ROAMING_APP_DATA_DIR = platformdirs.user_data_path(
+        "RyuKit", roaming=True, appauthor=False
+    )
+    CONFIG_FILE = (
+        platformdirs.user_config_path("RyuKit", appauthor=False, roaming=True)
+        / "ryukit-config.json"
+    )
     DATABASE_FILE = f"{ROAMING_APP_DATA_DIR}/db"
     SAVE_INSTANCE_FOLDER = f"{ROAMING_APP_DATA_DIR}/saves/{"{instance_id}"}"
     STATE_FILE = ROAMING_APP_DATA_DIR / "configs"
