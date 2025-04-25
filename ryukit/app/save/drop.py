@@ -22,7 +22,7 @@ def _(
     """
     Delete save buckets.
 
-    [yellow]:warning:[/yellow] There's no going back...
+    WARNING: There's no going back...
     """
 
     question_marks = ", ".join("?" for _ in range(len(buckets)))

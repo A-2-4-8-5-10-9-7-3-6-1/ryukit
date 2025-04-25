@@ -31,9 +31,7 @@ def tuned[R](func: collections.abc.Callable[..., R]):
     return typing.cast(
         collections.abc.Callable[..., R],
         {
-            typer.Typer: functools.partial(
-                typer.Typer, rich_markup_mode="rich"
-            )
+            typer.Typer: functools.partial(typer.Typer, rich_markup_mode=None)
         }.get(typing.cast(typing.Any, func), func),
     )
 

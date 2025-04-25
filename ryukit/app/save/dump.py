@@ -25,9 +25,7 @@ def _(
     with (
         io.BytesIO() as buffer,
         tarfile.TarFile(fileobj=buffer, mode="w") as tar,
-        rich.status.Status(
-            "Collecting data...", spinner="dots2", spinner_style="blue"
-        ),
+        rich.status.Status("Collecting data...", spinner="dots2"),
     ):
         saves: list[db.models.RyujinxSave] = []
         with db.connect() as conn:

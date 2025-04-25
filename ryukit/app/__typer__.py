@@ -1,6 +1,5 @@
 import importlib
 import importlib.metadata
-import importlib.resources
 import typing
 
 import jsonschema
@@ -9,14 +8,13 @@ import typer
 from ..core import display, runtime
 
 __all__ = ["app"]
-app = typer.Typer(name="ryukit")
+app = display.tuned(typer.Typer)(name="ryukit")
 
 
 @app.callback(invoke_without_command=True)
 def _(
-    ctx: typer.Context,
-    show_configs: typing.Annotated[
-        bool, typer.Option("--configs", help="Show configurations and exit.")
+    version: typing.Annotated[
+        bool, typer.Option("--version", help="Show version and exit.")
     ] = False,
 ):
     "A CLI tool for Ryujinx."
@@ -33,25 +31,11 @@ def _(
         raise typer.Exit(1)
     for do, command in [
         (
-            show_configs,
-            lambda: display.console.print_json(data=runtime.context.configs),
-        ),
-        (
-            not ctx.invoked_subcommand,
+            version,
             lambda: display.console.print(
-                *(
-                    f"[blue]{line[:25]}[/][red]{line[25:]}[/]"
-                    for line in importlib.resources.read_text(
-                        "ryukit.assets", resource="logo.txt"
-                    ).splitlines()
-                ),
-                "",
-                f"VERSION {importlib.metadata.version("ryukit")}",
-                sep="\n",
-                end="\n\n",
-                new_line_start=True,
+                f"RyuKit version {importlib.metadata.version("ryukit")}"
             ),
-        ),
+        )
     ]:
         if not do:
             continue

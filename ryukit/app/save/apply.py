@@ -18,7 +18,7 @@ def _(
     """
     Apply data from a save bucket into Ryujinx.
 
-    [yellow]:warning:[/yellow] This will overwrite files for Ryujinx. Unless certain, save your data.
+    WARNING: This will overwrite files for Ryujinx. Unless certain, save your data.
     """
 
     if not common_logic.save_bucket_exists(bucket):

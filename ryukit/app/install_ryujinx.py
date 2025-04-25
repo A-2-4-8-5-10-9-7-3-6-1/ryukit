@@ -31,7 +31,7 @@ def _():
 
     Before using this command, set 'ryujinxInstallURL' in ryujinxkit-config.json.
 
-    [yellow]:warning:[/] This will overwrite pre-existing app files. Proceed with caution.
+    WARNING: This will overwrite pre-existing app files. Proceed with caution.
     """
 
     if not runtime.context.configs["ryujinxInstallURL"]:
@@ -79,8 +79,7 @@ def _():
                         rich.table.Table, task_table["render"]
                     )
                     task_table["render"].add_row(
-                        rich.spinner.Spinner("dots2", style="blue"),
-                        " Connecting...",
+                        rich.spinner.Spinner("dots2"), " Connecting..."
                     )
                     with requests.get(
                         typing.cast(
@@ -93,25 +92,22 @@ def _():
                         total = int(response.headers["content-length"])
                         progress = 0
                         content = response.iter_content(chunk_size)
-                        parts = 20
+                        parts = 40
                         total_mb = calculator.megabytes(total)
                         while (percent := progress / total * 100) < 100:
-                            beads = int(percent / math.ceil(100 / parts))
+                            beads = math.floor(parts * percent / 100)
                             task_table["refresh"]()
                             task_table["render"].add_row(
-                                f"[blue][{
+                                f"Downloading files... [{
                                     "".join("=" if beads - i != 1 else ">" for i in range(beads))
-                                }{" " * (parts - beads)}][/] Downloading files... [green]{
+                                }{" " * (parts - beads)}] {
                                     calculator.megabytes(int(percent * total / 100)):.1f
-                                }MB[/][dim] / {total_mb:.1f}MB"
+                                }MB/{total_mb:.1f}MB"
                             )
                             buffer.write(next(content))
                             progress += chunk_size
                         task_table["refresh"]()
-                        task_table["render"].add_row(
-                            "[green]:heavy_check_mark:[/] Downloaded files."
-                        )
-
+                        task_table["render"].add_row("Downloaded files.")
                 if (
                     hashlib.sha256(buffer.getvalue()).hexdigest()
                     != typing.cast(
@@ -129,14 +125,10 @@ def _():
                     sep="\n",
                 )
                 raise typer.Exit(1)
-            display.console.print(
-                "[green]:heavy_check_mark:", "Verified content."
-            )
+            display.console.print("Verified content.")
             with zipfile.ZipFile(buffer) as zip:
                 zip.extractall(temp_dir_str)
-            display.console.print(
-                "[green]:heavy_check_mark:", "Extracted files."
-            )
+            display.console.print("Extracted files.")
         metadata: dict[str, object] = json.loads(
             (temp_dir / "metadata.json").read_bytes()
         )
@@ -169,7 +161,7 @@ def _():
                 ).items(),
             )
         )
-        display.console.print("[green]:heavy_check_mark:", "Organized files.")
+        display.console.print("Organized files.")
         runtime.context.persistence_layer["ryujinx"] = {
             **typing.cast(
                 dict[str, object], runtime.context.persistence_layer["ryujinx"]
@@ -177,7 +169,7 @@ def _():
             "meta": metadata,
         }
         display.console.print(
-            "[green]:heavy_check_mark:[/] Noted installation.",
-            f":package: Ryujinx installed to {paths["distDir"]}.",
+            "Noted installation.",
+            f"Ryujinx installed to {paths["distDir"]}.",
             sep="\n",
         )

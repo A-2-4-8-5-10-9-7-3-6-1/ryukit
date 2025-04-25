@@ -30,7 +30,7 @@ context = Context(
     {},
     internal_layer=json.loads(
         importlib.resources.read_text(
-            "ryukit.assets.configs", resource="internal-configs.json"
+            "ryukit.assets.configs", "internal-configs.json"
         )
     ),
 )
@@ -51,7 +51,7 @@ def with_context[**P, R](process: collections.abc.Callable[P, R]):
             fs.File.CONFIG_FILE().read_bytes()
             if fs.File.CONFIG_FILE().exists()
             else importlib.resources.read_binary(
-                "ryukit.assets.configs", resource="default-app-configs.json"
+                "ryukit.assets.configs", "default-app-configs.json"
             )
         )
         context.configs.pop("$schema", None)
@@ -61,8 +61,7 @@ def with_context[**P, R](process: collections.abc.Callable[P, R]):
                 jsonschema.Draft7Validator(
                     json.loads(
                         importlib.resources.read_text(
-                            "ryukit.assets.schemas",
-                            resource="app-configs.schema.json",
+                            "ryukit.assets.schemas", "app-configs.schema.json"
                         )
                     )
                 ),
@@ -109,18 +108,20 @@ def with_context[**P, R](process: collections.abc.Callable[P, R]):
             fs.File.STATE_FILE().read_bytes()
             if fs.File.STATE_FILE().exists()
             else importlib.resources.read_binary(
-                "ryukit.assets.configs", resource="initial-state.json"
+                "ryukit.assets.configs", "initial-state.json"
             )
         )
         with db.connect() as conn:
             conn.executescript(
                 importlib.resources.read_text(
-                    "ryukit.assets", resource="setup_database.sql"
+                    "ryukit.assets", "setup_database.sql"
                 )
             )
         try:
             return process(*args, **kwargs)
         finally:
+            fs.File.CONFIG_FILE().parent.mkdir(parents=True, exist_ok=True)
+            fs.File.STATE_FILE().parent.mkdir(parents=True, exist_ok=True)
             fs.File.STATE_FILE().write_text(
                 json.dumps(context.persistence_layer)
             )

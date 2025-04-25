@@ -37,7 +37,7 @@ def _(
         rich.table.Column("CREATED"),
         rich.table.Column("UPDATED"),
         rich.table.Column("LAST USED"),
-        rich.table.Column("SIZE", justify="center", style="blue"),
+        rich.table.Column("SIZE", justify="center"),
     )
     with db.connect() as conn:
         any(
