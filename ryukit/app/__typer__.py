@@ -11,7 +11,7 @@ __all__ = ["app"]
 app = display.tuned(typer.Typer)(name="ryukit")
 
 
-@app.callback(invoke_without_command=True)
+@app.callback(no_args_is_help=True, invoke_without_command=True)
 def _(
     version: typing.Annotated[
         bool, typer.Option("--version", help="Show version and exit.")

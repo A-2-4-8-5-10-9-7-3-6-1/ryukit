@@ -29,7 +29,7 @@ def _():
     """
     Install Ryujinx.
 
-    Before using this command, set 'ryujinxInstallURL' in ryujinxkit-config.json.
+    Before using this command, set 'ryujinxInstallURL' in ryukit-config.json.
 
     WARNING: This will overwrite pre-existing app files. Proceed with caution.
     """
@@ -150,6 +150,7 @@ def _():
         }
         any(
             shutil.copytree(temp_dir / source, destination, dirs_exist_ok=True)
+            and False
             for source, destination in map(
                 lambda pair: (pair[0], pathlib.Path(pair[1].format(**paths))),
                 typing.cast(

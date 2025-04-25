@@ -61,7 +61,7 @@ def with_context[**P, R](process: collections.abc.Callable[P, R]):
                 jsonschema.Draft7Validator(
                     json.loads(
                         importlib.resources.read_text(
-                            "ryukit.assets.schemas", "app-configs.schema.json"
+                            "ryukit.assets", "app-configs.schema.json"
                         )
                     )
                 ),
