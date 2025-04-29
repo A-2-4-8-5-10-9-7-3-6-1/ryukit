@@ -4,14 +4,15 @@ import rich
 import rich.table
 import typer
 
-from ...core import db, display
+from ...core import db, ui
+from ...core.ui import console
 from ...utils import calculator
-from . import __typer__
+from .__context__ import *
 
 __all__ = []
 
 
-@__typer__.save.command(name="ls")
+@save.command(name="ls")
 def _(
     wildcards: typing.Annotated[
         bool, typer.Option(help="Use your own SQL wildcards for keywords.")
@@ -31,7 +32,7 @@ def _(
 
     filter_by = filter_by or []
     pad = "" if wildcards else "%"
-    table = display.Table(
+    table = ui.Table(
         rich.table.Column("ID", justify="center", style="bold"),
         rich.table.Column("LABEL"),
         rich.table.Column("CREATED"),
@@ -93,4 +94,4 @@ def _(
                 ),
             )
         )
-    display.console.print(table)
+    console.print(table)

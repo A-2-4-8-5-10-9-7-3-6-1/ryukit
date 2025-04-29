@@ -3,13 +3,14 @@ import typing
 
 import typer
 
-from ...core import db, display
-from . import __typer__
+from ...core import db
+from ...core.ui import console
+from .__context__ import *
 
 __all__ = []
 
 
-@__typer__.save.command(name="create")
+@save.command(name="create")
 def _(
     with_label: typing.Annotated[
         str, typer.Argument(help="A label for your save.")
@@ -31,4 +32,4 @@ def _(
             """,
             {"label": with_label},
         ).lastrowid
-    display.console.print(f"Bucket {id_} created with label '{with_label}'.")
+    console.print(f"Bucket {id_} created with label '{with_label}'.")

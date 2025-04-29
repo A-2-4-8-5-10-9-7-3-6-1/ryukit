@@ -1,6 +1,5 @@
 # MARK: Development Environment
 FROM ubuntu:25.04@sha256:79efa276fdefa2ee3911db29b0608f8c0561c347ec3f4d4139980d43b168d991 AS development
-ENV POETRY_VIRTUALENVS_IN_PROJECT=true 
 SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 RUN apt-get update; \
     apt-get -y install --no-install-recommends \

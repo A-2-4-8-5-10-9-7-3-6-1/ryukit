@@ -1,12 +1,24 @@
-"""Implementations of common command logic."""
-
 import collections
 import collections.abc
 import pathlib
 import shutil
 import typing
 
-from ..core import db, fs, runtime
+import typer
+
+from ...core import db
+from ...core.fs import File
+from ..__context__ import *
+from .__context__ import *
+
+__all__ = ["save", "channel_save_bucket", "save_bucket_exists"]
+save = typer.Typer(name="save")
+app.add_typer(save)
+
+
+@save.callback()
+def _():
+    "Manage your save buckets."
 
 
 def channel_save_bucket(bucket_id: int, *, upstream: bool):
@@ -22,13 +34,13 @@ def channel_save_bucket(bucket_id: int, *, upstream: bool):
         return (iter if upstream else reversed)(values)
 
     ryujinx_info = typing.cast(
-        dict[str, object], runtime.context.persistence_layer["ryujinx"]
+        dict[str, object], intersession_state["ryujinx"]
     )
     if not ryujinx_info["meta"]:
         raise RuntimeError("Couldn't locate Ryujinx.")
     ryujinx_info["meta"] = typing.cast(dict[str, object], ryujinx_info["meta"])
     ryujinx_info["ryujinxConfigs"] = typing.cast(
-        dict[str, object], runtime.context.configs["ryujinxConfigs"]
+        dict[str, object], configs["ryujinxConfigs"]
     )
     for source, dest in map(
         rotate,
@@ -39,7 +51,7 @@ def channel_save_bucket(bucket_id: int, *, upstream: bool):
                     "ryujinxConfigs"
                 ], meta=ryujinx_info["meta"]: (
                     str(
-                        fs.File.SAVE_INSTANCE_FOLDER(instance_id=bucket_id)
+                        File.SAVE_INSTANCE_FOLDER(instance_id=bucket_id)
                         / pair[0]
                     )
                     .format(**ryujinx_config)
@@ -48,10 +60,9 @@ def channel_save_bucket(bucket_id: int, *, upstream: bool):
                 ),
                 typing.cast(
                     dict[str, str],
-                    typing.cast(
-                        dict[str, object],
-                        runtime.context.internal_layer["saveBuckets"],
-                    )["flow"],
+                    typing.cast(dict[str, object], system["saveBuckets"])[
+                        "flow"
+                    ],
                 ).items(),
             ),
         ),

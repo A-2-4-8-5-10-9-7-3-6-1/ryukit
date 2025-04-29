@@ -17,14 +17,15 @@ import rich.spinner
 import rich.table
 import typer
 
-from ..core import display, runtime
+from ..core import ui
+from ..core.ui import console
 from ..utils import calculator
-from . import __typer__
+from .__context__ import *
 
 __all__ = []
 
 
-@__typer__.app.command(name="install_ryujinx")
+@app.command(name="install_ryujinx")
 def _():
     """
     Install Ryujinx.
@@ -34,8 +35,8 @@ def _():
     WARNING: This will overwrite pre-existing app files. Proceed with caution.
     """
 
-    if not runtime.context.configs["ryujinxInstallURL"]:
-        display.console.print(
+    if not configs["ryujinxInstallURL"]:
+        console.print(
             "[error]Command cannot be used without setting 'ryujinxInstallURL'.",
             "└── [italic]Use '--help' for more information.",
             sep="\n",
@@ -58,7 +59,7 @@ def _():
                     "refresh": lambda: (
                         task_table.update(
                             {
-                                "render": display.Table(
+                                "render": ui.Table(
                                     show_header=False,
                                     box=None,
                                     pad_edge=False,
@@ -73,7 +74,7 @@ def _():
                     and None,
                 }
                 chunk_size = pow(2, 10)
-                with display.Live(task_table["render"]) as live:
+                with ui.Live(task_table["render"]) as live:
                     task_table["refresh"]()
                     task_table["render"] = typing.cast(
                         rich.table.Table, task_table["render"]
@@ -82,9 +83,7 @@ def _():
                         rich.spinner.Spinner("dots2"), " Connecting..."
                     )
                     with requests.get(
-                        typing.cast(
-                            str, runtime.context.configs["ryujinxInstallURL"]
-                        ),
+                        typing.cast(str, configs["ryujinxInstallURL"]),
                         stream=True,
                     ) as response:
                         if response.status_code != 200:
@@ -111,41 +110,38 @@ def _():
                 if (
                     hashlib.sha256(buffer.getvalue()).hexdigest()
                     != typing.cast(
-                        dict[str, object],
-                        runtime.context.internal_layer["ryujinxInstall"],
+                        dict[str, object], system["ryujinxInstall"]
                     )["sha256"]
                 ):
                     raise Exception
             except requests.ConnectionError:
                 raise RuntimeError("CONNECTION_FAILED")
             except Exception:
-                display.console.print(
+                console.print(
                     "[error]Unrecognized download content.",
                     "└── [italic]Where'd you get your link?",
                     sep="\n",
                 )
                 raise typer.Exit(1)
-            display.console.print("Verified content.")
+            console.print("Verified content.")
             with zipfile.ZipFile(buffer) as zip:
                 zip.extractall(temp_dir_str)
-            display.console.print("Extracted files.")
+            console.print("Extracted files.")
         metadata: dict[str, object] = json.loads(
             (temp_dir / "metadata.json").read_bytes()
         )
         paths = {
             "distDir": typing.cast(
                 str,
-                typing.cast(
-                    dict[str, object],
-                    runtime.context.configs["ryujinxConfigs"],
-                )["distDir"],
+                typing.cast(dict[str, object], configs["ryujinxConfigs"])[
+                    "distDir"
+                ],
             ).format(**metadata),
             "roamingDataDir": typing.cast(
                 str,
-                typing.cast(
-                    dict[str, object],
-                    runtime.context.configs["ryujinxConfigs"],
-                )["roamingDataDir"],
+                typing.cast(dict[str, object], configs["ryujinxConfigs"])[
+                    "roamingDataDir"
+                ],
             ).format(**metadata),
         }
         any(
@@ -155,21 +151,18 @@ def _():
                 lambda pair: (pair[0], pathlib.Path(pair[1].format(**paths))),
                 typing.cast(
                     dict[str, str],
-                    typing.cast(
-                        dict[str, object],
-                        runtime.context.internal_layer["ryujinxInstall"],
-                    )["paths"],
+                    typing.cast(dict[str, object], system["ryujinxInstall"])[
+                        "paths"
+                    ],
                 ).items(),
             )
         )
-        display.console.print("Organized files.")
-        runtime.context.persistence_layer["ryujinx"] = {
-            **typing.cast(
-                dict[str, object], runtime.context.persistence_layer["ryujinx"]
-            ),
+        console.print("Organized files.")
+        intersession_state["ryujinx"] = {
+            **typing.cast(dict[str, object], intersession_state["ryujinx"]),
             "meta": metadata,
         }
-        display.console.print(
+        console.print(
             "Noted installation.",
             f"Ryujinx installed to {paths["distDir"]}.",
             sep="\n",

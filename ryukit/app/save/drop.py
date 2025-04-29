@@ -3,13 +3,15 @@ import typing
 
 import typer
 
-from ...core import db, display, fs
-from . import __typer__
+from ...core import db
+from ...core.fs import File
+from ...core.ui import console
+from .__context__ import *
 
 __all__ = []
 
 
-@__typer__.save.command(name="drop")
+@save.command(name="drop")
 def _(
     buckets: typing.Annotated[
         list[int],
@@ -49,8 +51,8 @@ def _(
             buckets,
         )
     any(
-        shutil.rmtree(fs.File.SAVE_INSTANCE_FOLDER(instance_id=id_))
+        shutil.rmtree(File.SAVE_INSTANCE_FOLDER(instance_id=id_))
         for id_ in buckets
-        if not fs.File.SAVE_INSTANCE_FOLDER(instance_id=id_).exists()
+        if not File.SAVE_INSTANCE_FOLDER(instance_id=id_).exists()
     )
-    display.console.print(f"Deleted {deleted} bucket(s).")
+    console.print(f"Deleted {deleted} bucket(s).")

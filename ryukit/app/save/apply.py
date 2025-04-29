@@ -2,14 +2,14 @@ import typing
 
 import typer
 
-from ...core import db, display
-from ...utils import common_logic
-from . import __typer__
+from ...core import db
+from ...core.ui import console
+from .__context__ import *
 
 __all__ = []
 
 
-@__typer__.save.command(name="apply")
+@save.command(name="apply")
 def _(
     bucket: typing.Annotated[
         int, typer.Argument(help="ID of bucket to apply.")
@@ -21,14 +21,14 @@ def _(
     WARNING: This will overwrite files for Ryujinx. Unless certain, save your data.
     """
 
-    if not common_logic.save_bucket_exists(bucket):
-        display.console.print("[error]Unrecognized ID.")
+    if not save_bucket_exists(bucket):
+        console.print("[error]Unrecognized ID.")
         raise typer.Exit(1)
     with db.connect() as conn:
         try:
-            common_logic.channel_save_bucket(bucket, upstream=True)
+            channel_save_bucket(bucket, upstream=True)
         except RuntimeError:
-            display.console.print(
+            console.print(
                 "[error]Failed to apply save.",
                 "└── [italic]Is Ryujinx installed?",
                 sep="\n",
@@ -45,4 +45,4 @@ def _(
             """,
             {"id": bucket},
         )
-    display.console.print("Save applied.")
+    console.print("Save applied.")

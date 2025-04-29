@@ -2,14 +2,16 @@ import typing
 
 import typer
 
-from ...core import db, display, fs
-from ...utils import calculator, common_logic
-from . import __typer__
+from ...core import db
+from ...core.fs import File
+from ...core.ui import console
+from ...utils import calculator
+from .__context__ import *
 
 __all__ = []
 
 
-@__typer__.save.command(name="pull")
+@save.command(name="pull")
 def _(
     into: typing.Annotated[
         int,
@@ -18,14 +20,14 @@ def _(
 ):
     """Pull data from Ryujinx into a save bucket."""
 
-    if not common_logic.save_bucket_exists(into):
-        display.console.print("[error]Unrecognized ID.")
+    if not save_bucket_exists(into):
+        console.print("[error]Unrecognized ID.")
         raise typer.Exit(1)
     with db.connect() as conn:
         try:
-            common_logic.channel_save_bucket(into, upstream=False)
+            channel_save_bucket(into, upstream=False)
         except RuntimeError:
-            display.console.print(
+            console.print(
                 "[error]Failed to apply save.",
                 "└── [italic]Is Ryujinx installed?",
                 sep="\n",
@@ -33,9 +35,7 @@ def _(
             raise typer.Exit(1)
         size = sum(
             path.stat().st_size if path.is_file() else 0
-            for path in fs.File.SAVE_INSTANCE_FOLDER(instance_id=into).glob(
-                "**"
-            )
+            for path in File.SAVE_INSTANCE_FOLDER(instance_id=into).glob("**")
         )
         conn.execute(
             """
@@ -48,7 +48,7 @@ def _(
             """,
             {"id": into, "size": size},
         )
-    display.console.print(
+    console.print(
         "Updated bucket.",
         f"└── [italic]Bucket is now of size {calculator.megabytes(size):.1f}MB.",
         sep="\n",

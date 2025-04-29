@@ -1,8 +1,7 @@
 """App implemeentation."""
 
-from . import __typer__
+from .__context__ import *
 from .install_ryujinx import *
 from .save import *
 
-__all__ = ["app"]
-app = __typer__.app
+__all__ = ["start"]

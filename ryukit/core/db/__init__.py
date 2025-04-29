@@ -6,7 +6,7 @@ import functools
 import sqlite3
 from typing import Callable
 
-from .. import fs
+from ..fs import File
 from . import models
 
 __all__ = ["models", "connect"]
@@ -17,7 +17,6 @@ def tuned[**P, R](func: Callable[P, R]):
     Appends a tuning stage to the end of a function.
 
     :param func: The function to extend.
-
     :returns: The extended function.
     """
 
@@ -37,5 +36,5 @@ def tuned[**P, R](func: Callable[P, R]):
 
 
 connect = functools.partial(
-    tuned(sqlite3.connect), autocommit=True, database=fs.File.DATABASE_FILE()
+    tuned(sqlite3.connect), autocommit=True, database=File.DATABASE_FILE()
 )

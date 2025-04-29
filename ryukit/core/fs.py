@@ -30,7 +30,6 @@ class File(enum.Enum):
         Generate path to corresponding file-system object.
 
         :param kwargs: Keywords for path construction.
-
         :returns: Path corresponding to file-system object.
         """
 

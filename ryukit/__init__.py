@@ -1,5 +1,3 @@
-from . import app
-from .core import runtime
+from .app import *
 
 __all__ = ["start"]
-start = lambda: runtime.with_context(app.app)()
