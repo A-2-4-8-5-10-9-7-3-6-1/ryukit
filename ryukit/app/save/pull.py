@@ -1,28 +1,28 @@
+import pathlib
 import typing
 
 import typer
 
-from ...core import db
-from ...core.fs import File
-from ...core.ui import console
-from ...utils import calculator
-from .__context__ import *
-
-__all__ = []
+from ryukit.app.__context__ import console
+from ryukit.app.save.__context__ import channel_save_bucket, command, parser
+from ryukit.core import db
+from ryukit.core.fs import File
+from ryukit.utils import calculator
 
 
-@save.command(name="pull")
+@command("pull")
 def _(
     into: typing.Annotated[
         int,
-        typer.Argument(help="ID of bucket to pull into.", show_default=False),
+        typer.Argument(
+            help="ID of bucket to pull into.",
+            show_default=False,
+            parser=parser("bucket_id"),
+        ),
     ],
 ):
     """Pull data from Ryujinx into a save bucket."""
 
-    if not save_bucket_exists(into):
-        console.print("[error]Unrecognized ID.")
-        raise typer.Exit(1)
     with db.connect() as conn:
         try:
             channel_save_bucket(into, upstream=False)
@@ -35,7 +35,9 @@ def _(
             raise typer.Exit(1)
         size = sum(
             path.stat().st_size if path.is_file() else 0
-            for path in File.SAVE_INSTANCE_FOLDER(instance_id=into).glob("**")
+            for path in pathlib.Path(
+                File.SAVE_INSTANCE_DIR.format(instance_id=into)
+            ).glob("**")
         )
         conn.execute(
             """

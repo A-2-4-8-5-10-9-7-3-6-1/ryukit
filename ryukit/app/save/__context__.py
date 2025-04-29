@@ -7,12 +7,11 @@ import typing
 import typer
 
 from ...core import db
-from ...core.fs import File
-from ..__context__ import *
-from .__context__ import *
+from ..__context__ import INTERNAL_CONFIGS, app, console, intersession_state
 
-__all__ = ["save", "channel_save_bucket", "save_bucket_exists"]
+__all__ = ["channel_save_bucket", "parser", "command"]
 save = typer.Typer(name="save")
+command = save.command
 app.add_typer(save)
 
 
@@ -21,7 +20,7 @@ def _():
     "Manage your save buckets."
 
 
-def channel_save_bucket(bucket_id: int, *, upstream: bool):
+def channel_save_bucket(bucket_id: int, /, *, upstream: bool):
     """
     Channel content between a save bucket and Ryujinx.
 
@@ -33,37 +32,23 @@ def channel_save_bucket(bucket_id: int, *, upstream: bool):
     def rotate[T](values: collections.abc.Sequence[T]):
         return (iter if upstream else reversed)(values)
 
-    ryujinx_info = typing.cast(
-        dict[str, object], intersession_state["ryujinx"]
-    )
-    if not ryujinx_info["meta"]:
+    if not intersession_state["ryujinx_meta"]:
         raise RuntimeError("Couldn't locate Ryujinx.")
-    ryujinx_info["meta"] = typing.cast(dict[str, object], ryujinx_info["meta"])
-    ryujinx_info["ryujinxConfigs"] = typing.cast(
-        dict[str, object], configs["ryujinxConfigs"]
-    )
     for source, dest in map(
         rotate,
         map(
-            lambda x: list(map(pathlib.Path, x)),
+            tuple,
             map(
-                lambda pair, ryujinx_config=ryujinx_info[
-                    "ryujinxConfigs"
-                ], meta=ryujinx_info["meta"]: (
-                    str(
-                        File.SAVE_INSTANCE_FOLDER(instance_id=bucket_id)
-                        / pair[0]
-                    )
-                    .format(**ryujinx_config)
-                    .format(**meta),
-                    pair[1].format(**ryujinx_config).format(**meta),
+                lambda p: map(pathlib.Path, p),
+                map(
+                    lambda p: (
+                        p[0]
+                        .format(instace_id=bucket_id)
+                        .format(**intersession_state["ryujinx_meta"]),
+                        p[1],
+                    ),
+                    INTERNAL_CONFIGS["save_buckets"]["flow"].items(),
                 ),
-                typing.cast(
-                    dict[str, str],
-                    typing.cast(dict[str, object], system["saveBuckets"])[
-                        "flow"
-                    ],
-                ).items(),
             ),
         ),
     ):
@@ -74,25 +59,32 @@ def channel_save_bucket(bucket_id: int, *, upstream: bool):
         shutil.copytree(source, dest)
 
 
-def save_bucket_exists(id_: int):
+def parser(type_: typing.Literal["bucket_id"], /):
     """
-    Check whether or not a save bucket exists.
+    Get input parser for type 'type_'.
 
-    :param id_: The save bucket's ID.
+    :param type_: The type of parser required.
+    :returns: A parser for the given type.
     """
 
-    with db.connect() as conn:
-        return (
-            conn.execute(
-                """
-                SELECT
-                    COUNT(*)
-                FROM
-                    ryujinx_saves
-                WHERE
-                    id = :id;
-                """,
-                {"id": id_},
-            ).fetchone()[0]
-            != 0
-        )
+    match type_:
+        case "bucket_id":
+
+            def parser(id_: str):
+                with db.connect() as conn:
+                    if not conn.execute(
+                        """
+                        SELECT
+                            COUNT(*)
+                        FROM
+                            ryujinx_saves
+                        WHERE
+                            id = :id;
+                        """,
+                        {"id": id_},
+                    ).fetchone()[0]:
+                        console.print(f"[error]No bucket with ID '{id_}'.")
+                        raise typer.Exit(1)
+                return id_
+
+            return parser

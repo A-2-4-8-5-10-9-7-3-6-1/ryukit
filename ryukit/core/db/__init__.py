@@ -36,5 +36,5 @@ def tuned[**P, R](func: Callable[P, R]):
 
 
 connect = functools.partial(
-    tuned(sqlite3.connect), autocommit=True, database=File.DATABASE_FILE()
+    tuned(sqlite3.connect), autocommit=True, database=File.DATABASE_FILE
 )

@@ -8,15 +8,13 @@ import rich
 import rich.status
 import typer
 
-from ...core import db
-from ...core.fs import File
-from ...core.ui import console
-from .__context__ import *
-
-__all__ = []
+from ryukit.app.__context__ import console
+from ryukit.app.save.__context__ import command
+from ryukit.core import db
+from ryukit.core.fs import File
 
 
-@save.command(name="dump")
+@command("dump")
 def _(
     into: typing.Annotated[
         pathlib.Path, typer.Argument(help="Where to dump your buckets.")
@@ -46,9 +44,11 @@ def _(
                 ),
             ):
                 saves.append(save)
-                if File.SAVE_INSTANCE_FOLDER(instance_id=save["id"]).exists():
+                if pathlib.Path(
+                    File.SAVE_INSTANCE_DIR.format(instance_id=save["id"])
+                ).exists():
                     tar.add(
-                        File.SAVE_INSTANCE_FOLDER(instance_id=save["id"]),
+                        File.SAVE_INSTANCE_DIR.format(instance_id=save["id"]),
                         arcname=f"save{save["id"]}",
                     )
         with io.BytesIO(json.dumps(saves).encode()) as save_buffer:

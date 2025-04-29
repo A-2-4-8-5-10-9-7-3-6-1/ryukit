@@ -2,17 +2,18 @@ import typing
 
 import typer
 
-from ...core import db
-from ...core.ui import console
-from .__context__ import *
-
-__all__ = []
+from ryukit.app.__context__ import console
+from ryukit.app.save.__context__ import channel_save_bucket, command, parser
+from ryukit.core import db
 
 
-@save.command(name="apply")
+@command("apply")
 def _(
     bucket: typing.Annotated[
-        int, typer.Argument(help="ID of bucket to apply.")
+        int,
+        typer.Argument(
+            help="ID of bucket to apply.", parser=parser("bucket_id")
+        ),
     ],
 ):
     """
@@ -21,9 +22,6 @@ def _(
     WARNING: This will overwrite files for Ryujinx. Unless certain, save your data.
     """
 
-    if not save_bucket_exists(bucket):
-        console.print("[error]Unrecognized ID.")
-        raise typer.Exit(1)
     with db.connect() as conn:
         try:
             channel_save_bucket(bucket, upstream=True)

@@ -4,15 +4,13 @@ import rich
 import rich.table
 import typer
 
-from ...core import db, ui
-from ...core.ui import console
-from ...utils import calculator
-from .__context__ import *
-
-__all__ = []
+from ryukit.app.__context__ import console
+from ryukit.app.save.__context__ import command
+from ryukit.core import components, db
+from ryukit.utils import calculator
 
 
-@save.command(name="ls")
+@command("ls")
 def _(
     wildcards: typing.Annotated[
         bool, typer.Option(help="Use your own SQL wildcards for keywords.")
@@ -32,7 +30,7 @@ def _(
 
     filter_by = filter_by or []
     pad = "" if wildcards else "%"
-    table = ui.Table(
+    table = components.Table(
         rich.table.Column("ID", justify="center", style="bold"),
         rich.table.Column("LABEL"),
         rich.table.Column("CREATED"),
@@ -50,7 +48,7 @@ def _(
                         row["label"],
                         row["created"],
                         row["updated"],
-                        row["last_used"] or "[italic dim]Never...",
+                        row["last_used"] or "[italic]Never...",
                         f"{calculator.megabytes(row["size"]):.1f}MB",
                     ),
                 )

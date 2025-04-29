@@ -8,31 +8,18 @@ import platformdirs
 __all__ = ["File"]
 
 
-class File(enum.Enum):
-    LOCAL_DATA_DIR = platformdirs.user_data_dir()
-    ROAMING_DATA_DIR = platformdirs.user_data_dir(roaming=True)
-    ROAMING_APP_DATA_DIR = platformdirs.user_data_path(
+class File(str, enum.Enum):
+    ROAMING_DATA = platformdirs.user_data_dir(
         "RyuKit", roaming=True, appauthor=False
     )
-    CONFIG_FILE = (
-        platformdirs.user_config_path("RyuKit", appauthor=False, roaming=True)
-        / "ryukit-config.json"
+    CONFIG_FILE = f"{pathlib.Path.home()}/ryukit_configs.json"
+    DATABASE_FILE = f"{platformdirs.user_data_dir("RyuKit", appauthor=False, roaming=True)}/db"
+    SAVE_INSTANCE_DIR = f"{platformdirs.user_data_dir("RyuKit", appauthor=False, roaming=True)}/saves/{'{instance_id}'}"
+    SAVE_INSTANCE_META = f"{SAVE_INSTANCE_DIR}/meta"
+    SAVE_INSTACE_SYSTEM_DATA = f"{SAVE_INSTANCE_DIR}/registered"
+    SAVE_INSTANCE_USER_DATA = f"{SAVE_INSTANCE_DIR}/user"
+    STATE_FILE = f"{platformdirs.user_data_dir("RyuKit", appauthor=False, roaming=True)}/state"
+    RYUJINX_DIST_DIR = platformdirs.user_data_dir(
+        "Ryujinx-{version}-{target_system}", appauthor=False
     )
-    DATABASE_FILE = f"{ROAMING_APP_DATA_DIR}/db"
-    SAVE_INSTANCE_FOLDER = f"{ROAMING_APP_DATA_DIR}/saves/{"{instance_id}"}"
-    STATE_FILE = ROAMING_APP_DATA_DIR / "configs"
-
-    def __init__(self, stem: pathlib.Path | str):
-        self._stem = stem
-
-    def __call__(self, **kwargs: object):
-        """
-        Generate path to corresponding file-system object.
-
-        :param kwargs: Keywords for path construction.
-        :returns: Path corresponding to file-system object.
-        """
-
-        if isinstance(self._stem, pathlib.Path):
-            return self._stem
-        return pathlib.Path(self._stem.format(**kwargs))
+    RYUJINX_DATA_DIR = platformdirs.user_data_dir("Ryujinx", appauthor=False)

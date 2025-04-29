@@ -3,14 +3,12 @@ import typing
 
 import typer
 
-from ...core import db
-from ...core.ui import console
-from .__context__ import *
-
-__all__ = []
+from ryukit.app.__context__ import console
+from ryukit.app.save.__context__ import command
+from ryukit.core import db
 
 
-@save.command(name="create")
+@command("create")
 def _(
     with_label: typing.Annotated[
         str, typer.Argument(help="A label for your save.")
