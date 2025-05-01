@@ -33,7 +33,12 @@ def channel_save_bucket(bucket_id: int, /, *, upstream: bool):
         return (iter if upstream else reversed)(values)
 
     if not intersession_state["ryujinx_meta"]:
-        raise RuntimeError("Couldn't locate Ryujinx.")
+        console.print(
+            "[error]Couldn't detect a Ryujinx installation.",
+            "└── Did you run `install_ryujinx`?",
+            sep="\n",
+        )
+        raise typer.Exit(1)
     for source, dest in map(
         rotate,
         map(
@@ -41,12 +46,7 @@ def channel_save_bucket(bucket_id: int, /, *, upstream: bool):
             map(
                 lambda p: map(pathlib.Path, p),
                 map(
-                    lambda p: (
-                        p[0]
-                        .format(instace_id=bucket_id)
-                        .format(**intersession_state["ryujinx_meta"]),
-                        p[1],
-                    ),
+                    lambda p: (p[0].format(instace_id=bucket_id), p[1]),
                     INTERNAL_CONFIGS["save_buckets"]["flow"].items(),
                 ),
             ),

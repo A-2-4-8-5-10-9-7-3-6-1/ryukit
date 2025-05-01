@@ -23,15 +23,7 @@ def _(
     """
 
     with db.connect() as conn:
-        try:
-            channel_save_bucket(bucket, upstream=True)
-        except RuntimeError:
-            console.print(
-                "[error]Failed to apply save.",
-                "└── Is Ryujinx installed?",
-                sep="\n",
-            )
-            raise typer.Exit(1)
+        channel_save_bucket(bucket, upstream=True)
         conn.execute(
             """
             UPDATE

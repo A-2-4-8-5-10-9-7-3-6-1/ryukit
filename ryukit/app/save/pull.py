@@ -24,15 +24,7 @@ def _(
     """Pull data from Ryujinx into a save bucket."""
 
     with db.connect() as conn:
-        try:
-            channel_save_bucket(into, upstream=False)
-        except RuntimeError:
-            console.print(
-                "[error]Couldn't complete the action.",
-                "└── Is Ryujinx installed?",
-                sep="\n",
-            )
-            raise typer.Exit(1)
+        channel_save_bucket(into, upstream=False)
         size = sum(
             path.stat().st_size if path.is_file() else 0
             for path in pathlib.Path(

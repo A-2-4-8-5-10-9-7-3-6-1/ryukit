@@ -131,20 +131,6 @@ def _():
         metadata: dict[str, object] = json.loads(
             (temp_dir / "metadata.json").read_bytes()
         )
-        paths = {
-            "distDir": typing.cast(
-                str,
-                typing.cast(dict[str, object], USER_CONFIGS["ryujinxConfigs"])[
-                    "distDir"
-                ],
-            ).format(**metadata),
-            "roamingDataDir": typing.cast(
-                str,
-                typing.cast(dict[str, object], USER_CONFIGS["ryujinxConfigs"])[
-                    "roamingDataDir"
-                ],
-            ).format(**metadata),
-        }
         any(
             map(
                 lambda _: False,
@@ -152,7 +138,7 @@ def _():
                     map(
                         lambda pair: shutil.copytree(
                             temp_dir / pair[0],
-                            pathlib.Path(pair[1].format(**paths)),
+                            pathlib.Path(pair[1].format(**metadata)),
                             dirs_exist_ok=True,
                         ),
                         typing.cast(
@@ -167,6 +153,6 @@ def _():
         intersession_state["ryujinx_meta"] = metadata
         console.print(
             "Noted installation.",
-            f"Ryujinx installed to {paths["distDir"]}.",
+            f"Ryujinx installed to {INTERNAL_CONFIGS['ryujinx_install']['paths']['dist'].format(**metadata)}.",
             sep="\n",
         )

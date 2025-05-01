@@ -20,7 +20,7 @@ class File(str, enum.Enum):
     SAVE_INSTANCE_USER_DATA = f"{SAVE_INSTANCE_DIR}/user"
     STATE_FILE = f"{platformdirs.user_data_dir("RyuKit", appauthor=False, roaming=True)}/state"
     RYUJINX_DIST_DIR = platformdirs.user_data_dir(
-        "Ryujinx-{version}-{target_system}", appauthor=False
+        "Ryujinx-{appVersion}-{targetSystem}", appauthor=False
     )
     RYUJINX_DATA_DIR = platformdirs.user_data_dir(
         "Ryujinx", appauthor=False, roaming=True
