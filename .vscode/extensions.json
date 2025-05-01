@@ -1,7 +1,14 @@
 {
-    "recommendations": [
-        "ms-python.python",
-        "ms-python.isort",
-        "ms-python.black-formatter"
-    ]
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.isort",
+    "ms-python.black-formatter",
+    "tamasfe.even-better-toml",
+    "esbenp.prettier-vscode",
+    "redhat.vscode-yaml",
+    "dbcode.dbcode",
+    "ms-azuretools.vscode-docker",
+    "exiasr.hadolint",
+    "ms-azuretools.vscode-containers"
+  ]
 }

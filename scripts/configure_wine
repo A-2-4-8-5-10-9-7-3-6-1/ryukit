@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Configures wine environment within your container.
+#
+# Use this script before using wine for other purposes. You'll only need to execute it once.
+configure_wine() {
+    if wine python --version; then
+        echo "Detected Python installation in Wine, so will not proceed. This command should only be used once."
+        return 1
+    fi
+    if [[ -z "${POETRY_VERSION}" ]]; then
+        echo "Missing variable POETRY_VERSION, are you executing from a container?"
+        return 1
+    fi
+    echo "Installing Python..."
+    if ! wine start /unix /usr/share/python_installer /quiet PrependPath=1 Include_test=0; then
+        echo "An error occured. Is your container connected to your display?"
+        return 1
+    fi
+    echo "Waiting for pip..."
+    until wine pip install poetry=="${POETRY_VERSION}"; do 
+        sleep 1
+    done
+    echo "Done. It's not recommended that you to use wine directly, instead use other commands from the repository."
+}
+
+configure_wine

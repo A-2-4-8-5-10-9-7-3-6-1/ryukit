@@ -1,10 +1,12 @@
-# configurations
-**/.env
-**/.vscode/settings.json
-secrets
-
 # generated
-**/__pycache__
-**/logs
-**/build
-**/dist
+__pycache__
+.pytest_cache
+node_modules
+build
+
+# configurations
+.env
+.vscode/settings.json
+
+# artifacts
+dist

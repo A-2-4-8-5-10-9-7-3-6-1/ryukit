@@ -1,0 +1,19 @@
+-- Database setup script
+CREATE TABLE IF NOT EXISTS ryujinx_saves (
+  id INTEGER PRIMARY KEY,
+  label TEXT,
+  created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  last_used TIMESTAMP,
+  size INTEGER DEFAULT 0 NOT NULL
+);
+
+CREATE TRIGGER IF NOT EXISTS update_ryujinx_saves_updated AFTER
+UPDATE ON ryujinx_saves FOR EACH ROW BEGIN
+UPDATE ryujinx_saves
+SET
+  updated = CURRENT_TIMESTAMP
+WHERE
+  id = OLD.id;
+
+END;
