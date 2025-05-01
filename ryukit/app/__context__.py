@@ -60,15 +60,15 @@ INTERNAL_CONFIGS: InternalConfigsSpace.InternalConfigs = {
         "sha256": "3e841a946595abc56c02409e165c62cb8e049963b54853dc551b2918e1f25d17",
         "paths": {
             "dist": File.RYUJINX_DIST_DIR,
-            "registered": f"{File.RYUJINX_DATA_DIR}/bis/system/Contents/registered",
-            "keys": f"{File.RYUJINX_DATA_DIR}/system",
+            "registered": f"{File.RYUJINX_DATA_DIR.value}/bis/system/Contents/registered",
+            "keys": f"{File.RYUJINX_DATA_DIR.value}/system",
         },
     },
     "save_buckets": {
         "flow": {
-            File.SAVE_INSTANCE_META: f"{File.RYUJINX_DATA_DIR}/bis/user/saveMeta",
-            File.SAVE_INSTANCE_USER_DATA: f"{File.RYUJINX_DATA_DIR}/bis/user/save",
-            File.SAVE_INSTACE_SYSTEM_DATA: f"{File.RYUJINX_DATA_DIR}/bis/system/save",
+            File.SAVE_INSTANCE_META: f"{File.RYUJINX_DATA_DIR.value}/bis/user/saveMeta",
+            File.SAVE_INSTANCE_USER_DATA: f"{File.RYUJINX_DATA_DIR.value}/bis/user/save",
+            File.SAVE_INSTACE_SYSTEM_DATA: f"{File.RYUJINX_DATA_DIR.value}/bis/system/save",
         }
     },
 }
