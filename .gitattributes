@@ -1,3 +1,2 @@
 scripts/build_exe linguist-language=shell
 scripts/configure_wine linguist-language=shell
-ryukit/assets/setup_database.sql linguist-language=sql
