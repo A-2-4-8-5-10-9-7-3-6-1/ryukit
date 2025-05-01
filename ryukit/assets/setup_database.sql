@@ -1,4 +1,3 @@
--- Database setup script
 CREATE TABLE IF NOT EXISTS ryujinx_saves (
   id INTEGER PRIMARY KEY,
   label TEXT,
