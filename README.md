@@ -5,25 +5,16 @@
 
 ## Installation
 
-Use a Python package installer to download a package from the
-[releases section](https://github.com/A-2-4-8-5-10-9-7-3-6-1/ryukit/releases),
-for example:
-
-```sh
-pipx install https://github.com/A-2-4-8-5-10-9-7-3-6-1/ryukit/releases/download/v3.0.0/ryukit-3.0.0.tar.gz
-```
-
-You may then use it like:
-
-```sh
-python -m ryukit
-```
-
-or if the binary is in your PATH:
+Download an executable from the
+[releases section](https://github.com/A-2-4-8-5-10-9-7-3-6-1/ryukit/releases).
+Once installed, assuming you have the executable in your PATH variable, use it
+like:
 
 ```sh
 ryukit
 ```
+
+In particular, this command will display the help information.
 
 ## Development
 
@@ -34,6 +25,13 @@ environment. Additionally, there are settings and recommendations in the
 VSCode as your editor, copy the contents from `.vscode/settings.public.json`
 into `.vscode/settings.json` to correctly configure your editor.
 
+On building the development container, wine might prompt you to install some
+dependencies, please accept the installation.
+
 ## Licensing
 
 Please read `LICENSE.md`.
+
+## Acknowledgements
+
+- Image `resources/nintendo-switch.ico` by [FREEPICK](https://www.freepik.com).

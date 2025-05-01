@@ -28,7 +28,7 @@ def _(
         except RuntimeError:
             console.print(
                 "[error]Failed to apply save.",
-                "└── [italic]Is Ryujinx installed?",
+                "└── Is Ryujinx installed?",
                 sep="\n",
             )
             raise typer.Exit(1)

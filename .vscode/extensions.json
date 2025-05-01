@@ -8,6 +8,7 @@
     "redhat.vscode-yaml",
     "dbcode.dbcode",
     "ms-azuretools.vscode-docker",
-    "exiasr.hadolint"
+    "exiasr.hadolint",
+    "ms-azuretools.vscode-containers"
   ]
 }

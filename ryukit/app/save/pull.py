@@ -28,8 +28,8 @@ def _(
             channel_save_bucket(into, upstream=False)
         except RuntimeError:
             console.print(
-                "[error]Failed to apply save.",
-                "└── [italic]Is Ryujinx installed?",
+                "[error]Couldn't complete the action.",
+                "└── Is Ryujinx installed?",
                 sep="\n",
             )
             raise typer.Exit(1)
@@ -52,6 +52,6 @@ def _(
         )
     console.print(
         "Updated bucket.",
-        f"└── [italic]Bucket is now of size {calculator.megabytes(size):.1f}MB.",
+        f"└── Bucket is now of size {calculator.megabytes(size):.1f}MB.",
         sep="\n",
     )

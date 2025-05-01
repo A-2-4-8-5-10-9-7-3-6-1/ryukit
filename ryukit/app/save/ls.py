@@ -48,7 +48,7 @@ def _(
                         row["label"],
                         row["created"],
                         row["updated"],
-                        row["last_used"] or "[italic]Never...",
+                        row["last_used"] or "Never...",
                         f"{calculator.megabytes(row["size"]):.1f}MB",
                     ),
                 )

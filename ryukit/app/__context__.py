@@ -26,12 +26,12 @@ USER_CONFIGS: dict[str, object] = json.loads(
     pathlib.Path(File.CONFIG_FILE).read_bytes()
     if pathlib.Path(File.CONFIG_FILE).exists()
     else importlib.resources.read_binary(
-        "ryukit.assets", "ryukit_configs.default.json"
+        "ryukit.assets", "ryukitconfigs.default.json"
     )
 )
 command = app.command
 console = rich.console.Console(
-    theme=rich.theme.Theme({"error": "italic red"}), highlight=False
+    theme=rich.theme.Theme({"error": "red"}), highlight=False
 )
 
 
@@ -88,7 +88,7 @@ def _(
             jsonschema.Draft7Validator(
                 json.loads(
                     importlib.resources.read_text(
-                        "ryukit.assets", "ryukit_configs.schema.json"
+                        "ryukit.assets", "ryukitconfigs.schema.json"
                     )
                 )
             ),
@@ -96,7 +96,7 @@ def _(
     except jsonschema.ValidationError as e:
         console.print(
             f"[error]Malformed configuration file. {e.message}.",
-            f"└── [italic]Error originated from {e.json_path}.",
+            f"└── Error originated from {e.json_path}.",
             sep="\n",
         )
         raise typer.Exit(1)

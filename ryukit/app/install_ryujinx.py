@@ -41,7 +41,7 @@ def _():
     if not USER_CONFIGS["ryujinxInstallURL"]:
         console.print(
             "[error]Command cannot be used without setting 'ryujinxInstallURL'.",
-            "└── [italic]Use '--help' for more information.",
+            "└── Use '--help' for more information.",
             sep="\n",
         )
         raise typer.Exit(1)
@@ -120,7 +120,7 @@ def _():
             except Exception:
                 console.print(
                     "[error]Unrecognized download content.",
-                    "└── [italic]Where'd you get your link?",
+                    "└── Where'd you get your link?",
                     sep="\n",
                 )
                 raise typer.Exit(1)
