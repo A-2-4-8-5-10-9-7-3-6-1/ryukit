@@ -1,0 +1,11 @@
+services:
+  development:
+    build:
+      target: development
+    image: ryukit/development
+    volumes:
+      - .:/project
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    environment:
+      - DISPLAY=${DISPLAY}
+    command: ["-c", "scripts/configure_wine && tail -f /dev/null"]

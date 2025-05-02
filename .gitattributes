@@ -1,0 +1,2 @@
+scripts/build_exe linguist-language=shell
+scripts/configure_wine linguist-language=shell

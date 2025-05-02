@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.isort",
+    "ms-python.black-formatter",
+    "tamasfe.even-better-toml",
+    "esbenp.prettier-vscode",
+    "redhat.vscode-yaml",
+    "dbcode.dbcode",
+    "exiasr.hadolint",
+    "ms-azuretools.vscode-containers"
+  ]
+}
