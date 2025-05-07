@@ -17,14 +17,9 @@ import rich.spinner
 import rich.table
 import typer
 
-from ryukit.app.__context__ import (
-    INTERNAL_CONFIGS,
-    USER_CONFIGS,
-    command,
-    console,
-    intersession_state,
-)
-from ryukit.core import components
+from ryukit.app.__context__ import (INTERNAL_CONFIGS, USER_CONFIGS, command,
+                                    console, intersession_state)
+from ryukit.libs import components
 from ryukit.utils import calculator
 
 
@@ -46,7 +41,7 @@ def _():
         )
         raise typer.Exit(1)
     TaskTable = typing.TypedDict(
-        "TaskTable",
+        "",
         {
             "refresh": collections.abc.Callable[[], None],
             "render": None | rich.table.Table,

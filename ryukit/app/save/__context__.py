@@ -6,7 +6,7 @@ import typing
 
 import typer
 
-from ...core import db
+from ...libs import db
 from ..__context__ import INTERNAL_CONFIGS, app, console, intersession_state
 
 __all__ = ["channel_save_bucket", "parser", "command"]
@@ -45,9 +45,11 @@ def channel_save_bucket(bucket_id: int, /, *, upstream: bool):
             tuple,
             map(
                 lambda p: map(pathlib.Path, p),
-                map(
-                    lambda p: (p[0].format(instance_id=bucket_id), p[1]),
-                    INTERNAL_CONFIGS["save_buckets"]["flow"].items(),
+                (
+                    (x.format(instance_id=bucket_id), y)
+                    for x, y in INTERNAL_CONFIGS["save_buckets"][
+                        "flow"
+                    ].items()
                 ),
             ),
         ),

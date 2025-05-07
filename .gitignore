@@ -1,12 +1,9 @@
-# generated
 __pycache__
 .pytest_cache
 node_modules
 build
-
-# configurations
 .env
 .vscode/settings.json
-
-# artifacts
 dist
+
+!bin/*

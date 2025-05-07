@@ -4,14 +4,12 @@ import pathlib
 import tarfile
 import typing
 
-import rich
-import rich.status
 import typer
 
 from ryukit.app.__context__ import console
 from ryukit.app.save.__context__ import command
-from ryukit.core import db
-from ryukit.core.fs import File
+from ryukit.libs import components, db
+from ryukit.libs.fs import File
 
 
 @command("dump")
@@ -25,7 +23,7 @@ def _(
     with (
         io.BytesIO() as buffer,
         tarfile.TarFile(fileobj=buffer, mode="w") as tar,
-        rich.status.Status(
+        components.Status(
             "Collecting data...", spinner="dots2", spinner_style="none"
         ),
     ):
@@ -59,4 +57,4 @@ def _(
             tar.addfile(info, save_buffer)
         into.parent.mkdir(exist_ok=True)
         into.write_bytes(buffer.getvalue())
-    console.print(f"Dump file created at {into}.")
+    console.print(f"Dump file created at '{into}'.")

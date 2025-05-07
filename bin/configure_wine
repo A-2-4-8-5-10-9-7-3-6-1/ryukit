@@ -6,7 +6,7 @@
 configure_wine() {
     if wine python --version; then
         echo "Detected Python installation in Wine, so will not proceed. This command should only be used once."
-        return 1
+        return 0
     fi
     if [[ -z "${POETRY_VERSION}" ]]; then
         echo "Missing variable POETRY_VERSION, are you executing from a container?"

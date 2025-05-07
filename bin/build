@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Build a Windows executable for RyuKit.
-build_exe() {
+# Build the release executable.
+build() {
     if [[ ! -z "${VIRTUAL_ENV}" ]]; then
         echo "Do not use this command within a virtual environment. Please exit first."
         return 1
@@ -13,4 +13,4 @@ build_exe() {
     wine poetry run pyinstaller pyinstaller.spec
 }
 
-build_exe
+build

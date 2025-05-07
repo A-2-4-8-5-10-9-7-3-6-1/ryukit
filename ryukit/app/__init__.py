@@ -7,7 +7,7 @@ import json
 import pathlib
 import runpy
 
-from ..core.fs import File
+from ..libs.fs import File
 from .__context__ import USER_CONFIGS, app, intersession_state
 
 __all__ = ["start"]
@@ -29,6 +29,7 @@ any(
                         "save/ls.py",
                         "save/pull.py",
                         "save/relabel.py",
+                        "save/restore.py",
                     ]
                 ),
             ),

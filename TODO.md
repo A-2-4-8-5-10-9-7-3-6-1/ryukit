@@ -1,10 +1,9 @@
-<h1 align="center">TODO</h1>
+# TODO
 
-# Medium Priority
+## Medium Priority
 
 - [ ] Add uninstall command.
 
-# Low Priority
+## Low Priority
 
-- [ ] Complete error messages for install-ryujinx command.
 - [ ] Write tests.

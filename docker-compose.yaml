@@ -8,4 +8,4 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix
     environment:
       - DISPLAY=${DISPLAY}
-    command: ["-c", "scripts/configure_wine && tail -f /dev/null"]
+    command: ["-c", "bin/configure_wine && tail -f /dev/null"]

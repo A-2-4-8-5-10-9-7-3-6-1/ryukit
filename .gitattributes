@@ -1,2 +1,3 @@
-scripts/build_exe linguist-language=shell
-scripts/configure_wine linguist-language=shell
+bin/build linguist-language=shell
+bin/configure_wine linguist-language=shell
+ryukit/scripts/* linguist-detectable=true

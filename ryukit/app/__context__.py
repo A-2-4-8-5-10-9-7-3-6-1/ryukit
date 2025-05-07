@@ -10,8 +10,8 @@ import rich
 import rich.theme
 import typer
 
-from ..core import db
-from ..core.fs import File
+from ..libs import db
+from ..libs.fs import File
 
 __all__ = [
     "USER_CONFIGS",
@@ -109,7 +109,7 @@ def _(
     with db.connect() as conn:
         conn.executescript(
             importlib.resources.read_text(
-                "ryukit.assets", "setup_database.sql"
+                "ryukit.scripts", "setup_database.sql"
             )
         )
     for do, command in [
