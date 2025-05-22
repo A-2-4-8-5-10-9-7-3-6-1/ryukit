@@ -1,11 +1,11 @@
 """Database models."""
 
-import typing
+from typing import TypedDict
 
 __all__ = ["RyujinxSave"]
 
 
-class RyujinxSave(typing.TypedDict):
+class RyujinxSave(TypedDict):
     id: int
     label: str
     created: str

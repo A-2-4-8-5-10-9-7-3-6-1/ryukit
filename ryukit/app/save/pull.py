@@ -1,18 +1,21 @@
 import pathlib
-import typing
+from typing import Annotated
 
 import typer
 
-from ryukit.app.__context__ import console
-from ryukit.app.save.__context__ import channel_save_bucket, command, parser
-from ryukit.libs import db
-from ryukit.libs.fs import File
+from ryukit.app.save.__context__ import (
+    channel_save_bucket,
+    command,
+    console,
+    parser,
+)
+from ryukit.libs import db, paths
 from ryukit.utils import calculator
 
 
 @command("pull")
 def _(
-    into: typing.Annotated[
+    into: Annotated[
         int,
         typer.Argument(
             help="ID of bucket to pull into.",
@@ -28,7 +31,7 @@ def _(
         size = sum(
             path.stat().st_size if path.is_file() else 0
             for path in pathlib.Path(
-                File.SAVE_INSTANCE_DIR.format(instance_id=into)
+                paths.SAVE_INSTANCE_DIR.format(instance_id=into)
             ).glob("**")
         )
         conn.execute(
@@ -38,7 +41,7 @@ def _(
             SET
                 size = :size
             WHERE
-                id = :id;
+                id = :id
             """,
             {"id": into, "size": size},
         )

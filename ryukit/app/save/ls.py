@@ -1,21 +1,20 @@
-import typing
+from typing import Annotated, cast
 
 import rich
 import rich.table
 import typer
 
-from ryukit.app.__context__ import console
-from ryukit.app.save.__context__ import command
+from ryukit.app.save.__context__ import command, console
 from ryukit.libs import components, db
 from ryukit.utils import calculator
 
 
 @command("ls")
 def _(
-    wildcards: typing.Annotated[
+    wildcards: Annotated[
         bool, typer.Option(help="Use your own SQL wildcards for keywords.")
     ] = False,
-    filter_by: typing.Annotated[
+    filter_by: Annotated[
         list[str] | None,
         typer.Argument(
             show_default=False, help="A search term for the command."
@@ -54,7 +53,7 @@ def _(
                 )
             )
             for row in map(
-                lambda x: typing.cast(db.models.RyujinxSave, x),
+                lambda x: cast(db.models.RyujinxSave, x),
                 map(
                     dict,
                     conn.execute(

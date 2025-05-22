@@ -1,15 +1,19 @@
-import typing
+from typing import Annotated
 
 import typer
 
-from ryukit.app.__context__ import console
-from ryukit.app.save.__context__ import channel_save_bucket, command, parser
+from ryukit.app.save.__context__ import (
+    channel_save_bucket,
+    command,
+    console,
+    parser,
+)
 from ryukit.libs import db
 
 
 @command("apply")
 def _(
-    bucket: typing.Annotated[
+    bucket: Annotated[
         int,
         typer.Argument(
             help="ID of bucket to apply.", parser=parser("bucket_id")
@@ -31,7 +35,7 @@ def _(
             SET
                 last_used = CURRENT_TIMESTAMP
             WHERE
-                id = :id;
+                id = :id
             """,
             {"id": bucket},
         )

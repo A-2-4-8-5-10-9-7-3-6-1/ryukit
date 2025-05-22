@@ -1,14 +1,13 @@
 """App implementation."""
 
-import copy
 import importlib
 import importlib.resources
 import json
 import pathlib
 import runpy
 
-from ..libs.fs import File
-from .__context__ import USER_CONFIGS, app, intersession_state
+from ..libs import paths
+from .__context__ import INTERSESSION_STATE, USER_CONFIGS, app
 
 __all__ = ["start"]
 any(
@@ -42,8 +41,9 @@ def start():
     try:
         app()
     finally:
-        user_configs = copy.copy(USER_CONFIGS)
-        user_configs.pop("$schema", None)
+        USER_CONFIGS["$schema"] = (
+            "https://github.com/A-2-4-8-5-10-9-7-3-6-1/ryukit/blob/dev/ryukit/ryukitconfigs.json"
+        )
         any(
             map(
                 lambda _: False,
@@ -57,8 +57,8 @@ def start():
                         ),
                     )
                     for file, options in [
-                        (File.CONFIG_FILE, user_configs),
-                        (File.STATE_FILE, intersession_state),
+                        (paths.CONFIG_FILE, USER_CONFIGS),
+                        (paths.STATE_FILE, INTERSESSION_STATE),
                     ]
                     if options
                 ),

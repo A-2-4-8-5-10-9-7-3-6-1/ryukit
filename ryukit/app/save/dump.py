@@ -2,19 +2,17 @@ import io
 import json
 import pathlib
 import tarfile
-import typing
+from typing import Annotated, cast
 
 import typer
 
-from ryukit.app.__context__ import console
-from ryukit.app.save.__context__ import command
-from ryukit.libs import components, db
-from ryukit.libs.fs import File
+from ryukit.app.save.__context__ import command, console
+from ryukit.libs import components, db, paths
 
 
 @command("dump")
 def _(
-    into: typing.Annotated[
+    into: Annotated[
         pathlib.Path, typer.Argument(help="Where to dump your buckets.")
     ] = pathlib.Path("saves.ryukitdmp"),
 ):
@@ -30,7 +28,7 @@ def _(
         saves: list[db.models.RyujinxSave] = []
         with db.connect() as conn:
             for save in map(
-                lambda x: typing.cast(db.models.RyujinxSave, x),
+                lambda x: cast(db.models.RyujinxSave, x),
                 map(
                     dict,
                     conn.execute(
@@ -38,17 +36,17 @@ def _(
                         SELECT
                             *
                         FROM
-                            ryujinx_saves;
+                            ryujinx_saves
                         """
                     ),
                 ),
             ):
                 saves.append(save)
                 if pathlib.Path(
-                    File.SAVE_INSTANCE_DIR.format(instance_id=save["id"])
+                    paths.SAVE_INSTANCE_DIR.format(instance_id=save["id"])
                 ).exists():
                     tar.add(
-                        File.SAVE_INSTANCE_DIR.format(instance_id=save["id"]),
+                        paths.SAVE_INSTANCE_DIR.format(instance_id=save["id"]),
                         arcname=f"save{save["id"]}",
                     )
         with io.BytesIO(json.dumps(saves).encode()) as save_buffer:

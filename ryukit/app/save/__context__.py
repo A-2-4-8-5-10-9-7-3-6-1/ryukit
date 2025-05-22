@@ -1,16 +1,16 @@
-import collections
-import collections.abc
 import pathlib
 import shutil
-import typing
+from collections.abc import Sequence
+from typing import Literal
 
 import typer
+from typer import Typer
 
 from ...libs import db
-from ..__context__ import INTERNAL_CONFIGS, app, console, intersession_state
+from ..__context__ import *
 
 __all__ = ["channel_save_bucket", "parser", "command"]
-save = typer.Typer(name="save")
+save = Typer(name="save")
 command = save.command
 app.add_typer(save)
 
@@ -29,10 +29,10 @@ def channel_save_bucket(bucket_id: int, /, *, upstream: bool):
     :raises RuntimeError: If Ryujinx is not installed.
     """
 
-    def rotate[T](values: collections.abc.Sequence[T]):
+    def rotate[T](values: Sequence[T]):
         return (iter if upstream else reversed)(values)
 
-    if not intersession_state["ryujinx_meta"]:
+    if not INTERSESSION_STATE["ryujinx_meta"]:
         console.print(
             "[error]Couldn't detect a Ryujinx installation.",
             "└── Did you run `install_ryujinx`?",
@@ -61,7 +61,7 @@ def channel_save_bucket(bucket_id: int, /, *, upstream: bool):
         shutil.copytree(source, dest)
 
 
-def parser(type_: typing.Literal["bucket_id"], /):
+def parser(type_: Literal["bucket_id"], /):
     """
     Get input parser for type 'type_'.
 
@@ -81,7 +81,7 @@ def parser(type_: typing.Literal["bucket_id"], /):
                         FROM
                             ryujinx_saves
                         WHERE
-                            id = :id;
+                            id = :id
                         """,
                         {"id": id_},
                     ).fetchone()[0]:

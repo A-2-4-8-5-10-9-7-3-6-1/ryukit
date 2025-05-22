@@ -34,5 +34,4 @@ Please read `LICENSE.md`.
 
 ## Acknowledgements
 
-- Image `resources/exe.ico` by
-  [Alfredo Hernandez](https://www.alfredocreates.com).
+- Image `assets/exe.ico` by [Alfredo Hernandez](https://www.alfredocreates.com).

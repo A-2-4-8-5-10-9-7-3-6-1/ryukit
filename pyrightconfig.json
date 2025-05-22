@@ -1,6 +1,0 @@
-{
-  "extraPaths": ["*"],
-  "include": ["*"],
-  "reportMissingTypeStubs": "none",
-  "typeCheckingMode": "strict"
-}

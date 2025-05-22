@@ -1,8 +1,6 @@
 #!/bin/bash
 
-# Configures wine environment within your container.
-#
-# Use this script before using wine for other purposes. You'll only need to execute it once.
+# Configure wine environment.
 configure_wine() {
     if wine python --version; then
         echo "Detected Python installation in Wine, so will not proceed. This command should only be used once."

@@ -3,19 +3,17 @@ import pathlib
 import shutil
 import tarfile
 import tempfile
-import typing
+from typing import Annotated
 
 import typer
 
-from ryukit.app.__context__ import console
-from ryukit.app.save.__context__ import command
-from ryukit.libs import components, db
-from ryukit.libs.fs import File
+from ryukit.app.save.__context__ import command, console
+from ryukit.libs import components, db, paths
 
 
 @command("restore")
 def _(
-    dump: typing.Annotated[
+    dump: Annotated[
         pathlib.Path,
         typer.Argument(help="Dump file path.", exists=True, dir_okay=False),
     ],
@@ -35,7 +33,7 @@ def _(
             (pathlib.Path(temp_dir) / "index").read_bytes()
         )
         for save in saves:
-            write_to = File.SAVE_INSTANCE_DIR.format(
+            write_to = paths.SAVE_INSTANCE_DIR.format(
                 instance_id=conn.execute(
                     """
                     INSERT INTO
@@ -50,4 +48,4 @@ def _(
             if not save_path.exists():
                 continue
             shutil.move(save_path, write_to)
-    console.print(f"Restored {len(saves)} bucket(s).")
+    console.print(f"Restored '{len(saves)}' bucket(s).")

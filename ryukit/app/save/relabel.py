@@ -1,15 +1,14 @@
-import typing
+from typing import Annotated
 
 import typer
 
-from ryukit.app.__context__ import console
-from ryukit.app.save.__context__ import command, parser
+from ryukit.app.save.__context__ import command, console, parser
 from ryukit.libs import db
 
 
 @command("relabel")
 def _(
-    bucket: typing.Annotated[
+    bucket: Annotated[
         int,
         typer.Argument(
             help="ID of bucket to update.",
@@ -17,7 +16,7 @@ def _(
             parser=parser("bucket_id"),
         ),
     ],
-    as_: typing.Annotated[
+    as_: Annotated[
         str,
         typer.Option(
             "--as", help="New label for the bucket.", show_default=False
@@ -34,7 +33,7 @@ def _(
             SET
                 label = :label
             WHERE
-                id = :id;
+                id = :id
             """,
             {"label": as_, "id": bucket},
         )

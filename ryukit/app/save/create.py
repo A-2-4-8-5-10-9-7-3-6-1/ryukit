@@ -1,16 +1,15 @@
 import datetime
-import typing
+from typing import Annotated
 
 import typer
 
-from ryukit.app.__context__ import console
-from ryukit.app.save.__context__ import command
+from ryukit.app.save.__context__ import command, console
 from ryukit.libs import db
 
 
 @command("create")
 def _(
-    with_label: typing.Annotated[
+    with_label: Annotated[
         str, typer.Argument(help="A label for your save.")
     ] = f"save{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}",
 ):
@@ -26,7 +25,7 @@ def _(
             INSERT INTO 
                 ryujinx_saves (label)
             VALUES 
-                (:label);
+                (:label)
             """,
             {"label": with_label},
         ).lastrowid
