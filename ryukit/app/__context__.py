@@ -25,7 +25,7 @@ USER_CONFIGS: dict[str, object] = (
     json.loads(pathlib.Path(paths.CONFIG_FILE).read_bytes())
     if pathlib.Path(paths.CONFIG_FILE).exists()
     else {
-        "$schema": "https://github.com/A-2-4-8-5-10-9-7-3-6-1/ryukit/blob/main/ryukit/ryukitconfigs.schema.json",
+        "$schema": "https://github.com/A-2-4-8-5-10-9-7-3-6-1/ryukit/tree/main/ryukit/ryukitconfigs.schema.json",
         "ryujinxInstallURL": None,
     }
 )

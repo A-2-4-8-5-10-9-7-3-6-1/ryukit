@@ -56,6 +56,7 @@ def ls(
             for save in client.scalars(
                 sqlalchemy.select(db.RyujinxSave).where(
                     sqlalchemy.and_(
+                        True,
                         *(
                             sqlalchemy.or_(
                                 *(
@@ -71,7 +72,7 @@ def ls(
                                 )
                             )
                             for word in filter_by
-                        )
+                        ),
                     )
                 )
             )
