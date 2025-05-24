@@ -1,16 +1,15 @@
+import contextlib
 import pathlib
 import shutil
 from collections.abc import Sequence
-from typing import Literal
 
 import typer
-from typer import Typer
 
 from ...libs import db
 from ..__context__ import *
 
-__all__ = ["channel_save_bucket", "parser", "command"]
-save = Typer(name="save")
+__all__ = ["channel_save_bucket", "bucket", "command"]
+save = typer.Typer(name="save")
 command = save.command
 app.add_typer(save)
 
@@ -61,32 +60,18 @@ def channel_save_bucket(bucket_id: int, /, *, upstream: bool):
         shutil.copytree(source, dest)
 
 
-def parser(type_: Literal["bucket_id"], /):
+@contextlib.contextmanager
+def bucket(id_: int, /):
     """
-    Get input parser for type 'type_'.
+    Get a save bucket from an ID.
 
-    :param type_: The type of parser required.
-    :returns: A parser for the given type.
+    :param id_: The bucket's ID.
+    :raises typer.Exit: If the bucket doesn't exist.
     """
 
-    match type_:
-        case "bucket_id":
-
-            def parser(id_: str):
-                with db.connect() as conn:
-                    if not conn.execute(
-                        """
-                        SELECT
-                            COUNT(*)
-                        FROM
-                            ryujinx_saves
-                        WHERE
-                            id = :id
-                        """,
-                        {"id": id_},
-                    ).fetchone()[0]:
-                        console.print(f"[error]No bucket with ID '{id_}'.")
-                        raise typer.Exit(1)
-                return id_
-
-            return parser
+    with db.client() as conn:
+        save = conn.get(db.RyujinxSave, {"id": id_})
+        if not save:
+            console.print(f"[error]No bucket with ID '{id_}'.")
+            raise typer.Exit(1)
+        yield conn, save

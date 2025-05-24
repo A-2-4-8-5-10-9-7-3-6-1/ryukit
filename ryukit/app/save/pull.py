@@ -1,52 +1,33 @@
-import pathlib
 from typing import Annotated
 
 import typer
 
-from ryukit.app.save.__context__ import (
+from ... import utils
+from ...app.save.__context__ import (
+    bucket,
     channel_save_bucket,
     command,
     console,
-    parser,
 )
-from ryukit.libs import db, paths
-from ryukit.utils import calculator
+from ...libs import paths
 
 
 @command("pull")
-def _(
+def pull(
     into: Annotated[
         int,
-        typer.Argument(
-            help="ID of bucket to pull into.",
-            show_default=False,
-            parser=parser("bucket_id"),
-        ),
+        typer.Argument(help="ID of bucket to pull into.", show_default=False),
     ],
 ):
     """Pull data from Ryujinx into a save bucket."""
 
-    with db.connect() as conn:
-        channel_save_bucket(into, upstream=False)
-        size = sum(
-            path.stat().st_size if path.is_file() else 0
-            for path in pathlib.Path(
-                paths.SAVE_INSTANCE_DIR.format(instance_id=into)
-            ).glob("**")
+    channel_save_bucket(into, upstream=False)
+    with bucket(into) as (_, save):
+        save.size = utils.size(
+            paths.SAVE_INSTANCE_DIR.format(instance_id=into), sizing="dir"
         )
-        conn.execute(
-            """
-            UPDATE
-                ryujinx_saves
-            SET
-                size = :size
-            WHERE
-                id = :id
-            """,
-            {"id": into, "size": size},
+        console.print(
+            "Updated bucket.",
+            f"└── Bucket is now of size {utils.megabytes(save.size):.1f}MB.",
+            sep="\n",
         )
-    console.print(
-        "Updated bucket.",
-        f"└── Bucket is now of size {calculator.megabytes(size):.1f}MB.",
-        sep="\n",
-    )

@@ -2,18 +2,17 @@ from typing import Annotated
 
 import typer
 
-from ryukit.app.save.__context__ import command, console, parser
-from ryukit.libs import db
+from ...app.save.__context__ import bucket, command, console
 
 
 @command("relabel")
-def _(
-    bucket: Annotated[
+def relabel(
+    bucket_: Annotated[
         int,
         typer.Argument(
+            metavar="BUCKET",
             help="ID of bucket to update.",
             show_default=False,
-            parser=parser("bucket_id"),
         ),
     ],
     as_: Annotated[
@@ -25,16 +24,6 @@ def _(
 ):
     """Relabel an existing bucket."""
 
-    with db.connect() as conn:
-        conn.execute(
-            """
-            UPDATE
-                ryujinx_saves
-            SET
-                label = :label
-            WHERE
-                id = :id
-            """,
-            {"label": as_, "id": bucket},
-        )
+    with bucket(bucket_) as (_, save):
+        save.label = as_
     console.print("Label updated.")

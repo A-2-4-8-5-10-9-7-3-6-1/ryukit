@@ -9,9 +9,8 @@ import jsonschema
 import rich
 import rich.theme
 import typer
-from typer import Typer
 
-from ..libs import db, paths
+from ..libs import paths
 
 __all__ = [
     "USER_CONFIGS",
@@ -21,12 +20,16 @@ __all__ = [
     "app",
     "console",
 ]
-app = Typer(rich_markup_mode=None)
-USER_CONFIGS: dict[str, object] = json.loads(
-    pathlib.Path(paths.CONFIG_FILE).read_bytes()
+app = typer.Typer(rich_markup_mode=None)
+USER_CONFIGS: dict[str, object] = (
+    json.loads(pathlib.Path(paths.CONFIG_FILE).read_bytes())
     if pathlib.Path(paths.CONFIG_FILE).exists()
-    else importlib.resources.read_binary("ryukit.app", "ryukitconfigs.json")
+    else {
+        "$schema": "https://github.com/A-2-4-8-5-10-9-7-3-6-1/ryukit/blob/main/ryukit/ryukitconfigs.schema.json",
+        "ryujinxInstallURL": None,
+    }
 )
+
 command = app.command
 console = rich.console.Console(
     theme=rich.theme.Theme({"error": "red"}), highlight=False
@@ -86,7 +89,7 @@ def _(
             jsonschema.Draft7Validator(
                 json.loads(
                     importlib.resources.read_text(
-                        "ryukit.app", "ryukitconfigs.schema.json"
+                        "ryukit", "ryukitconfigs.schema.json"
                     )
                 )
             ),
@@ -98,16 +101,11 @@ def _(
             sep="\n",
         )
         raise typer.Exit(1)
-    pathlib.Path(paths.ROAMING_DATA).mkdir(parents=True, exist_ok=True)
     INTERSESSION_STATE.update(
         json.loads(pathlib.Path(paths.STATE_FILE).read_bytes())
         if pathlib.Path(paths.STATE_FILE).exists()
         else {}
     )
-    with db.connect() as conn:
-        conn.executescript(
-            importlib.resources.read_text("ryukit.app", "setup_db.sql")
-        )
     for do, command in [
         (
             version,

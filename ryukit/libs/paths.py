@@ -5,7 +5,6 @@ import pathlib
 import platformdirs
 
 __all__ = [
-    "ROAMING_DATA",
     "CONFIG_FILE",
     "DATABASE_FILE",
     "SAVE_INSTANCE_DIR",
@@ -16,9 +15,6 @@ __all__ = [
     "RYUJINX_DIST_DIR",
     "RYUJINX_DATA_DIR",
 ]
-ROAMING_DATA = platformdirs.user_data_dir(
-    "RyuKit", roaming=True, appauthor=False
-)
 CONFIG_FILE = f"{pathlib.Path.home()}/ryukitconfig.json"
 DATABASE_FILE = (
     f"{platformdirs.user_data_dir("RyuKit", appauthor=False, roaming=True)}/db"

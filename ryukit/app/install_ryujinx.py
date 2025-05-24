@@ -16,19 +16,21 @@ import rich.spinner
 import rich.table
 import typer
 
-from ryukit.app.__context__ import (
+from .. import utils
+from ..app.__context__ import (
     INTERNAL_CONFIGS,
     INTERSESSION_STATE,
     USER_CONFIGS,
     command,
     console,
 )
-from ryukit.libs import components
-from ryukit.utils import calculator
+from ..libs import components
+
+__all__ = ["install_ryujinx"]
 
 
 @command("install_ryujinx")
-def _():
+def install_ryujinx():
     """
     Install Ryujinx.
 
@@ -90,12 +92,12 @@ def _():
                         progress = 0
                         content = response.iter_content(chunk_size)
                         parts = 40
-                        total_mb = calculator.megabytes(total)
+                        total_mb = utils.megabytes(total)
                         while (percent := progress / total * 100) < 100:
                             beads = math.floor(parts * percent / 100)
                             task_table["refresh"]()
                             task_table["render"].add_row(
-                                f"Downloading files... [{"".join("=" if beads - i != 1 else ">" for i in range(beads))}{" " * (parts - beads)}] {calculator.megabytes(int(percent * total / 100)):.1f}MB/{total_mb:.1f}MB"
+                                f"Downloading files... [{"".join("=" if beads - i != 1 else ">" for i in range(beads))}{" " * (parts - beads)}] {utils.megabytes(int(percent * total / 100)):.1f}MB/{total_mb:.1f}MB"
                             )
                             buffer.write(next(content))
                             progress += chunk_size

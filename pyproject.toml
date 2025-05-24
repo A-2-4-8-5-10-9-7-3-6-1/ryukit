@@ -1,6 +1,6 @@
 [project]
 name = "ryukit"
-version = "0.2.0"
+version = "0.2.1"
 description = "A CLI tool for managing Ryujinx."
 authors = [
   { name = "A-2-4-8-5-10-9-7-3-6-1", email = "112730580+A-2-4-8-5-10-9-7-3-6-1@users.noreply.github.com" },
@@ -13,6 +13,7 @@ dependencies = [
   "jsonschema (>=4.23.0,<5.0.0)",
   "pyinstaller (>=6.13.0,<7.0.0)",
   "requests (>=2.32.3,<3.0.0)",
+  "sqlalchemy (>=2.0.41,<3.0.0)",
 ]
 
 [tool.poetry.scripts]
@@ -36,5 +37,5 @@ skip-magic-trailing-comma = true
 remove_redundant_aliases = true
 
 [tool.pyright]
-include = ["ryukit"]
+include = ["ryukit", "tests"]
 typeCheckingMode = "strict"

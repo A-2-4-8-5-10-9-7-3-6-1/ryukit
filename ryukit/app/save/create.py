@@ -3,12 +3,12 @@ from typing import Annotated
 
 import typer
 
-from ryukit.app.save.__context__ import command, console
-from ryukit.libs import db
+from ...app.save.__context__ import command, console
+from ...libs import db
 
 
 @command("create")
-def _(
+def create(
     with_label: Annotated[
         str, typer.Argument(help="A label for your save.")
     ] = f"save{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}",
@@ -19,14 +19,8 @@ def _(
     The created bucket will be empty. You'll use the save-pull command to populate it.
     """
 
-    with db.connect() as conn:
-        id_ = conn.execute(
-            """
-            INSERT INTO 
-                ryujinx_saves (label)
-            VALUES 
-                (:label)
-            """,
-            {"label": with_label},
-        ).lastrowid
-    console.print(f"Bucket {id_} created with label '{with_label}'.")
+    save = db.RyujinxSave(label=with_label)
+    with db.client() as client:
+        client.add(save)
+        client.flush()
+        console.print(f"Bucket {save.id} created with label '{with_label}'.")

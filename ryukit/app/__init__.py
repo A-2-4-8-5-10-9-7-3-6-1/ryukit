@@ -1,7 +1,5 @@
 """App implementation."""
 
-import importlib
-import importlib.resources
 import json
 import pathlib
 import runpy
@@ -14,36 +12,27 @@ any(
     map(
         lambda _: False,
         map(
-            runpy.run_path,
-            map(
-                str,
-                (
-                    importlib.resources.files("ryukit.app") / file
-                    for file in [
-                        "install_ryujinx.py",
-                        "save/apply.py",
-                        "save/create.py",
-                        "save/drop.py",
-                        "save/dump.py",
-                        "save/ls.py",
-                        "save/pull.py",
-                        "save/relabel.py",
-                        "save/restore.py",
-                    ]
-                ),
-            ),
+            runpy.run_module,
+            [
+                "ryukit.app.install_ryujinx",
+                "ryukit.app.save.apply",
+                "ryukit.app.save.create",
+                "ryukit.app.save.drop",
+                "ryukit.app.save.dump",
+                "ryukit.app.save.ls",
+                "ryukit.app.save.pull",
+                "ryukit.app.save.relabel",
+                "ryukit.app.save.restore",
+            ],
         ),
     )
 )
 
 
-def start():
+def start(*args: ..., **kwargs: ...):
     try:
-        app()
+        app(*args, **kwargs)
     finally:
-        USER_CONFIGS["$schema"] = (
-            "https://github.com/A-2-4-8-5-10-9-7-3-6-1/ryukit/blob/dev/ryukit/ryukitconfigs.json"
-        )
         any(
             map(
                 lambda _: False,

@@ -2,16 +2,18 @@ import io
 import json
 import pathlib
 import tarfile
-from typing import Annotated, cast
+from typing import Annotated
 
+import sqlalchemy
 import typer
 
-from ryukit.app.save.__context__ import command, console
-from ryukit.libs import components, db, paths
+from ... import utils
+from ...app.save.__context__ import command, console
+from ...libs import components, db, paths
 
 
 @command("dump")
-def _(
+def dump(
     into: Annotated[
         pathlib.Path, typer.Argument(help="Where to dump your buckets.")
     ] = pathlib.Path("saves.ryukitdmp"),
@@ -25,31 +27,29 @@ def _(
             "Collecting data...", spinner="dots2", spinner_style="none"
         ),
     ):
-        saves: list[db.models.RyujinxSave] = []
-        with db.connect() as conn:
-            for save in map(
-                lambda x: cast(db.models.RyujinxSave, x),
-                map(
-                    dict,
-                    conn.execute(
-                        """
-                        SELECT
-                            *
-                        FROM
-                            ryujinx_saves
-                        """
-                    ),
-                ),
-            ):
-                saves.append(save)
+        with db.client() as client:
+            saves = client.scalars(sqlalchemy.select(db.RyujinxSave)).all()
+            any(
+                tar.add(
+                    paths.SAVE_INSTANCE_DIR.format(instance_id=save.id),
+                    arcname=f"save{save.id}",
+                )
+                for save in saves
                 if pathlib.Path(
-                    paths.SAVE_INSTANCE_DIR.format(instance_id=save["id"])
-                ).exists():
-                    tar.add(
-                        paths.SAVE_INSTANCE_DIR.format(instance_id=save["id"]),
-                        arcname=f"save{save["id"]}",
-                    )
-        with io.BytesIO(json.dumps(saves).encode()) as save_buffer:
+                    paths.SAVE_INSTANCE_DIR.format(instance_id=save.id)
+                ).exists()
+            )
+            save_dicts = list(map(utils.model_to_dict, saves))
+        any(
+            save.update(
+                {
+                    key: save[key] and save[key].isoformat()
+                    for key in ("created", "updated", "last_used")
+                }
+            )
+            for save in save_dicts
+        )
+        with io.BytesIO(json.dumps(save_dicts).encode()) as save_buffer:
             info = tar.tarinfo("index")
             info.size = len(save_buffer.getvalue())
             tar.addfile(info, save_buffer)
