@@ -46,6 +46,7 @@ def restore(
             save_path = pathlib.Path(temp_dir) / f"save{save_args.pop("id")}"
             save = db.RyujinxSave(**save_args)
             client.add(save)
+            client.flush([save])
             console.print(f"Restored '{save_path.stem}' under ID '{save.id}'.")
             if not save_path.exists():
                 continue
