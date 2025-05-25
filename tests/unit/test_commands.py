@@ -10,6 +10,7 @@ from ryukit.app.save.apply import apply
 from ryukit.app.save.create import create
 from ryukit.app.save.drop import drop
 from ryukit.app.save.ls import ls
+from ryukit.app.save.relabel import relabel
 from ryukit.libs import db
 
 from .. import utils
@@ -19,12 +20,21 @@ __all__ = [
     "test_save_create",
     "test_save_drop",
     "test_save_ls",
-    "test_apply",
+    "test_save_apply",
 ]
 
 
+def test_relabel(seed: object):
+    with db.client() as client:
+        save = cast(db.RyujinxSave, client.get(db.RyujinxSave, 1))
+        label = f"{save.label}+"
+        relabel(1, as_=label)
+        client.refresh(save)
+        assert save.label == label, "Label did not update as expected."
+
+
 @mark.parametrize("id_", [1, 2, 5])
-def test_apply(seed: object, id_: int):
+def test_save_apply(seed: object, id_: int):
     with db.client() as client:
         save = cast(db.RyujinxSave, client.get(db.RyujinxSave, id_))
         initial_stamp = save.updated
@@ -68,17 +78,15 @@ def test_save_create(seed: object, label: str | None):
         ) >= 1
 
 
-@mark.parametrize(
-    "ids, valid",
-    [([], True), ([1], True), ([1, 2, 3, 4, 5], True), ([9], False)],
-)
-def test_save_drop(seed: object, ids: list[int], valid: bool):
-    try:
-        drop(ids)
-    except Exception:
-        assert not valid, "Drop failed for valid input."
-        return
-    assert valid, "Drop passed for invalid input."
+@mark.parametrize("ids", [[], [1], [1, 2, 3, 4, 5]])
+def test_save_drop(seed: object, ids: list[int]):
+    drop(ids)
+    with db.client() as client:
+        assert set(
+            client.scalars(sqlalchemy.select(db.RyujinxSave.id))
+        ) == set(
+            i for i in range(1, 6) if i not in ids
+        ), "Unexpected ID set remaining."
 
 
 @mark.parametrize(

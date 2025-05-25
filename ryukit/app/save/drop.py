@@ -6,6 +6,8 @@ import typer
 from ...app.save.__context__ import bucket, command, console
 from ...libs import paths
 
+__all__ = ["drop"]
+
 
 @command("drop")
 def drop(
@@ -24,10 +26,9 @@ def drop(
     """
 
     for context in map(bucket, buckets):
-        with context as (conn, save):
-            conn.delete(save)
+        with context as (client, save):
+            client.delete(save)
             shutil.rmtree(
-                paths.SAVE_INSTANCE_DIR.format(instance_id=save.id),
-                ignore_errors=True,
+                paths.SAVE_INSTANCE_DIR.format(id=save.id), ignore_errors=True
             )
             console.print(f"Deleted bucket '{save.id}'.")

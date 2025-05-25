@@ -1,9 +1,9 @@
 """App implementation."""
 
-import json
 import pathlib
 import runpy
 
+from .. import utils
 from ..libs import paths
 from .__context__ import INTERSESSION_STATE, USER_CONFIGS, app
 
@@ -29,9 +29,9 @@ any(
 )
 
 
-def start(*args: ..., **kwargs: ...):
+def start():
     try:
-        app(*args, **kwargs)
+        app()
     finally:
         any(
             map(
@@ -42,7 +42,7 @@ def start(*args: ..., **kwargs: ...):
                             parents=True, exist_ok=True
                         ),
                         pathlib.Path(file).write_text(
-                            json.dumps(options, indent=2)
+                            utils.json_dumps(options, indent=2)
                         ),
                     )
                     for file, options in [

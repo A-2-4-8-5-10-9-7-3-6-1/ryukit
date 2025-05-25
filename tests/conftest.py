@@ -25,9 +25,9 @@ def verify_setup():
 def seed():
     with tempfile.TemporaryDirectory() as temp_dir:
         paths.CONFIG_FILE = f"{temp_dir}/ryukitconfig.json"
-        paths.SAVE_INSTANCE_DIR = f"{temp_dir}/saves/{'{instance_id}'}"
+        paths.SAVE_INSTANCE_DIR = f"{temp_dir}/saves/{'{id}'}"
         paths.SAVE_INSTANCE_META = f"{paths.SAVE_INSTANCE_DIR}/meta"
-        paths.SAVE_INSTACE_SYSTEM_DATA = (
+        paths.SAVE_INSTANCE_SYSTEM_DATA = (
             f"{paths.SAVE_INSTANCE_DIR}/registered"
         )
         paths.SAVE_INSTANCE_USER_DATA = f"{paths.SAVE_INSTANCE_DIR}/user"
@@ -53,7 +53,7 @@ def seed():
                     "flow": {
                         paths.SAVE_INSTANCE_META: f"{paths.RYUJINX_DATA_DIR}/bis/user/saveMeta",
                         paths.SAVE_INSTANCE_USER_DATA: f"{paths.RYUJINX_DATA_DIR}/bis/user/save",
-                        paths.SAVE_INSTACE_SYSTEM_DATA: f"{paths.RYUJINX_DATA_DIR}/bis/system/save",
+                        paths.SAVE_INSTANCE_SYSTEM_DATA: f"{paths.RYUJINX_DATA_DIR}/bis/system/save",
                     }
                 },
             }

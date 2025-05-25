@@ -7,7 +7,7 @@ import shutil
 import tempfile
 import zipfile
 from collections.abc import Callable
-from typing import TypedDict, cast
+from typing import Any, Iterable, TypedDict, cast
 
 import requests
 import rich
@@ -83,8 +83,7 @@ def install_ryujinx():
                         rich.spinner.Spinner("dots2"), " Connecting..."
                     )
                     with requests.get(
-                        cast(str, USER_CONFIGS["ryujinxInstallURL"]),
-                        stream=True,
+                        USER_CONFIGS["ryujinxInstallURL"], stream=True
                     ) as response:
                         if response.status_code != 200:
                             raise requests.ConnectionError
@@ -125,7 +124,7 @@ def install_ryujinx():
             with zipfile.ZipFile(buffer) as zip:
                 zip.extractall(temp_dir_str)
             console.print("Extracted files.")
-        metadata: dict[str, object] = json.loads(
+        metadata: dict[str, Any] = json.loads(
             (temp_dir / "metadata.json").read_bytes()
         )
         any(
@@ -133,13 +132,14 @@ def install_ryujinx():
                 lambda _: False,
                 (
                     shutil.copytree(
-                        temp_dir / k,
-                        pathlib.Path(cast(str, path).format(**metadata)),
+                        temp_dir / key,
+                        pathlib.Path(path.format(**metadata)),
                         dirs_exist_ok=True,
                     )
-                    for k, path in INTERNAL_CONFIGS["ryujinx_install"][
-                        "paths"
-                    ].items()
+                    for key, path in cast(
+                        Iterable[tuple[str, Any]],
+                        INTERNAL_CONFIGS["ryujinx_install"]["paths"].items(),
+                    )
                 ),
             )
         )

@@ -9,6 +9,8 @@ from ... import utils
 from ...app.save.__context__ import command, console
 from ...libs import components, db
 
+__all__ = ["ls"]
+
 
 @command("ls")
 def ls(
@@ -49,9 +51,9 @@ def ls(
                         save.created,
                         save.updated,
                         save.last_used or "Never",
-                        f"{utils.megabytes(save.size):.1f}MB",
                     ),
-                )
+                ),
+                f"{utils.megabytes(save.size):.1f}MB",
             )
             for save in client.scalars(
                 sqlalchemy.select(db.RyujinxSave).where(

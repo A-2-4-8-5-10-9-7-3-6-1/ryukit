@@ -11,6 +11,8 @@ from ...app.save.__context__ import (
 )
 from ...libs import paths
 
+__all__ = ["pull"]
+
 
 @command("pull")
 def pull(
@@ -24,7 +26,7 @@ def pull(
     channel_save_bucket(into, upstream=False)
     with bucket(into) as (_, save):
         save.size = utils.size(
-            paths.SAVE_INSTANCE_DIR.format(instance_id=into), sizing="dir"
+            paths.SAVE_INSTANCE_DIR.format(id=into), sizing="dir"
         )
         console.print(
             "Updated bucket.",

@@ -20,19 +20,20 @@ def test_megabytes(byte_total: int, expected: float):
 
 @mark.parametrize(
     "obj, sizing, expected",
-    list(
-        zip(
-            map(
-                str,
-                (
-                    importlib.resources.files("tests.data") / part
-                    for part in ["saves/1", "saves/2", "saves/5", "EMPTY"]
-                ),
-            ),
-            ["dir", "dir", "dir", "dir"],
-            [236666670, 157777780, 78888890, 0],
-        )
-    ),
+    [
+        (
+            importlib.resources.files("tests.data.saves") / "1",
+            "dir",
+            236666670,
+        ),
+        (
+            importlib.resources.files("tests.data.saves") / "2",
+            "dir",
+            157777780,
+        ),
+        (importlib.resources.files("tests.data.saves") / "5", "dir", 78888890),
+        (importlib.resources.files("tests.data") / "EMPTY", "dir", 0),
+    ],
 )
 def test_size(obj: object, sizing: str, expected: int):
     assert (

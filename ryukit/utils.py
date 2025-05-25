@@ -1,15 +1,18 @@
 """System-wide utilities."""
 
+import datetime
+import functools
+import json
 import pathlib
 from typing import Any, Literal
 
 import sqlalchemy
 import sqlalchemy.orm
 
-__all__ = ["megabytes", "model_to_dict", "size"]
+__all__ = ["megabytes", "model_to_dict", "size", "json_dumps"]
 
 
-def megabytes(byte_total: int):
+def megabytes(byte_total: int, /):
     """
     Converts bytes to megabytes.
 
@@ -19,7 +22,7 @@ def megabytes(byte_total: int):
     return byte_total / pow(2, 20)
 
 
-def model_to_dict(model: sqlalchemy.orm.DeclarativeBase) -> dict[str, Any]:
+def model_to_dict(model: sqlalchemy.orm.DeclarativeBase, /) -> dict[str, Any]:
     """
     Convert a model to a dict.
 
@@ -47,3 +50,12 @@ def size(obj: Any, /, *, sizing: Literal["dir"]):
                 for path in pathlib.Path(obj).glob("**")
                 if not path.is_dir()
             )
+
+
+def serialize(obj: object):
+    if isinstance(obj, datetime.datetime):
+        return obj.isoformat()
+    raise ValueError
+
+
+json_dumps = functools.partial(json.dumps, default=serialize)

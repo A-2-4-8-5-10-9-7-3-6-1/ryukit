@@ -4,6 +4,8 @@ import typer
 
 from ...app.save.__context__ import bucket, command, console
 
+__all__ = ["relabel"]
+
 
 @command("relabel")
 def relabel(

@@ -6,6 +6,8 @@ import typer
 from ...app.save.__context__ import command, console
 from ...libs import db
 
+__all__ = ["create"]
+
 
 @command("create")
 def create(

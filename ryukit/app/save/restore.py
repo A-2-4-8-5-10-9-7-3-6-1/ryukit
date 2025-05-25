@@ -11,6 +11,8 @@ import typer
 from ...app.save.__context__ import command, console
 from ...libs import components, db, paths
 
+__all__ = ["restore"]
+
 
 @command("restore")
 def restore(
@@ -47,7 +49,5 @@ def restore(
             console.print(f"Restored '{save_path.stem}' under ID '{save.id}'.")
             if not save_path.exists():
                 continue
-            shutil.move(
-                save_path, paths.SAVE_INSTANCE_DIR.format(instance_id=save.id)
-            )
+            shutil.move(save_path, paths.SAVE_INSTANCE_DIR.format(id=save.id))
     console.print(f"Added '{len(saves)}' bucket(s).")

@@ -3,7 +3,7 @@ import importlib.metadata
 import importlib.resources
 import json
 import pathlib
-from typing import Annotated, Any, TypedDict, cast
+from typing import Annotated, Any, Literal, TypedDict, cast
 
 import jsonschema
 import rich
@@ -21,7 +21,7 @@ __all__ = [
     "console",
 ]
 app = typer.Typer(rich_markup_mode=None)
-USER_CONFIGS: dict[str, object] = (
+USER_CONFIGS: dict[str, Any] = (
     json.loads(pathlib.Path(paths.CONFIG_FILE).read_bytes())
     if pathlib.Path(paths.CONFIG_FILE).exists()
     else {
@@ -29,7 +29,6 @@ USER_CONFIGS: dict[str, object] = (
         "ryujinxInstallURL": None,
     }
 )
-
 command = app.command
 console = rich.console.Console(
     theme=rich.theme.Theme({"error": "red"}), highlight=False
@@ -37,18 +36,19 @@ console = rich.console.Console(
 
 
 class IntersessionState(TypedDict):
-    ryujinx_meta: dict[str, object]
+    ryujinx_meta: dict[str, Any]
 
 
 INTERSESSION_STATE: IntersessionState = {"ryujinx_meta": {}}
 
 
 class InternalConfigsSpace:
-    RyujinxInstallPaths = TypedDict(
-        "", {"dist": str, "registered": str, "keys": str}
-    )
     RyujinxInstall = TypedDict(
-        "", {"sha256": str, "paths": RyujinxInstallPaths}
+        "",
+        {
+            "sha256": str,
+            "paths": dict[Literal["dist", "registered", "keys"], str],
+        },
     )
     SaveBuckets = TypedDict("", {"flow": dict[str, str]})
     InternalConfigs = TypedDict(
@@ -69,7 +69,7 @@ INTERNAL_CONFIGS: InternalConfigsSpace.InternalConfigs = {
         "flow": {
             paths.SAVE_INSTANCE_META: f"{paths.RYUJINX_DATA_DIR}/bis/user/saveMeta",
             paths.SAVE_INSTANCE_USER_DATA: f"{paths.RYUJINX_DATA_DIR}/bis/user/save",
-            paths.SAVE_INSTACE_SYSTEM_DATA: f"{paths.RYUJINX_DATA_DIR}/bis/system/save",
+            paths.SAVE_INSTANCE_SYSTEM_DATA: f"{paths.RYUJINX_DATA_DIR}/bis/system/save",
         }
     },
 }

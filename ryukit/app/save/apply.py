@@ -10,6 +10,8 @@ from ...app.save.__context__ import (
     console,
 )
 
+__all__ = ["apply"]
+
 
 @command("apply")
 def apply(

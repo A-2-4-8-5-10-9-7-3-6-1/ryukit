@@ -45,7 +45,7 @@ def channel_save_bucket(bucket_id: int, /, *, upstream: bool):
             map(
                 lambda p: map(pathlib.Path, p),
                 (
-                    (x.format(instance_id=bucket_id), y)
+                    (x.format(id=bucket_id), y)
                     for x, y in INTERNAL_CONFIGS["save_buckets"][
                         "flow"
                     ].items()
@@ -69,9 +69,9 @@ def bucket(id_: int, /):
     :raises typer.Exit: If the bucket doesn't exist.
     """
 
-    with db.client() as conn:
-        save = conn.get(db.RyujinxSave, {"id": id_})
+    with db.client() as client:
+        save = client.get(db.RyujinxSave, {"id": id_})
         if not save:
             console.print(f"[error]No bucket with ID '{id_}'.")
             raise typer.Exit(1)
-        yield conn, save
+        yield client, save

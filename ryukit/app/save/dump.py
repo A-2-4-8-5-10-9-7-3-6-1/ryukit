@@ -1,8 +1,7 @@
 import io
-import json
 import pathlib
 import tarfile
-from typing import Annotated
+from typing import Annotated, Any
 
 import sqlalchemy
 import typer
@@ -10,6 +9,8 @@ import typer
 from ... import utils
 from ...app.save.__context__ import command, console
 from ...libs import components, db, paths
+
+__all__ = ["dump"]
 
 
 @command("dump")
@@ -28,28 +29,31 @@ def dump(
         ),
     ):
         with db.client() as client:
-            saves = client.scalars(sqlalchemy.select(db.RyujinxSave)).all()
+            save_dicts: list[dict[str, Any]] = []
             any(
-                tar.add(
-                    paths.SAVE_INSTANCE_DIR.format(instance_id=save.id),
-                    arcname=f"save{save.id}",
+                map(
+                    lambda _: False,
+                    (
+                        (
+                            save_dicts.append(utils.model_to_dict(save)),
+                            (
+                                tar.add(
+                                    paths.SAVE_INSTANCE_DIR.format(id=save.id),
+                                    arcname=f"save{save.id}",
+                                )
+                                if pathlib.Path(
+                                    paths.SAVE_INSTANCE_DIR.format(id=save.id)
+                                ).exists()
+                                else None
+                            ),
+                        )
+                        for save in client.scalars(
+                            sqlalchemy.select(db.RyujinxSave)
+                        )
+                    ),
                 )
-                for save in saves
-                if pathlib.Path(
-                    paths.SAVE_INSTANCE_DIR.format(instance_id=save.id)
-                ).exists()
             )
-            save_dicts = list(map(utils.model_to_dict, saves))
-        any(
-            save.update(
-                {
-                    key: save[key] and save[key].isoformat()
-                    for key in ("created", "updated", "last_used")
-                }
-            )
-            for save in save_dicts
-        )
-        with io.BytesIO(json.dumps(save_dicts).encode()) as save_buffer:
+        with io.BytesIO(utils.json_dumps(save_dicts).encode()) as save_buffer:
             info = tar.tarinfo("index")
             info.size = len(save_buffer.getvalue())
             tar.addfile(info, save_buffer)
