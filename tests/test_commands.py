@@ -11,6 +11,7 @@ from typing import cast
 import sqlalchemy
 from pytest import mark
 
+from ryukit import utils as ryutils
 from ryukit.app.__context__ import USER_CONFIGS
 from ryukit.app.install_ryujinx import install_ryujinx
 from ryukit.app.save.apply import apply
@@ -56,27 +57,37 @@ def test_save_dump(seed: object):
 
 def test_save_restore(seed: object):
     with tempfile.TemporaryDirectory() as dir:
-        any((pathlib.Path(dir) / part).mkdir() for part in ("test", "truth"))
-        shutil.move(paths.DATABASE_FILE, f"{dir}/truth/db")
         shutil.move(
-            pathlib.Path(paths.SAVE_INSTANCE_DIR).parent, f"{dir}/truth/saves"
+            pathlib.Path(paths.SAVE_INSTANCE_DIR).parent, f"{dir}/truth"
         )
-        restore(
-            pathlib.Path(
-                str(importlib.resources.files("tests.data") / "saves")
+        with db.client() as client1:
+            pathlib.Path(paths.DATABASE_FILE).unlink()
+            restore(
+                pathlib.Path(
+                    str(importlib.resources.files("tests.data") / "saves")
+                )
             )
-        )
-        shutil.move(paths.DATABASE_FILE, f"{dir}/test/db")
-        shutil.move(
-            pathlib.Path(paths.SAVE_INSTANCE_DIR).parent, f"{dir}/test/saves"
-        )
-        comparison = filecmp.dircmp(f"{dir}/test", f"{dir}/truth")
-        assert (
-            []
-            == comparison.diff_files
-            == comparison.left_only
-            == comparison.right_only
-        ), "Failed to restore content."
+            shutil.move(
+                pathlib.Path(paths.SAVE_INSTANCE_DIR).parent, f"{dir}/test"
+            )
+            comparison = filecmp.dircmp(f"{dir}/test", f"{dir}/truth")
+            with db.client() as client2:
+                assert list(
+                    map(
+                        ryutils.model_to_dict,
+                        client2.scalars(sqlalchemy.select(db.RyujinxSave)),
+                    )
+                ) == list(
+                    map(
+                        ryutils.model_to_dict,
+                        client1.scalars(sqlalchemy.select(db.RyujinxSave)),
+                    )
+                ) and (
+                    []
+                    == comparison.diff_files
+                    == comparison.left_only
+                    == comparison.right_only
+                ), "Failed to restore content."
 
 
 def test_relabel(seed: object):
