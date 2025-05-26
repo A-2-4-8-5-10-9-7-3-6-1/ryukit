@@ -1,4 +1,4 @@
-"""UI-component definitions."""
+"""UI components."""
 
 import functools
 

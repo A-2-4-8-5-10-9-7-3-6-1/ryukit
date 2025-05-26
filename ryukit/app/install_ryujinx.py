@@ -1,5 +1,3 @@
-import collections
-import collections.abc
 import hashlib
 import io
 import json
@@ -7,8 +5,9 @@ import math
 import pathlib
 import shutil
 import tempfile
-import typing
 import zipfile
+from collections.abc import Callable
+from typing import Any, Iterable, TypedDict, cast
 
 import requests
 import rich
@@ -17,14 +16,21 @@ import rich.spinner
 import rich.table
 import typer
 
-from ryukit.app.__context__ import (INTERNAL_CONFIGS, USER_CONFIGS, command,
-                                    console, intersession_state)
-from ryukit.libs import components
-from ryukit.utils import calculator
+from .. import utils
+from ..app.__context__ import (
+    INTERNAL_CONFIGS,
+    INTERSESSION_STATE,
+    USER_CONFIGS,
+    command,
+    console,
+)
+from ..libs import components
+
+__all__ = ["install_ryujinx"]
 
 
 @command("install_ryujinx")
-def _():
+def install_ryujinx():
     """
     Install Ryujinx.
 
@@ -40,12 +46,8 @@ def _():
             sep="\n",
         )
         raise typer.Exit(1)
-    TaskTable = typing.TypedDict(
-        "",
-        {
-            "refresh": collections.abc.Callable[[], None],
-            "render": None | rich.table.Table,
-        },
+    TaskTable = TypedDict(
+        "", {"refresh": Callable[[], None], "render": None | rich.table.Table}
     )
     with tempfile.TemporaryDirectory() as temp_dir_str:
         temp_dir = pathlib.Path(temp_dir_str)
@@ -65,8 +67,8 @@ def _():
                                 )
                             }
                         ),
-                        typing.cast(rich.live.Live, live).update(
-                            typing.cast(rich.table.Table, task_table["render"])
+                        cast(rich.live.Live, live).update(
+                            cast(rich.table.Table, task_table["render"])
                         ),
                     )
                     and None,
@@ -74,15 +76,14 @@ def _():
                 chunk_size = pow(2, 10)
                 with components.Live(task_table["render"]) as live:
                     task_table["refresh"]()
-                    task_table["render"] = typing.cast(
+                    task_table["render"] = cast(
                         rich.table.Table, task_table["render"]
                     )
                     task_table["render"].add_row(
                         rich.spinner.Spinner("dots2"), " Connecting..."
                     )
                     with requests.get(
-                        typing.cast(str, USER_CONFIGS["ryujinxInstallURL"]),
-                        stream=True,
+                        USER_CONFIGS["ryujinxInstallURL"], stream=True
                     ) as response:
                         if response.status_code != 200:
                             raise requests.ConnectionError
@@ -90,12 +91,12 @@ def _():
                         progress = 0
                         content = response.iter_content(chunk_size)
                         parts = 40
-                        total_mb = calculator.megabytes(total)
+                        total_mb = utils.megabytes(total)
                         while (percent := progress / total * 100) < 100:
                             beads = math.floor(parts * percent / 100)
                             task_table["refresh"]()
                             task_table["render"].add_row(
-                                f"Downloading files... [{"".join("=" if beads - i != 1 else ">" for i in range(beads))}{" " * (parts - beads)}] {calculator.megabytes(int(percent * total / 100)):.1f}MB/{total_mb:.1f}MB"
+                                f"Downloading files... [{"".join("=" if beads - i != 1 else ">" for i in range(beads))}{" " * (parts - beads)}] {utils.megabytes(int(percent * total / 100)):.1f}MB/{total_mb:.1f}MB"
                             )
                             buffer.write(next(content))
                             progress += chunk_size
@@ -123,29 +124,27 @@ def _():
             with zipfile.ZipFile(buffer) as zip:
                 zip.extractall(temp_dir_str)
             console.print("Extracted files.")
-        metadata: dict[str, object] = json.loads(
+        metadata: dict[str, Any] = json.loads(
             (temp_dir / "metadata.json").read_bytes()
         )
         any(
             map(
                 lambda _: False,
                 (
-                    map(
-                        lambda pair: shutil.copytree(
-                            temp_dir / pair[0],
-                            pathlib.Path(pair[1].format(**metadata)),
-                            dirs_exist_ok=True,
-                        ),
-                        typing.cast(
-                            dict[str, str],
-                            INTERNAL_CONFIGS["ryujinx_install"]["paths"],
-                        ).items(),
+                    shutil.copytree(
+                        temp_dir / key,
+                        pathlib.Path(path.format(**metadata)),
+                        dirs_exist_ok=True,
+                    )
+                    for key, path in cast(
+                        Iterable[tuple[str, Any]],
+                        INTERNAL_CONFIGS["ryujinx_install"]["paths"].items(),
                     )
                 ),
             )
         )
         console.print("Organized files.")
-        intersession_state["ryujinx_meta"] = metadata
+        INTERSESSION_STATE["ryujinx_meta"] = metadata
         console.print(
             "Noted installation.",
             f"Ryujinx installed to {INTERNAL_CONFIGS['ryujinx_install']['paths']['dist'].format(**metadata)}.",

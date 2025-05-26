@@ -1,20 +1,21 @@
 import io
-import json
 import pathlib
 import tarfile
-import typing
+from typing import Annotated, Any
 
+import sqlalchemy
 import typer
 
-from ryukit.app.__context__ import console
-from ryukit.app.save.__context__ import command
-from ryukit.libs import components, db
-from ryukit.libs.fs import File
+from ... import utils
+from ...app.save.__context__ import command, console
+from ...libs import components, db, paths
+
+__all__ = ["dump"]
 
 
 @command("dump")
-def _(
-    into: typing.Annotated[
+def dump(
+    into: Annotated[
         pathlib.Path, typer.Argument(help="Where to dump your buckets.")
     ] = pathlib.Path("saves.ryukitdmp"),
 ):
@@ -27,31 +28,32 @@ def _(
             "Collecting data...", spinner="dots2", spinner_style="none"
         ),
     ):
-        saves: list[db.models.RyujinxSave] = []
-        with db.connect() as conn:
-            for save in map(
-                lambda x: typing.cast(db.models.RyujinxSave, x),
+        with db.client() as client:
+            save_dicts: list[dict[str, Any]] = []
+            any(
                 map(
-                    dict,
-                    conn.execute(
-                        """
-                        SELECT
-                            *
-                        FROM
-                            ryujinx_saves;
-                        """
+                    lambda _: False,
+                    (
+                        (
+                            save_dicts.append(utils.model_to_dict(save)),
+                            (
+                                tar.add(
+                                    paths.SAVE_INSTANCE_DIR.format(id=save.id),
+                                    arcname=f"save{save.id}",
+                                )
+                                if pathlib.Path(
+                                    paths.SAVE_INSTANCE_DIR.format(id=save.id)
+                                ).exists()
+                                else None
+                            ),
+                        )
+                        for save in client.scalars(
+                            sqlalchemy.select(db.RyujinxSave)
+                        )
                     ),
-                ),
-            ):
-                saves.append(save)
-                if pathlib.Path(
-                    File.SAVE_INSTANCE_DIR.format(instance_id=save["id"])
-                ).exists():
-                    tar.add(
-                        File.SAVE_INSTANCE_DIR.format(instance_id=save["id"]),
-                        arcname=f"save{save["id"]}",
-                    )
-        with io.BytesIO(json.dumps(saves).encode()) as save_buffer:
+                )
+            )
+        with io.BytesIO(utils.json_dumps(save_dicts).encode()) as save_buffer:
             info = tar.tarinfo("index")
             info.size = len(save_buffer.getvalue())
             tar.addfile(info, save_buffer)

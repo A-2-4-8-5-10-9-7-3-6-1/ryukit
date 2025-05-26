@@ -1,6 +1,6 @@
 [project]
 name = "ryukit"
-version = "0.2.0"
+version = "0.2.1"
 description = "A CLI tool for managing Ryujinx."
 authors = [
   { name = "A-2-4-8-5-10-9-7-3-6-1", email = "112730580+A-2-4-8-5-10-9-7-3-6-1@users.noreply.github.com" },
@@ -8,12 +8,12 @@ authors = [
 license = { text = "MIT" }
 requires-python = ">=3.13,<3.14"
 dependencies = [
-  "requests (>=2.32.3,<3.0.0)",
-  "platformdirs (>=4.3.6,<5.0.0)",
   "rich (>=13.9.4,<14.0.0)",
   "typer (>=0.15.1,<0.16.0)",
   "jsonschema (>=4.23.0,<5.0.0)",
   "pyinstaller (>=6.13.0,<7.0.0)",
+  "requests (>=2.32.3,<3.0.0)",
+  "sqlalchemy (>=2.0.41,<3.0.0)",
 ]
 
 [tool.poetry.scripts]
@@ -24,6 +24,7 @@ pytest = "^8.3.4"
 isort = "^6.0.1"
 black = "^25.1.0"
 pyright = "^1.1.399"
+pytest-cov = "^6.1.1"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -32,3 +33,13 @@ build-backend = "poetry.core.masonry.api"
 [tool.black]
 line-length = 79
 skip-magic-trailing-comma = true
+
+[tool.isort]
+remove_redundant_aliases = true
+
+[tool.pyright]
+include = ["ryukit", "tests"]
+typeCheckingMode = "strict"
+
+[tool.coverage.run]
+source = ["ryukit"]

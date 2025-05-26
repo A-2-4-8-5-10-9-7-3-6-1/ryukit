@@ -1,22 +1,21 @@
 import shutil
-import typing
+from typing import Annotated
 
 import typer
 
-from ryukit.app.__context__ import console
-from ryukit.app.save.__context__ import command, parser
-from ryukit.libs import db
-from ryukit.libs.fs import File
+from ...app.save.__context__ import bucket, command, console
+from ...libs import paths
+
+__all__ = ["drop"]
 
 
 @command("drop")
-def _(
-    buckets: typing.Annotated[
+def drop(
+    buckets: Annotated[
         list[int],
         typer.Argument(
             help="The IDs of your to-be-deleted save buckets.",
             show_default=False,
-            parser=parser("bucket_id"),
         ),
     ],
 ):
@@ -26,21 +25,10 @@ def _(
     WARNING: There's no going back...
     """
 
-    question_marks = ", ".join("?" for _ in range(len(buckets)))
-    with db.connect() as conn:
-        conn.execute(
-            f"""
-            DELETE FROM 
-                ryujinx_saves
-            WHERE
-                id IN ({question_marks});
-            """,
-            buckets,
-        )
-    any(
-        shutil.rmtree(
-            File.SAVE_INSTANCE_DIR.format(instance_id=id_), ignore_errors=True
-        )
-        for id_ in buckets
-    )
-    console.print("Buckets deleted.")
+    for context in map(bucket, buckets):
+        with context as (client, save):
+            client.delete(save)
+            shutil.rmtree(
+                paths.SAVE_INSTANCE_DIR.format(id=save.id), ignore_errors=True
+            )
+            console.print(f"Deleted bucket '{save.id}'.")

@@ -1,21 +1,23 @@
-import typing
+from typing import Annotated
 
 import rich
 import rich.table
+import sqlalchemy
 import typer
 
-from ryukit.app.__context__ import console
-from ryukit.app.save.__context__ import command
-from ryukit.libs import components, db
-from ryukit.utils import calculator
+from ... import utils
+from ...app.save.__context__ import command, console
+from ...libs import components, db
+
+__all__ = ["ls"]
 
 
 @command("ls")
-def _(
-    wildcards: typing.Annotated[
+def ls(
+    wildcards: Annotated[
         bool, typer.Option(help="Use your own SQL wildcards for keywords.")
     ] = False,
-    filter_by: typing.Annotated[
+    filter_by: Annotated[
         list[str] | None,
         typer.Argument(
             show_default=False, help="A search term for the command."
@@ -38,41 +40,43 @@ def _(
         rich.table.Column("LAST USED"),
         rich.table.Column("SIZE", justify="center"),
     )
-    with db.connect() as conn:
+    with db.client() as client:
         any(
             table.add_row(
                 *map(
                     str,
                     (
-                        row["id"],
-                        row["label"],
-                        row["created"],
-                        row["updated"],
-                        row["last_used"] or "Never",
-                        f"{calculator.megabytes(row["size"]):.1f}MB",
-                    ),
-                )
-            )
-            for row in map(
-                lambda x: typing.cast(db.models.RyujinxSave, x),
-                map(
-                    dict,
-                    conn.execute(
-                        f"""
-                        SELECT
-                            *
-                        FROM
-                            ryujinx_saves
-                        WHERE
-                        {
-                            "true"
-                            if not filter_by
-                            else "AND ".join(f"""({"OR ".join(f"{key} LIKE '{pad}' || :t{i} || '{pad}'" for key in ["LOWER(label)", "created", "updated", "last_used"])})""" for i, _ in enumerate(filter_by))
-                        }
-                        """,
-                        {f"t{i}": word for i, word in enumerate(filter_by)},
+                        save.id,
+                        save.label,
+                        save.created,
+                        save.updated,
+                        save.last_used or "Never",
                     ),
                 ),
+                f"{utils.megabytes(save.size):.1f}MB",
+            )
+            for save in client.scalars(
+                sqlalchemy.select(db.RyujinxSave).where(
+                    sqlalchemy.and_(
+                        True,
+                        *(
+                            sqlalchemy.or_(
+                                *(
+                                    attr.like(f"'{pad}' || {word} || '{pad}'")
+                                    for attr in [
+                                        db.RyujinxSave.created,
+                                        db.RyujinxSave.updated,
+                                        db.RyujinxSave.last_used,
+                                        sqlalchemy.func.lower(
+                                            db.RyujinxSave.label
+                                        ),
+                                    ]
+                                )
+                            )
+                            for word in filter_by
+                        ),
+                    )
+                )
             )
         )
     console.print(table)

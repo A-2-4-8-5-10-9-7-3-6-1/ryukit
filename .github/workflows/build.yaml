@@ -1,0 +1,19 @@
+on:
+  push:
+    tags: [v*]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: snok/install-poetry@v1
+        with:
+          version: 2.1.1
+      - run: echo "C:\Users\runneradmin\.local\bin" >> $env:GITHUB_PATH
+      - run: poetry python install 3.13
+      - run: poetry install
+      - run: poetry run pyinstaller pyinstaller.spec
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ryukit.exe
+          path: dist/ryukit.exe

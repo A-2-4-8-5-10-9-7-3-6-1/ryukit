@@ -11,5 +11,6 @@
   },
   "isort.importStrategy": "fromEnvironment",
   "python.testing.pytestEnabled": true,
-  "black-formatter.path": ["python", "-m", "black"]
+  "black-formatter.path": ["python", "-m", "black"],
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
 }

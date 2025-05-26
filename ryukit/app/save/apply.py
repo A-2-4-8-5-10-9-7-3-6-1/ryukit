@@ -1,19 +1,22 @@
-import typing
+import datetime
+from typing import Annotated
 
 import typer
 
-from ryukit.app.__context__ import console
-from ryukit.app.save.__context__ import channel_save_bucket, command, parser
-from ryukit.libs import db
+from ...app.save.__context__ import (
+    bucket,
+    channel_save_bucket,
+    command,
+    console,
+)
+
+__all__ = ["apply"]
 
 
 @command("apply")
-def _(
-    bucket: typing.Annotated[
-        int,
-        typer.Argument(
-            help="ID of bucket to apply.", parser=parser("bucket_id")
-        ),
+def apply(
+    bucket_: Annotated[
+        int, typer.Argument(metavar="BUCKET", help="ID of bucket to apply.")
     ],
 ):
     """
@@ -22,17 +25,7 @@ def _(
     WARNING: This will overwrite files for Ryujinx. Unless certain, save your data.
     """
 
-    with db.connect() as conn:
-        channel_save_bucket(bucket, upstream=True)
-        conn.execute(
-            """
-            UPDATE
-                ryujinx_saves
-            SET
-                last_used = CURRENT_TIMESTAMP
-            WHERE
-                id = :id;
-            """,
-            {"id": bucket},
-        )
+    channel_save_bucket(bucket_, upstream=True)
+    with bucket(bucket_) as (_, save):
+        save.last_used = datetime.datetime.now(datetime.timezone.utc)
     console.print("Save applied.")

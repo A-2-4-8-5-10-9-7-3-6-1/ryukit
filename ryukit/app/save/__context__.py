@@ -1,15 +1,14 @@
-import collections
-import collections.abc
+import contextlib
 import pathlib
 import shutil
-import typing
+from collections.abc import Sequence
 
 import typer
 
 from ...libs import db
-from ..__context__ import INTERNAL_CONFIGS, app, console, intersession_state
+from ..__context__ import *
 
-__all__ = ["channel_save_bucket", "parser", "command"]
+__all__ = ["channel_save_bucket", "bucket", "command"]
 save = typer.Typer(name="save")
 command = save.command
 app.add_typer(save)
@@ -29,10 +28,10 @@ def channel_save_bucket(bucket_id: int, /, *, upstream: bool):
     :raises RuntimeError: If Ryujinx is not installed.
     """
 
-    def rotate[T](values: collections.abc.Sequence[T]):
+    def rotate[T](values: Sequence[T]):
         return (iter if upstream else reversed)(values)
 
-    if not intersession_state["ryujinx_meta"]:
+    if not INTERSESSION_STATE["ryujinx_meta"]:
         console.print(
             "[error]Couldn't detect a Ryujinx installation.",
             "└── Did you run `install_ryujinx`?",
@@ -46,7 +45,7 @@ def channel_save_bucket(bucket_id: int, /, *, upstream: bool):
             map(
                 lambda p: map(pathlib.Path, p),
                 (
-                    (x.format(instance_id=bucket_id), y)
+                    (x.format(id=bucket_id), y)
                     for x, y in INTERNAL_CONFIGS["save_buckets"][
                         "flow"
                     ].items()
@@ -61,32 +60,18 @@ def channel_save_bucket(bucket_id: int, /, *, upstream: bool):
         shutil.copytree(source, dest)
 
 
-def parser(type_: typing.Literal["bucket_id"], /):
+@contextlib.contextmanager
+def bucket(id_: int, /):
     """
-    Get input parser for type 'type_'.
+    Get a save bucket from an ID.
 
-    :param type_: The type of parser required.
-    :returns: A parser for the given type.
+    :param id_: The bucket's ID.
+    :raises typer.Exit: If the bucket doesn't exist.
     """
 
-    match type_:
-        case "bucket_id":
-
-            def parser(id_: str):
-                with db.connect() as conn:
-                    if not conn.execute(
-                        """
-                        SELECT
-                            COUNT(*)
-                        FROM
-                            ryujinx_saves
-                        WHERE
-                            id = :id;
-                        """,
-                        {"id": id_},
-                    ).fetchone()[0]:
-                        console.print(f"[error]No bucket with ID '{id_}'.")
-                        raise typer.Exit(1)
-                return id_
-
-            return parser
+    with db.client() as client:
+        save = client.get(db.RyujinxSave, {"id": id_})
+        if not save:
+            console.print(f"[error]No bucket with ID '{id_}'.")
+            raise typer.Exit(1)
+        yield client, save

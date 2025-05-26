@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "ryujinxInstallURL": {
+      "type": ["string", "null"],
+      "description": "HTTP link to Ryujinx resource. Ask an authority for an appropriate value."
+    }
+  },
+  "type": "object",
+  "required": ["ryujinxInstallURL"]
+}
