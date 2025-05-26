@@ -4,12 +4,13 @@ import datetime
 import functools
 import json
 import pathlib
+from collections.abc import Callable
 from typing import Any, Literal
 
 import sqlalchemy
 import sqlalchemy.orm
 
-__all__ = ["megabytes", "model_to_dict", "size", "json_dumps"]
+__all__ = ["megabytes", "model_to_dict", "size", "json_dumps", "use"]
 
 
 def megabytes(byte_total: int, /):
@@ -56,6 +57,11 @@ def serialize(obj: object):
     if isinstance(obj, datetime.datetime):
         return obj.isoformat()
     raise ValueError
+
+
+def use[R](func: Callable[..., R]):
+    """Immediately use a function."""
+    return func()
 
 
 json_dumps = functools.partial(json.dumps, default=serialize)

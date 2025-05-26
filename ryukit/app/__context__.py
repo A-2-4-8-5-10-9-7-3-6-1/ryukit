@@ -10,6 +10,7 @@ import rich
 import rich.theme
 import typer
 
+from .. import utils
 from ..libs import paths
 
 __all__ = [
@@ -42,7 +43,8 @@ class IntersessionState(TypedDict):
 INTERSESSION_STATE: IntersessionState = {"ryujinx_meta": {}}
 
 
-class InternalConfigsSpace:
+@utils.use
+def InternalConfigs():
     RyujinxInstall = TypedDict(
         "",
         {
@@ -51,12 +53,12 @@ class InternalConfigsSpace:
         },
     )
     SaveBuckets = TypedDict("", {"flow": dict[str, str]})
-    InternalConfigs = TypedDict(
+    return TypedDict(
         "", {"ryujinx_install": RyujinxInstall, "save_buckets": SaveBuckets}
     )
 
 
-INTERNAL_CONFIGS: InternalConfigsSpace.InternalConfigs = {
+INTERNAL_CONFIGS: InternalConfigs = {
     "ryujinx_install": {
         "sha256": "3e841a946595abc56c02409e165c62cb8e049963b54853dc551b2918e1f25d17",
         "paths": {
