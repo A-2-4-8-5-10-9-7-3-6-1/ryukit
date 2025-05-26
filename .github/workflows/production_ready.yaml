@@ -31,5 +31,5 @@ jobs:
       - run: poetry run pyinstaller pyinstaller.spec
       - uses: actions/upload-artifact@v4
         with:
-          name: ryukit.exe
+          name: ryukit
           path: dist/ryukit.exe
