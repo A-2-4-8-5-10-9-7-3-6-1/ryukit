@@ -42,7 +42,7 @@ def test_save_dump(seed: object):
         dump(dump_file)
         for part, path in [
             ("test", dump_file),
-            ("truth", str(importlib.resources.files("tests.data") / "saves")),
+            ("truth", str(importlib.resources.files("tests") / "saves")),
         ]:
             with tarfile.open(path) as tar:
                 tar.extractall(f"{dir}/{part}")
@@ -63,9 +63,7 @@ def test_save_restore(seed: object):
         with db.client() as client1:
             pathlib.Path(paths.DATABASE_FILE).unlink()
             restore(
-                pathlib.Path(
-                    str(importlib.resources.files("tests.data") / "saves")
-                )
+                pathlib.Path(str(importlib.resources.files("tests") / "saves"))
             )
             shutil.move(
                 pathlib.Path(paths.SAVE_INSTANCE_DIR).parent, f"{dir}/test"

@@ -1,6 +1,9 @@
 import datetime
 import importlib
 import importlib.resources
+import pathlib
+import shutil
+import tempfile
 from typing import Any, cast
 
 from pytest import mark
@@ -21,11 +24,34 @@ def test_megabytes(byte_total: int, expected: float):
 @mark.parametrize(
     "obj, sizing, expected",
     [
-        (importlib.resources.files("tests") / "data", "dir", 48241082),
-        ("EMPTY", "dir", 0),
+        ([1, [2], [1, [5]]], "dir", 62000010),
+        ([9], "dir", 62000010),
+        ([], "dir", 0),
     ],
 )
-def test_size(obj: object, sizing: str, expected: int):
+def test_size(obj: object, sizing: str, expected: int) -> None:
+    if sizing == "dir" and isinstance(obj, list):
+        with tempfile.TemporaryDirectory() as dir:
+            instructions = [(cast(list[Any], obj), dir)]
+            i = -1
+            while instructions:
+                items, path = instructions.pop()
+                while items:
+                    item = items.pop()
+                    i += 1
+                    if isinstance(item, int):
+                        for _ in range(item):
+                            shutil.copy(
+                                str(
+                                    importlib.resources.files("tests") / "data"
+                                ),
+                                f"{path}/{i}",
+                            )
+                            i += 1
+                        continue
+                    pathlib.Path(f"{path}/{i}").mkdir()
+                    instructions.append((item, f"{path}/{i}"))
+            return test_size(dir, "dir", expected)
     assert (
         utils.size(obj, sizing=cast(Any, sizing)) == expected
     ), "Incorrect size calculation."

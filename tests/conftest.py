@@ -53,10 +53,7 @@ def seed():
                     (
                         pathlib.Path(path).mkdir(parents=True, exist_ok=True),
                         shutil.copy(
-                            str(
-                                importlib.resources.files("tests.data")
-                                / "data"
-                            ),
+                            str(importlib.resources.files("tests") / "data"),
                             path,
                         ),
                     )
@@ -72,7 +69,6 @@ def seed():
             )
         )
         shutil.copy(
-            str(importlib.resources.files("tests.data") / "db"),
-            paths.DATABASE_FILE,
+            str(importlib.resources.files("tests") / "db"), paths.DATABASE_FILE
         )
         yield
