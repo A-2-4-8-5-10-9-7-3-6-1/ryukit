@@ -1,0 +1,24 @@
+on:
+  pull_request:
+    types: [opened]
+    branches:
+      - main
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
+      - run: poetry run pytest
+        env:
+          RYUKIT_INSTALL_URL: ${{ secrets.RYUKIT_INSTALL_URL }}
+  check_formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
+      - uses: |
+          poetry run isort --check-only . &
+          poetry run black --check . &
+          npx prettier --check . &
+          wait
