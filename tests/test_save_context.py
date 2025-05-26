@@ -1,3 +1,4 @@
+import typer
 from pytest import mark
 
 from ryukit import utils as ryuitls
@@ -24,7 +25,6 @@ def test_bucket(seed: object, id_: int, valid: bool):
             assert (
                 client.get(db.RyujinxSave, id_) == save
             ), "Incorrect bucket returned."
-    except Exception:
+        assert valid, "Successfully fetched invalid bucket."
+    except typer.Exit:
         assert not valid, "Failed to fetch a valid bucket."
-        return
-    assert valid, "Successfully fetched invalid bucket."

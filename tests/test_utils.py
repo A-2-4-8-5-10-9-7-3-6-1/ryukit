@@ -82,3 +82,26 @@ def test_model_to_dict(save_args: dict[str, Any]):
     assert (
         utils.model_to_dict(db.RyujinxSave(**save_args)) == save_args
     ), "Incorrect model-dict mapping."
+
+
+@mark.parametrize("data", [5, {"KEY": "VALUE"}, []])
+def test_use(data: object):
+    assert utils.use(lambda: data) == data, "Unexpected output."
+
+
+@mark.parametrize(
+    "data, expected",
+    [
+        (
+            {"date": datetime.datetime(1, 1, 1, 1)},
+            '{"date": "0001-01-01T01:00:00"}',
+        ),
+        ([1, 2, {"KEY": "VALUE"}], '[1, 2, {"KEY": "VALUE"}]'),
+        ({"set": {1, 2}}, None),
+    ],
+)
+def test_json_dumps(data: object, expected: str | None):
+    try:
+        assert utils.json_dumps(data) == expected, "Unexpected output."
+    except ValueError:
+        assert expected is None, "Error raised for valid input."

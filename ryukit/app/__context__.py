@@ -36,15 +36,14 @@ console = rich.console.Console(
 )
 
 
-class IntersessionState(TypedDict):
-    ryujinx_meta: dict[str, Any]
-
-
-INTERSESSION_STATE: IntersessionState = {"ryujinx_meta": {}}
+@utils.use
+def INTERSESSION_STATE():
+    IntersessionState = TypedDict("", {"ryujinx_meta": dict[str, Any]})
+    return cast(IntersessionState, {"ryujinx_meta": {}})
 
 
 @utils.use
-def InternalConfigs():
+def INTERNAL_CONFIGS():
     RyujinxInstall = TypedDict(
         "",
         {
@@ -53,28 +52,29 @@ def InternalConfigs():
         },
     )
     SaveBuckets = TypedDict("", {"flow": dict[str, str]})
-    return TypedDict(
+    InternalConfigs = TypedDict(
         "", {"ryujinx_install": RyujinxInstall, "save_buckets": SaveBuckets}
     )
-
-
-INTERNAL_CONFIGS: InternalConfigs = {
-    "ryujinx_install": {
-        "sha256": "3e841a946595abc56c02409e165c62cb8e049963b54853dc551b2918e1f25d17",
-        "paths": {
-            "dist": paths.RYUJINX_DIST_DIR,
-            "registered": f"{paths.RYUJINX_DATA_DIR}/bis/system/Contents/registered",
-            "keys": f"{paths.RYUJINX_DATA_DIR}/system",
+    return cast(
+        InternalConfigs,
+        {
+            "ryujinx_install": {
+                "sha256": "3e841a946595abc56c02409e165c62cb8e049963b54853dc551b2918e1f25d17",
+                "paths": {
+                    "dist": paths.RYUJINX_DIST_DIR,
+                    "registered": f"{paths.RYUJINX_DATA_DIR}/bis/system/Contents/registered",
+                    "keys": f"{paths.RYUJINX_DATA_DIR}/system",
+                },
+            },
+            "save_buckets": {
+                "flow": {
+                    paths.SAVE_INSTANCE_META: f"{paths.RYUJINX_DATA_DIR}/bis/user/saveMeta",
+                    paths.SAVE_INSTANCE_USER_DATA: f"{paths.RYUJINX_DATA_DIR}/bis/user/save",
+                    paths.SAVE_INSTANCE_SYSTEM_DATA: f"{paths.RYUJINX_DATA_DIR}/bis/system/save",
+                }
+            },
         },
-    },
-    "save_buckets": {
-        "flow": {
-            paths.SAVE_INSTANCE_META: f"{paths.RYUJINX_DATA_DIR}/bis/user/saveMeta",
-            paths.SAVE_INSTANCE_USER_DATA: f"{paths.RYUJINX_DATA_DIR}/bis/user/save",
-            paths.SAVE_INSTANCE_SYSTEM_DATA: f"{paths.RYUJINX_DATA_DIR}/bis/system/save",
-        }
-    },
-}
+    )
 
 
 @app.callback(no_args_is_help=True, invoke_without_command=True)
