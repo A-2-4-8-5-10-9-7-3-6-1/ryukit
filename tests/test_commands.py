@@ -9,6 +9,7 @@ import tempfile
 from typing import cast
 
 import sqlalchemy
+import typer
 from pytest import mark
 
 from ryukit import utils as ryutils
@@ -113,10 +114,9 @@ def test_install_ryujinx(url: str):
     USER_CONFIGS["ryujinxInstallURL"] = os.environ.get(url, url)
     try:
         install_ryujinx()
-    except Exception:
+        assert url == "RYUKIT_INSTALL_URL", "Install passed for invalid URL."
+    except typer.Exit:
         assert url != "RYUKIT_INSTALL_URL", "Install failed for valid URL."
-        return
-    assert url == "RYUKIT_INSTALL_URL", "Install passed for invalid URL."
 
 
 @mark.parametrize("label", [None, "LABELLED"])

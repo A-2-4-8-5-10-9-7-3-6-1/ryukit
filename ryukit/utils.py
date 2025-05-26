@@ -53,15 +53,17 @@ def size(obj: Any, /, *, sizing: Literal["dir"]):
             )
 
 
-def serialize(obj: object):
-    if isinstance(obj, datetime.datetime):
-        return obj.isoformat()
-    raise ValueError
-
-
 def use[R](func: Callable[..., R]):
     """Immediately use a function."""
+
     return func()
 
 
-json_dumps = functools.partial(json.dumps, default=serialize)
+@use
+def json_dumps():
+    def serialize(obj: object):
+        if isinstance(obj, datetime.datetime):
+            return obj.isoformat()
+        raise ValueError
+
+    return functools.partial(json.dumps, default=serialize)
