@@ -1,0 +1,21 @@
+on:
+  push:
+    branches-ignore:
+      - main
+jobs:
+  check_formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: snok/install-poetry@v1
+        with:
+          version: 2.1.1
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 24
+      - run: poetry python install 3.13
+      - run: poetry install
+      - run: npm install
+      - run: poetry run isort --check-only .
+      - run: poetry run black --check .
+      - run: npx prettier --check .

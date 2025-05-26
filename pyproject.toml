@@ -36,6 +36,7 @@ skip-magic-trailing-comma = true
 
 [tool.isort]
 remove_redundant_aliases = true
+profile = "black"
 
 [tool.pyright]
 include = ["ryukit", "tests"]
