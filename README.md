@@ -5,7 +5,7 @@
 
 ## Installation
 
-Download an executable from the
+Downloa d an executable from the
 [releases section](https://github.com/A-2-4-8-5-10-9-7-3-6-1/ryukit/releases).
 Once installed, assuming you have the executable in your PATH variable, use it
 like:
