@@ -5,7 +5,4 @@ services:
     image: ryukit/development
     volumes:
       - .:/project
-      - /tmp/.X11-unix:/tmp/.X11-unix
-    environment:
-      - DISPLAY=${DISPLAY}
-    command: ["-c", "bin/configure_wine && tail -f /dev/null"]
+    command: ["-c", "tail -f /dev/null"]
