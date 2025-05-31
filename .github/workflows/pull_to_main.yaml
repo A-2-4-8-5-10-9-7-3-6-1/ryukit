@@ -17,8 +17,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
-      - run: |
-          poetry run isort --check-only . &
-          poetry run black --check . &
-          npx prettier --check . &
-          wait
+      - run: poetry run isort --check-only .
+      - run: poetry run black --check .
+      - run: npx prettier --check .
