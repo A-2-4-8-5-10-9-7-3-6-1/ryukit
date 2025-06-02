@@ -23,6 +23,4 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: ryukit
-      - run: |
-          Expand-Archive -Path ryukit.zip -DestinationPath .
-          .\ryukit.exe
+      - run: .\ryukit.exe
