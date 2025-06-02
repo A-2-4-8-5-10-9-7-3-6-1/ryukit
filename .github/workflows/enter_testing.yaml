@@ -1,7 +1,7 @@
 on:
   workflow_dispatch:
 jobs:
-  it_builds:
+  it_builds_and_runs:
     environment: Testing
     runs-on: windows-latest
     steps:
@@ -12,13 +12,4 @@ jobs:
         with:
           name: ryukit
           path: dist/ryukit.exe
-  it_runs:
-    environment: Testing
-    runs-on: windows-latest
-    needs: it_builds
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v4
-        with:
-          name: ryukit
-      - run: .\ryukit.exe
+      - run: .\dist\ryukit.exe
