@@ -4,7 +4,7 @@ on:
     branches:
       - main
 jobs:
-  test:
+  it_passes_tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -12,11 +12,12 @@ jobs:
       - run: poetry run pytest
         env:
           RYUKIT_INSTALL_URL: ${{ secrets.RYUKIT_INSTALL_URL }}
-  check_formatting:
+  its_formatted:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
-      - run: poetry run isort --check-only .
-      - run: poetry run black --check .
-      - run: npx prettier --check .
+      - run: |
+          poetry run isort --check-only .
+          poetry run black --check .
+          npx prettier --check .
