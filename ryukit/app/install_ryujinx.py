@@ -17,13 +17,7 @@ import rich.table
 import typer
 
 from .. import utils
-from ..app.__context__ import (
-    INTERNAL_CONFIGS,
-    INTERSESSION_STATE,
-    USER_CONFIGS,
-    command,
-    console,
-)
+from ..app.__context__ import INTERNAL_CONFIGS, USER_CONFIGS, command, console
 from ..libs import components
 
 __all__ = ["install_ryujinx"]
@@ -144,7 +138,6 @@ def install_ryujinx():
             )
         )
         console.print("Organized files.")
-        INTERSESSION_STATE["ryujinx_meta"] = metadata
         console.print(
             "Noted installation.",
             f"Ryujinx installed to {INTERNAL_CONFIGS['ryujinx_install']['paths']['dist'].format(**metadata)}.",

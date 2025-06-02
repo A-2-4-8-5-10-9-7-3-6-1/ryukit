@@ -1,3 +1,4 @@
+import contextlib
 import importlib
 import importlib.metadata
 import importlib.resources
@@ -11,17 +12,17 @@ import rich.theme
 import typer
 
 from .. import utils
-from ..libs import paths
+from ..libs import db, paths
 
 __all__ = [
     "USER_CONFIGS",
     "INTERNAL_CONFIGS",
-    "INTERSESSION_STATE",
     "command",
     "app",
     "console",
+    "bucket",
 ]
-app = typer.Typer(rich_markup_mode=None)
+app = typer.Typer(rich_markup_mode="rich")
 USER_CONFIGS: dict[str, Any] = (
     json.loads(pathlib.Path(paths.CONFIG_FILE).read_bytes())
     if pathlib.Path(paths.CONFIG_FILE).exists()
@@ -34,12 +35,6 @@ command = app.command
 console = rich.console.Console(
     theme=rich.theme.Theme({"error": "red"}), highlight=False
 )
-
-
-@utils.use
-def INTERSESSION_STATE():
-    IntersessionState = TypedDict("", {"ryujinx_meta": dict[str, Any]})
-    return cast(IntersessionState, {"ryujinx_meta": {}})
 
 
 @utils.use
@@ -77,6 +72,23 @@ def INTERNAL_CONFIGS():
     )
 
 
+@contextlib.contextmanager
+def bucket(id_: int, /):
+    """
+    Get a save bucket from an ID.
+
+    :param id_: The bucket's ID.
+    :raises typer.Exit: If the bucket doesn't exist.
+    """
+
+    with db.client() as client:
+        save = client.get(db.RyujinxSave, {"id": id_})
+        if not save:
+            console.print(f"[error]No bucket with ID '{id_}'.")
+            raise typer.Exit(1)
+        yield client, save
+
+
 @app.callback(no_args_is_help=True, invoke_without_command=True)
 def _(
     version: Annotated[
@@ -103,11 +115,7 @@ def _(
             sep="\n",
         )
         raise typer.Exit(1)
-    INTERSESSION_STATE.update(
-        json.loads(pathlib.Path(paths.STATE_FILE).read_bytes())
-        if pathlib.Path(paths.STATE_FILE).exists()
-        else {}
-    )
+    pathlib.Path(paths.DATABASE_FILE).parent.mkdir(exist_ok=True, parents=True)
     for do, command in [
         (
             version,
