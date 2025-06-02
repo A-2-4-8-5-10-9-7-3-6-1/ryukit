@@ -1,0 +1,11 @@
+description: Build executable.
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/setup
+    - run: poetry run pyinstaller pyinstaller.spec
+      shell: bash
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ryukit
+        path: dist/ryukit.exe
