@@ -1,7 +1,5 @@
 on:
-  push:
-    tags:
-      - test*
+  workflow_dispatch:
 jobs:
   it_builds:
     environment: Testing
