@@ -6,7 +6,7 @@ import tempfile
 
 from pytest import fixture
 
-from ryukit.app.__context__ import INTERNAL_CONFIGS, INTERSESSION_STATE
+from ryukit.app.__context__ import INTERNAL_CONFIGS
 from ryukit.libs import db, paths
 
 __all__ = ["seed"]
@@ -22,14 +22,12 @@ def seed():
             f"{paths.SAVE_INSTANCE_DIR}/registered"
         )
         paths.SAVE_INSTANCE_USER_DATA = f"{paths.SAVE_INSTANCE_DIR}/user"
-        paths.STATE_FILE = f"{dir}/state"
         paths.RYUJINX_DIST_DIR = f"{dir}/ryujinx/dist"
         paths.RYUJINX_DATA_DIR = f"{dir}/ryujinx/data"
         paths.DATABASE_FILE = f"{dir}/db"
         db.CLIENT_CONFIGS.update(
             {"url": f"sqlite:///{paths.DATABASE_FILE}", "echo": True}
         )
-        INTERSESSION_STATE.update({"ryujinx_meta": {"KEY": "VALUE"}})
         INTERNAL_CONFIGS["ryujinx_install"]["paths"].update(
             {
                 "dist": paths.RYUJINX_DIST_DIR,

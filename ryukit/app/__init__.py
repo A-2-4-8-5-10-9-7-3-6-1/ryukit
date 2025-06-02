@@ -5,7 +5,7 @@ import runpy
 
 from .. import utils
 from ..libs import paths
-from .__context__ import INTERSESSION_STATE, USER_CONFIGS, app
+from .__context__ import USER_CONFIGS, app
 
 __all__ = ["start"]
 any(
@@ -23,6 +23,7 @@ any(
                 "ryukit.app.save.pull",
                 "ryukit.app.save.relabel",
                 "ryukit.app.save.restore",
+                "ryukit.app.track",
             ],
         ),
     )
@@ -33,23 +34,9 @@ def start():
     try:
         app()
     finally:
-        any(
-            map(
-                lambda _: False,
-                (
-                    (
-                        pathlib.Path(file).parent.mkdir(
-                            parents=True, exist_ok=True
-                        ),
-                        pathlib.Path(file).write_text(
-                            utils.json_dumps(options, indent=2)
-                        ),
-                    )
-                    for file, options in [
-                        (paths.CONFIG_FILE, USER_CONFIGS),
-                        (paths.STATE_FILE, INTERSESSION_STATE),
-                    ]
-                    if options
-                ),
-            )
+        pathlib.Path(paths.CONFIG_FILE).parent.mkdir(
+            parents=True, exist_ok=True
+        )
+        pathlib.Path(paths.CONFIG_FILE).write_text(
+            utils.json_dumps(USER_CONFIGS, indent=2)
         )

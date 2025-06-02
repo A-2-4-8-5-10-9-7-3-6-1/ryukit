@@ -11,7 +11,6 @@ __all__ = [
     "SAVE_INSTANCE_META",
     "SAVE_INSTANCE_SYSTEM_DATA",
     "SAVE_INSTANCE_USER_DATA",
-    "STATE_FILE",
     "RYUJINX_DIST_DIR",
     "RYUJINX_DATA_DIR",
 ]
@@ -23,9 +22,8 @@ SAVE_INSTANCE_DIR = f"{platformdirs.user_data_dir("RyuKit", appauthor=False, roa
 SAVE_INSTANCE_META = f"{SAVE_INSTANCE_DIR}/meta"
 SAVE_INSTANCE_SYSTEM_DATA = f"{SAVE_INSTANCE_DIR}/registered"
 SAVE_INSTANCE_USER_DATA = f"{SAVE_INSTANCE_DIR}/user"
-STATE_FILE = f"{platformdirs.user_data_dir("RyuKit", appauthor=False, roaming=True)}/state"
 RYUJINX_DIST_DIR = platformdirs.user_data_dir(
-    "Ryujinx-{appVersion}-{targetSystem}", appauthor=False
+    "Ryujinx-1.1.1393-win_x64", appauthor=False
 )
 RYUJINX_DATA_DIR = platformdirs.user_data_dir(
     "Ryujinx", appauthor=False, roaming=True

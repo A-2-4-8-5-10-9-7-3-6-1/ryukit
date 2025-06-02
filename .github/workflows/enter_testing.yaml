@@ -1,10 +1,10 @@
 on:
   push:
     tags:
-      - v*
+      - test*
 jobs:
   builds:
-    environment: Production
+    environment: Testing
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
