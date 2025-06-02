@@ -1,6 +1,6 @@
 [project]
 name = "ryukit"
-version = "0.2.1"
+version = "0.3.0"
 description = "A CLI tool for managing Ryujinx."
 authors = [
   { name = "A-2-4-8-5-10-9-7-3-6-1", email = "112730580+A-2-4-8-5-10-9-7-3-6-1@users.noreply.github.com" },
