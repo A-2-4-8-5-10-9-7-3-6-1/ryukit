@@ -1,6 +1,6 @@
-description: "Install Poetry-and-NodeJS dependencies."
+description: Install project dependencies.
 runs:
-  using: "composite"
+  using: composite
   steps:
     - uses: snok/install-poetry@v1
       with:

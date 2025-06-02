@@ -7,4 +7,4 @@ build
 dist
 .coverage*
 
-!bin/*
+!.github/**
