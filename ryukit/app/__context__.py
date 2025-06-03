@@ -115,7 +115,10 @@ def _(
             sep="\n",
         )
         raise typer.Exit(1)
-    pathlib.Path(paths.DATABASE_FILE).parent.mkdir(exist_ok=True, parents=True)
+    any(
+        pathlib.Path(path).parent.mkdir(exist_ok=True, parents=True)
+        for path in [paths.TRACKER_FILE, paths.DATABASE_FILE]
+    )
     for do, command in [
         (
             version,

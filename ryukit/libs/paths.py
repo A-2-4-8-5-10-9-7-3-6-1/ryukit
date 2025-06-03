@@ -13,6 +13,7 @@ __all__ = [
     "SAVE_INSTANCE_USER_DATA",
     "RYUJINX_DIST_DIR",
     "RYUJINX_DATA_DIR",
+    "TRACKER_FILE",
 ]
 CONFIG_FILE = f"{pathlib.Path.home()}/ryukitconfig.json"
 DATABASE_FILE = (
@@ -27,4 +28,7 @@ RYUJINX_DIST_DIR = platformdirs.user_data_dir(
 )
 RYUJINX_DATA_DIR = platformdirs.user_data_dir(
     "Ryujinx", appauthor=False, roaming=True
+)
+TRACKER_FILE = (
+    f"{platformdirs.user_cache_dir(appname="RyuKit", appauthor=False)}/tracker"
 )

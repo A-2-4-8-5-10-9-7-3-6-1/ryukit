@@ -1,92 +1,146 @@
-import datetime
+import importlib
+import importlib.resources
+import json
+import pathlib
+import subprocess
+import sys
 import time
-from typing import Annotated, cast
+from typing import Annotated, TypedDict, cast
 
 import psutil
 import typer
 
 from .. import utils
-from ..libs import components
-from .__context__ import INTERNAL_CONFIGS, bucket, command, console
+from ..libs import components, paths
+from .__context__ import bucket, command, console
 from .save.pull import pull
 
-__all__ = ["track"]
+__all__ = ["track", "Tracker", "TRACK_FREQUENCY"]
+
+TRACK_FREQUENCY = 0.2
+
+
+class Tracker(TypedDict):
+    pid: int
+    runtime: float
+    saveDiff: int
+    bucket: int
 
 
 @command("track")
 def track(
     into: Annotated[
-        int,
+        int | None,
         typer.Argument(
             help="The save bucket to track into.", show_default=False
         ),
-    ],
+    ] = None,
+    status: Annotated[
+        bool,
+        typer.Option(
+            "--status",
+            help="Show tracking status and exit.",
+            show_default=False,
+        ),
+    ] = False,
+    reset: Annotated[
+        bool,
+        typer.Option("--reset", help="Reset the tracker.", show_default=False),
+    ] = False,
 ):
     """
     Monitor a Ryujinx play session and save changes into a bucket.
 
-    WARNING
-    -------
-    * This will surely invoke the save-pull command on whichever bucket 'into' points to.
-    * Avoid running multiple Ryujinx processes when using this command.
+    WARNING: On success, this will surely invoke the save-pull command on whichever bucket 'into' points to.
     """
 
-    try:
-        process = next(
-            filter(
-                lambda process: process.name() == "Ryujinx.exe"
-                and process.status() != psutil.STATUS_ZOMBIE,
-                psutil.process_iter(["name", "pid", "create_time", "status"]),
-            )
+    def load_tracker():
+        tracker_container.clear()
+        tracker_container.append(
+            json.loads(pathlib.Path(paths.TRACKER_FILE).read_bytes())
         )
-    except:
-        console.print(
-            "[error]Couldn't find an active Ryujinx process.",
-            "└── Is Ryujinx running?",
-            sep="\n",
+
+    def tracker_active():
+        pid = [*tracker_container, {"pid": -1}][0]["pid"]
+        return (
+            psutil.pid_exists(pid)
+            and psutil.Process(pid).status() != psutil.STATUS_ZOMBIE
         )
+
+    if not any([into is not None, status, reset]):
+        console.print("[error]Missing argument for INTO.")
+        raise typer.Exit()
+    tracker_container: list[Tracker] = []
+    if pathlib.Path(paths.TRACKER_FILE).exists():
+        load_tracker()
+    if not tracker_active() and reset:
+        console.print("[error]Tracker is inactive.")
         raise typer.Exit(1)
-    with bucket(into) as (_, save):
-        initials = {
-            "time": datetime.datetime.fromtimestamp(process.create_time()),
-            "size": save.size,
-        }
-    console.print(f"Monitoring Ryujinx through process '{process.pid}'.")
-    status = "\n".join(
-        [
-            "",
-            ". playtime: {playtime}",
-            ". session diff: {sign}{session_diff:.1f}MB[/]",
-            "",
-        ]
-    )
-    try:
+    if tracker_active() and into is not None:
+        console.print("[error]Tracker is already active.")
+        raise typer.Exit(1)
+    if reset:
+        psutil.Process(tracker_container[0]["pid"]).terminate()
+        with utils.capture_out():
+            pull(tracker_container[0]["bucket"])
+        return console.print(
+            f"Changes written to save bucket '{tracker_container[0]['bucket']}'."
+        )
+    if status:
+        display = "\n".join(
+            [
+                ". Writing to bucket with ID: {bucket}",
+                ". Save diff: {sign}{saveDiff}MB[/]",
+                ". Lifetime: {lifetime:.2f}-minute",
+                ". State: {state}",
+            ]
+        )
         with components.Live(console=console) as live:
-            while (
-                psutil.pid_exists(process.pid)
-                and process.status() != psutil.STATUS_ZOMBIE
-            ):
-                size_diff = sum(
-                    utils.size(path, sizing="dir")
-                    for path in INTERNAL_CONFIGS["save_buckets"][
-                        "flow"
-                    ].values()
-                ) - cast(int, initials["size"])
+            while True:
                 live.update(
-                    status.format(
-                        playtime=str(
-                            datetime.datetime.now()
-                            - cast(datetime.datetime, initials["time"])
-                        ).split(".")[0],
-                        session_diff=utils.megabytes(size_diff),
-                        sign="[green]" if size_diff < 0 else "[red]+",
+                    display.format(
+                        **tracker_container[0],
+                        lifetime=tracker_container[0]["runtime"] / 60,
+                        state="ACTIVE" if tracker_active() else "DORMANT",
+                        sign=(
+                            "[none]"
+                            if not tracker_container[0]["saveDiff"]
+                            else (
+                                "[green]+"
+                                if tracker_container[0]["saveDiff"] < 0
+                                else "[red]-"
+                            )
+                        ),
                     )
                 )
-                time.sleep(0.2)
-        console.print("Session terminated.")
-    except KeyboardInterrupt:
-        console.print("Tracking was forcefully stopped.")
-    finally:
-        console.print("Writing to bucket...")
-        with utils.capture_out():
-            pull(into)
+                time.sleep(TRACK_FREQUENCY)
+                previous = tracker_container[0]
+                try:  # risk of reloading whilst background process is writing.
+                    load_tracker()
+                except json.decoder.JSONDecodeError:
+                    tracker_container.append(previous)
+    into = cast(int, into)
+    with bucket(into) as (_, save):
+        pathlib.Path(paths.TRACKER_FILE).write_text(
+            utils.json_dumps(
+                {
+                    "bucket": into,
+                    "runtime": 0,
+                    "saveDiff": save.size,
+                    "pid": -1,
+                }
+            )
+        )
+    subprocess.Popen(
+        [
+            sys.executable,
+            str(importlib.resources.files("ryukit.app") / "__tracker__.py"),
+            str(into),
+        ],
+        start_new_session=True,
+    )
+    console.print(
+        "Tracker activated.",
+        "└── Use the '--status' option to monitor the tracker.",
+        sep="\n",
+    )
