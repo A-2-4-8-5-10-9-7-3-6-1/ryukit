@@ -31,27 +31,21 @@ def dump(
         with db.client() as client:
             save_dicts: list[dict[str, Any]] = []
             any(
-                map(
-                    lambda _: False,
+                (
+                    save_dicts.append(utils.model_to_dict(save)),
                     (
-                        (
-                            save_dicts.append(utils.model_to_dict(save)),
-                            (
-                                tar.add(
-                                    paths.SAVE_INSTANCE_DIR.format(id=save.id),
-                                    arcname=f"save{save.id}",
-                                )
-                                if pathlib.Path(
-                                    paths.SAVE_INSTANCE_DIR.format(id=save.id)
-                                ).exists()
-                                else None
-                            ),
+                        tar.add(
+                            paths.SAVE_INSTANCE_DIR.format(id=save.id),
+                            arcname=f"save{save.id}",
                         )
-                        for save in client.scalars(
-                            sqlalchemy.select(db.RyujinxSave)
-                        )
+                        if pathlib.Path(
+                            paths.SAVE_INSTANCE_DIR.format(id=save.id)
+                        ).exists()
+                        else None
                     ),
                 )
+                and False
+                for save in client.scalars(sqlalchemy.select(db.RyujinxSave))
             )
         with io.BytesIO(utils.json_dumps(save_dicts).encode()) as save_buffer:
             info = tar.tarinfo("index")

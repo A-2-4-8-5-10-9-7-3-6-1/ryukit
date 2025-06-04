@@ -40,7 +40,7 @@ def restore(
                 {
                     key: save_args[key]
                     and datetime.datetime.fromisoformat(save_args[key])
-                    for key in ("created", "updated", "last_used")
+                    for key in ["created", "updated", "last_used"]
                 }
             )
             save_path = pathlib.Path(temp_dir) / f"save{save_args.pop("id")}"

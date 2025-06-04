@@ -18,9 +18,14 @@ __all__ = [
     "model_to_dict",
     "size",
     "json_dumps",
-    "use",
     "capture_out",
+    "use",
+    "PATTERNS",
 ]
+
+PATTERNS: dict[
+    Literal["flag_callback", "run_one", "dict_decorator"], Callable[..., Any]
+] = {}
 
 
 @contextlib.contextmanager
@@ -79,6 +84,51 @@ def use[R](func: Callable[..., R]):
     """Immediately use a function."""
 
     return func()
+
+
+@use
+def _():
+    def dict_decorator[K, V: Callable[..., Any]](
+        dict_: dict[K, V], /, *, key: K
+    ):
+        def inner(func: V):
+            dict_[key] = func
+            return func
+
+        return inner
+
+    dict_decorator(PATTERNS, key="dict_decorator")(dict_decorator)
+
+
+@PATTERNS["dict_decorator"](PATTERNS, key="flag_callback")
+def _(func: Callable[[], None], /):
+    def inner(do: bool = True):
+        func() if do else None
+
+    return inner
+
+
+@PATTERNS["dict_decorator"](PATTERNS, key="run_one")
+@use
+def _():
+    used = {"$gateway": False}
+
+    def inner(key: str, /):
+        used.setdefault(key, False)
+
+        def innner[**P](func: Callable[P, None], /):
+            @functools.wraps(func)
+            def core(*args: P.args, **kwargs: P.kwargs):
+                if used[key]:
+                    return
+                func(*args, **kwargs)
+                used[key] = key == "$gateway" or used["$gateway"]
+
+            return core
+
+        return innner
+
+    return inner
 
 
 @use

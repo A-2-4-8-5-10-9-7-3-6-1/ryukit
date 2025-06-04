@@ -1,22 +1,25 @@
 import pathlib
 import shutil
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
+from typing import Any
 
 import typer
 
+from ... import utils
 from ..__context__ import *
 
 __all__ = [
-    "channel_save_bucket",
+    "HELPERS",
     "USER_CONFIGS",
     "INTERNAL_CONFIGS",
     "command",
     "console",
-    "bucket",
+    "PARSERS",
 ]
-save = typer.Typer(name="save", no_args_is_help=True)
+save = typer.Typer(name="save")
 command = save.command
 app.add_typer(save)
+HELPERS: dict[str, Callable[..., Any]] = {}
 
 
 @save.callback()
@@ -24,14 +27,8 @@ def _():
     """Manage save buckets."""
 
 
-def channel_save_bucket(bucket_id: int, /, *, upstream: bool):
-    """
-    Channel content between a save bucket and Ryujinx.
-
-    :param upstream: Set as true to channel from the bucket to Ryujinx, and as false to do the reverse.
-    :param bucket_id: ID belonging to the subject save bucket.
-    """
-
+@utils.PATTERNS["dict_decorator"](HELPERS, key="channel_save_bucket")
+def _(id_: int, /, *, upstream: bool):
     def rotate[T](values: Sequence[T]):
         return (iter if upstream else reversed)(values)
 
@@ -42,7 +39,7 @@ def channel_save_bucket(bucket_id: int, /, *, upstream: bool):
             map(
                 lambda p: map(pathlib.Path, p),
                 (
-                    (x.format(id=bucket_id), y)
+                    (x.format(id=id_), y)
                     for x, y in INTERNAL_CONFIGS["save_buckets"][
                         "flow"
                     ].items()

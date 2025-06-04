@@ -1,22 +1,29 @@
+import contextlib
 import datetime
 from typing import Annotated
 
+import sqlalchemy
+import sqlalchemy.orm
 import typer
 
-from ...app.save.__context__ import (
-    bucket,
-    channel_save_bucket,
-    command,
-    console,
-)
+from ryukit.libs import db
+
+from ...app.save.__context__ import HELPERS, PARSERS, command, console
 
 __all__ = ["apply"]
 
 
 @command("apply")
 def apply(
-    bucket_: Annotated[
-        int, typer.Argument(metavar="BUCKET", help="ID of bucket to apply.")
+    bucket: Annotated[
+        contextlib.AbstractContextManager[
+            tuple[sqlalchemy.orm.Session, db.RyujinxSave]
+        ],
+        typer.Argument(
+            help="ID of bucket to apply.",
+            parser=PARSERS["bucket"],
+            show_default=False,
+        ),
     ],
 ):
     """
@@ -25,7 +32,7 @@ def apply(
     WARNING: This will overwrite files for Ryujinx. Unless certain, save your data.
     """
 
-    channel_save_bucket(bucket_, upstream=True)
-    with bucket(bucket_) as (_, save):
+    with bucket as (_, save):
+        HELPERS["channel_save_bucket"](save.id, upstream=True)
         save.last_used = datetime.datetime.now(datetime.timezone.utc)
     console.print("Save applied.")

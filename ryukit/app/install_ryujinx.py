@@ -1,6 +1,5 @@
 import hashlib
 import io
-import json
 import math
 import pathlib
 import shutil
@@ -9,12 +8,12 @@ import zipfile
 from collections.abc import Callable
 from typing import Any, Iterable, TypedDict, cast
 
+import click
 import requests
 import rich
 import rich.live
 import rich.spinner
 import rich.table
-import typer
 
 from .. import utils
 from ..app.__context__ import INTERNAL_CONFIGS, USER_CONFIGS, command, console
@@ -34,12 +33,9 @@ def install_ryujinx():
     """
 
     if not USER_CONFIGS["ryujinxInstallURL"]:
-        console.print(
-            "[error]Command cannot be used without setting 'ryujinxInstallURL'.",
-            "└── Use '--help' for more information.",
-            sep="\n",
+        raise click.UsageError(
+            "Command cannot be used without setting 'ryujinxInstallURL'."
         )
-        raise typer.Exit(1)
     TaskTable = TypedDict(
         "", {"refresh": Callable[[], None], "render": None | rich.table.Table}
     )
@@ -102,44 +98,28 @@ def install_ryujinx():
                 ):
                     raise Exception
             except requests.ConnectionError:
-                console.print(
-                    "[error]Couldn't complete the installation due to network issues.",
-                    sep="\n",
+                raise click.ClickException(
+                    "Couldn't complete the installation due to connectivity problems."
                 )
-                raise typer.Exit(1)
             except Exception:
-                console.print(
-                    "[error]Unrecognized download content.",
-                    "└── Where'd you get your link?",
-                    sep="\n",
+                raise click.UsageError(
+                    "Unrecognized download content.\n"
+                    "└── Where'd you get your link?"
                 )
-                raise typer.Exit(1)
             console.print("Verified content.")
             with zipfile.ZipFile(buffer) as zip:
                 zip.extractall(temp_dir_str)
             console.print("Extracted files.")
-        metadata: dict[str, Any] = json.loads(
-            (temp_dir / "metadata.json").read_bytes()
-        )
         any(
-            map(
-                lambda _: False,
-                (
-                    shutil.copytree(
-                        temp_dir / key,
-                        pathlib.Path(path.format(**metadata)),
-                        dirs_exist_ok=True,
-                    )
-                    for key, path in cast(
-                        Iterable[tuple[str, Any]],
-                        INTERNAL_CONFIGS["ryujinx_install"]["paths"].items(),
-                    )
-                ),
+            shutil.copytree(temp_dir / key, path, dirs_exist_ok=True) and False
+            for key, path in cast(
+                Iterable[tuple[str, Any]],
+                INTERNAL_CONFIGS["ryujinx_install"]["paths"].items(),
             )
         )
         console.print("Organized files.")
         console.print(
             "Noted installation.",
-            f"Ryujinx installed to {INTERNAL_CONFIGS['ryujinx_install']['paths']['dist'].format(**metadata)}.",
+            f"Ryujinx installed to {INTERNAL_CONFIGS['ryujinx_install']['paths']['dist']}.",
             sep="\n",
         )
