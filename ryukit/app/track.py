@@ -2,143 +2,160 @@ import importlib
 import importlib.resources
 import json
 import pathlib
+import signal
 import subprocess
 import sys
 import time
-from typing import Annotated, TypedDict, cast
+from collections.abc import Callable
+from typing import Annotated, Literal, TypedDict, cast
 
+import click
 import psutil
 import typer
 
 from .. import utils
 from ..libs import components, paths
-from .__context__ import bucket, command, console
-from .save.pull import pull
+from .__context__ import command, console
 
-__all__ = ["track", "Tracker", "TRACK_FREQUENCY"]
-
-TRACK_FREQUENCY = 0.2
+__all__ = ["track", "Tracker", "FREQUENCIES", "CALLBACKS"]
+FREQUENCIES = {"process_checking": 0.3, "tracker_logging": 0.1}
+CALLBACKS: dict[Literal["halt", "status"], Callable[..., None]] = {}
 
 
 class Tracker(TypedDict):
-    pid: int
-    runtime: float
-    saveDiff: int
-    bucket: int
+    pid: int | None
+    runtime: float | None
+    diff: int | None
+    bucket: int | None
+
+
+TRACKER_CONTAINER: list[Tracker] = []
+
+
+def load_tracker():
+    TRACKER_CONTAINER.clear()
+    (
+        TRACKER_CONTAINER.append(
+            json.loads(pathlib.Path(paths.TRACKER_FILE).read_bytes())
+        )
+        if pathlib.Path(paths.TRACKER_FILE).exists()
+        else None
+    )
+
+
+def tracker_active():
+    return (
+        TRACKER_CONTAINER
+        and TRACKER_CONTAINER[0]["pid"] is not None
+        and psutil.pid_exists(TRACKER_CONTAINER[0]["pid"])
+        and psutil.Process(TRACKER_CONTAINER[0]["pid"]).status()
+        != psutil.STATUS_ZOMBIE
+    )
+
+
+@utils.PATTERNS["dict_decorator"](CALLBACKS, key="halt")
+@utils.PATTERNS["run_one"]("/track")
+@utils.PATTERNS["flag_callback"]
+def _():
+    if not tracker_active():
+        raise click.UsageError("Tracker is not active.")
+    psutil.Process(cast(int, TRACKER_CONTAINER[0]["pid"])).send_signal(
+        signal.SIGINT
+    )
+    with components.Status("Deactivating tracker...", spinner="dots2"):
+        while tracker_active():
+            time.sleep(FREQUENCIES["process_checking"])
+            load_tracker()
+
+
+@utils.PATTERNS["dict_decorator"](CALLBACKS, key="status")
+@utils.PATTERNS["run_one"]("/track")
+@utils.PATTERNS["flag_callback"]
+def _():
+    with components.Live(console=console) as live:
+        while True:
+            live.update(
+                "[reset]\n".join(
+                    [
+                        f". Writing to bucket with ID: {cast(int, TRACKER_CONTAINER[0]['bucket'])}",
+                        f". Diff: {'[green]-' if cast(int, TRACKER_CONTAINER[0]['diff']) < 0 else '[blue]+'}{abs(utils.megabytes(cast(int, TRACKER_CONTAINER[0]["diff"]))):.1f}MB",
+                        f". Lifetime: {cast(float, TRACKER_CONTAINER[0]["runtime"]) / 60:.2f} minute(s)",
+                        f". State: [green bold]ACTIVE",
+                    ]
+                    if tracker_active()
+                    else [
+                        ". Writing to bucket with ID: Unavailable",
+                        ". Diff: Unavailable",
+                        ". Lifetime: Unavailable",
+                        ". State: [yellow bold]RESTING",
+                    ]
+                )
+            )
+            time.sleep(FREQUENCIES["tracker_logging"])
+            try:  # risk of reloading whilst background process is writing.
+                load_tracker()
+            except json.decoder.JSONDecodeError:
+                pass
 
 
 @command("track")
+@utils.PATTERNS["run_one"]("/track")
 def track(
-    into: Annotated[
-        int | None,
+    use_bucket: Annotated[
+        int,
         typer.Argument(
             help="The save bucket to track into.", show_default=False
         ),
-    ] = None,
+    ],
     status: Annotated[
         bool,
         typer.Option(
             "--status",
             help="Show tracking status and exit.",
             show_default=False,
+            callback=CALLBACKS["status"],
         ),
     ] = False,
-    reset: Annotated[
+    halt: Annotated[
         bool,
-        typer.Option("--reset", help="Reset the tracker.", show_default=False),
+        typer.Option(
+            "--halt",
+            help="Reset the tracker.",
+            show_default=False,
+            callback=CALLBACKS["halt"],
+        ),
     ] = False,
 ):
     """
     Monitor a Ryujinx play session and save changes into a bucket.
 
-    WARNING: On success, this will surely invoke the save-pull command on whichever bucket 'into' points to.
+    NOTE: The tracker will stop immediately if there's no active Ryujinx process.
+    NOTE: A non-existent bucket ID will be created anew.
+    WARNING: The tracker is sure to invoke the save-pull command once awakened, this will overwrite any previous data.
     """
 
-    def load_tracker():
-        tracker_container.clear()
-        tracker_container.append(
-            json.loads(pathlib.Path(paths.TRACKER_FILE).read_bytes())
+    if use_bucket < 0:
+        raise typer.BadParameter("Must be non-negative integer.")
+    load_tracker()
+    if tracker_active():
+        raise typer.BadParameter("Tracker is already running.")
+    pathlib.Path(paths.TRACKER_FILE).write_text(
+        utils.json_dumps(
+            {"bucket": use_bucket, "runtime": None, "diff": None, "pid": None}
         )
-
-    def tracker_active():
-        pid = [*tracker_container, {"pid": -1}][0]["pid"]
-        return (
-            psutil.pid_exists(pid)
-            and psutil.Process(pid).status() != psutil.STATUS_ZOMBIE
-        )
-
-    if not any([into is not None, status, reset]):
-        console.print("[error]Missing argument for INTO.")
-        raise typer.Exit()
-    tracker_container: list[Tracker] = []
-    if pathlib.Path(paths.TRACKER_FILE).exists():
-        load_tracker()
-    if not tracker_active() and reset:
-        console.print("[error]Tracker is inactive.")
-        raise typer.Exit(1)
-    if tracker_active() and into is not None:
-        console.print("[error]Tracker is already active.")
-        raise typer.Exit(1)
-    if reset:
-        psutil.Process(tracker_container[0]["pid"]).terminate()
-        with utils.capture_out():
-            pull(tracker_container[0]["bucket"])
-        return console.print(
-            f"Changes written to save bucket '{tracker_container[0]['bucket']}'."
-        )
-    if status:
-        display = "\n".join(
-            [
-                ". Writing to bucket with ID: {bucket}",
-                ". Save diff: {sign}{saveDiff}MB[/]",
-                ". Lifetime: {lifetime:.2f}-minute",
-                ". State: {state}",
-            ]
-        )
-        with components.Live(console=console) as live:
-            while True:
-                live.update(
-                    display.format(
-                        **tracker_container[0],
-                        lifetime=tracker_container[0]["runtime"] / 60,
-                        state="ACTIVE" if tracker_active() else "DORMANT",
-                        sign=(
-                            "[none]"
-                            if not tracker_container[0]["saveDiff"]
-                            else (
-                                "[green]+"
-                                if tracker_container[0]["saveDiff"] < 0
-                                else "[red]-"
-                            )
-                        ),
-                    )
-                )
-                time.sleep(TRACK_FREQUENCY)
-                previous = tracker_container[0]
-                try:  # risk of reloading whilst background process is writing.
-                    load_tracker()
-                except json.decoder.JSONDecodeError:
-                    tracker_container.append(previous)
-    into = cast(int, into)
-    with bucket(into) as (_, save):
-        pathlib.Path(paths.TRACKER_FILE).write_text(
-            utils.json_dumps(
-                {
-                    "bucket": into,
-                    "runtime": 0,
-                    "saveDiff": save.size,
-                    "pid": -1,
-                }
-            )
-        )
+    )
+    load_tracker()
     subprocess.Popen(
         [
             sys.executable,
             str(importlib.resources.files("ryukit.app") / "__tracker__.py"),
-            str(into),
         ],
         start_new_session=True,
     )
+    with components.Status("Waking tracker...", spinner="dots2"):
+        while TRACKER_CONTAINER[0]["runtime"] is None:
+            time.sleep(FREQUENCIES["process_checking"])
+            load_tracker()
     console.print(
         "Tracker activated.",
         "└── Use the '--status' option to monitor the tracker.",

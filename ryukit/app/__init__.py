@@ -30,6 +30,7 @@ any(
 )
 
 
+@utils.PATTERNS["run_one"]("$gateway")
 def start():
     try:
         app()

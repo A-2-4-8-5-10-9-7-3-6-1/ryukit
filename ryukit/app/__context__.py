@@ -4,11 +4,12 @@ import importlib.metadata
 import importlib.resources
 import json
 import pathlib
+from collections.abc import Callable
 from typing import Annotated, Any, Literal, TypedDict, cast
 
+import click
 import jsonschema
 import rich
-import rich.theme
 import typer
 
 from .. import utils
@@ -20,9 +21,11 @@ __all__ = [
     "command",
     "app",
     "console",
-    "bucket",
+    "PARSERS",
 ]
 app = typer.Typer(rich_markup_mode="rich")
+command = app.command
+console = rich.console.Console(highlight=False)
 USER_CONFIGS: dict[str, Any] = (
     json.loads(pathlib.Path(paths.CONFIG_FILE).read_bytes())
     if pathlib.Path(paths.CONFIG_FILE).exists()
@@ -31,10 +34,8 @@ USER_CONFIGS: dict[str, Any] = (
         "ryujinxInstallURL": None,
     }
 )
-command = app.command
-console = rich.console.Console(
-    theme=rich.theme.Theme({"error": "red"}), highlight=False
-)
+PARSERS: dict[str, Callable[..., Any]] = {}
+CALLBACKS: dict[str, Callable[..., Any]] = {}
 
 
 @utils.use
@@ -72,27 +73,33 @@ def INTERNAL_CONFIGS():
     )
 
 
+@utils.PATTERNS["dict_decorator"](PARSERS, key="bucket")
 @contextlib.contextmanager
-def bucket(id_: int, /):
-    """
-    Get a save bucket from an ID.
-
-    :param id_: The bucket's ID.
-    :raises typer.Exit: If the bucket doesn't exist.
-    """
-
+def _(id_: int, /):
     with db.client() as client:
-        save = client.get(db.RyujinxSave, {"id": id_})
+        save = client.get(db.RyujinxSave, id_)
         if not save:
-            console.print(f"[error]No bucket with ID '{id_}'.")
-            raise typer.Exit(1)
+            raise typer.BadParameter("Unrecognized bucket ID.")
         yield client, save
 
 
-@app.callback(no_args_is_help=True, invoke_without_command=True)
+@utils.PATTERNS["dict_decorator"](CALLBACKS, key="version")
+@utils.PATTERNS["run_one"]("/")
+@utils.PATTERNS["flag_callback"]
+def _():
+    console.print(f"RyuKit version {importlib.metadata.version("ryukit")}")
+
+
+@app.callback()
+@utils.PATTERNS["run_one"]("/")
 def _(
     version: Annotated[
-        bool, typer.Option("--version", help="Show version and exit.")
+        bool,
+        typer.Option(
+            "--version",
+            help="Show version and exit.",
+            callback=CALLBACKS["version"],
+        ),
     ] = False,
 ):
     "A CLI tool for Ryujinx."
@@ -109,25 +116,11 @@ def _(
             ),
         ).validate(USER_CONFIGS)
     except jsonschema.ValidationError as e:
-        console.print(
-            f"[error]Malformed configuration file. {e.message}.",
-            f"└── Error originated from {e.json_path}.",
-            sep="\n",
+        raise click.UsageError(
+            f"Malformed configuration file, '{e.message}'.\n"
+            f"└── Origin: '{e.json_path}'."
         )
-        raise typer.Exit(1)
     any(
         pathlib.Path(path).parent.mkdir(exist_ok=True, parents=True)
         for path in [paths.TRACKER_FILE, paths.DATABASE_FILE]
     )
-    for do, command in [
-        (
-            version,
-            lambda: console.print(
-                f"RyuKit version {importlib.metadata.version("ryukit")}"
-            ),
-        )
-    ]:
-        if not do:
-            continue
-        command()
-        raise typer.Exit()
