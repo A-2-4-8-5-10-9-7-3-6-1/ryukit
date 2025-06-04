@@ -12,10 +12,10 @@ import tempfile
 import time
 from typing import cast
 
+import click
 import psutil
 import setproctitle
 import sqlalchemy
-import typer
 from pytest import mark
 
 from ryukit import utils as ryutils
@@ -200,7 +200,7 @@ def test_install_ryujinx(url: str):
     try:
         install_ryujinx()
         assert url == "RYUKIT_INSTALL_URL", "Install passed for invalid URL."
-    except typer.Exit:
+    except click.UsageError:
         assert url != "RYUKIT_INSTALL_URL", "Install failed for valid URL."
 
 
