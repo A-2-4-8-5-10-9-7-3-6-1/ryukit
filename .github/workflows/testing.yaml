@@ -26,4 +26,4 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/build
-      - run: .\dist\ryukit.exe
+      - run: .\dist\ryukit.exe --help
