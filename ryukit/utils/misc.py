@@ -1,38 +1,17 @@
 """System-wide utilities."""
 
-import contextlib
 import datetime
 import functools
-import io
 import json
 import pathlib
-import sys
-from collections.abc import Callable
 from typing import Any, Literal
 
 import sqlalchemy
 import sqlalchemy.orm
 
-__all__ = [
-    "megabytes",
-    "model_to_dict",
-    "size",
-    "json_dumps",
-    "use",
-    "capture_out",
-]
+from . import patterns
 
-
-@contextlib.contextmanager
-def capture_out():
-    """Capture sys.stdout output within context."""
-
-    register: list[str] = []
-    with io.StringIO() as buffer:
-        sys.stdout = buffer
-        yield register
-        sys.stdout = sys.__stdout__
-        register.append(buffer.getvalue())
+__all__ = ["megabytes", "model_to_dict", "size", "json_dumps"]
 
 
 def megabytes(byte_total: int, /):
@@ -75,13 +54,7 @@ def size(obj: Any, /, *, sizing: Literal["dir"]):
             )
 
 
-def use[R](func: Callable[..., R]):
-    """Immediately use a function."""
-
-    return func()
-
-
-@use
+@patterns.use
 def json_dumps():
     def serialize(obj: object):
         if isinstance(obj, datetime.datetime):

@@ -1,16 +1,22 @@
 from typing import Annotated
 
+import rich
+import sqlalchemy
+import sqlalchemy.orm
 import typer
 
-from ...app.save.__context__ import bucket, command, console
+from ...app.save.__context__ import command
+from ...libs import db
 
-__all__ = ["relabel"]
+__all__ = []
 
 
 @command("relabel")
-def relabel(
-    bucket_: Annotated[
-        int,
+def _(
+    bucket: Annotated[
+        contextlib.AbstractContextManager[
+            tuple[sqlalchemy.orm.Session, db.RyujinxSave]
+        ],
         typer.Argument(
             metavar="BUCKET",
             help="ID of bucket to update.",
@@ -28,4 +34,4 @@ def relabel(
 
     with bucket(bucket_) as (_, save):
         save.label = as_
-    console.print("Label updated.")
+    rich.print("Label updated.")

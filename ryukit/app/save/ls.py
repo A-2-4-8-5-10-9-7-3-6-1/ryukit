@@ -5,15 +5,15 @@ import rich.table
 import sqlalchemy
 import typer
 
-from ... import utils
-from ...app.save.__context__ import command, console
-from ...libs import components, db
+from ...app.save.__context__ import command
+from ...libs import db
+from ...utils import misc
 
-__all__ = ["ls"]
+__all__ = []
 
 
 @command("ls")
-def ls(
+def _(
     wildcards: Annotated[
         bool, typer.Option(help="Use your own SQL wildcards for keywords.")
     ] = False,
@@ -32,13 +32,14 @@ def ls(
 
     filter_by = filter_by or []
     pad = "" if wildcards else "%"
-    table = components.Table(
+    table = rich.table.Table(
         rich.table.Column("ID", justify="center"),
         rich.table.Column("LABEL"),
         rich.table.Column("CREATED"),
         rich.table.Column("UPDATED"),
         rich.table.Column("LAST USED"),
         rich.table.Column("SIZE", justify="center"),
+        box=rich.table.box.SIMPLE,
     )
     with db.client() as client:
         any(
@@ -53,7 +54,7 @@ def ls(
                         save.last_used or "Never",
                     ),
                 ),
-                f"{utils.megabytes(save.size):.1f}MB",
+                f"{misc.megabytes(save.size):.1f}MB",
             )
             for save in client.scalars(
                 sqlalchemy.select(db.RyujinxSave).where(
@@ -79,4 +80,4 @@ def ls(
                 )
             )
         )
-    console.print(table)
+    rich.print(table)

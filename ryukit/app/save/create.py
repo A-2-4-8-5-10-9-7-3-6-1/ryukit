@@ -1,16 +1,17 @@
 import datetime
 from typing import Annotated
 
+import rich
 import typer
 
-from ...app.save.__context__ import command, console
+from ...app.save.__context__ import command
 from ...libs import db
 
-__all__ = ["create"]
+__all__ = []
 
 
 @command("create")
-def create(
+def _(
     with_label: Annotated[
         str, typer.Argument(help="A label for your save.")
     ] = f"save{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}",
@@ -25,4 +26,4 @@ def create(
     with db.client() as client:
         client.add(save)
         client.flush()
-        console.print(f"Bucket {save.id} created with label '{with_label}'.")
+        rich.print(f"Bucket {save.id} created with label '{with_label}'.")

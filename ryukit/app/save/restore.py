@@ -6,16 +6,18 @@ import tarfile
 import tempfile
 from typing import Annotated, Any
 
+import rich
+import rich.status
 import typer
 
-from ...app.save.__context__ import command, console
-from ...libs import components, db, paths
+from ...app.save.__context__ import command
+from ...libs import db, paths
 
-__all__ = ["restore"]
+__all__ = []
 
 
 @command("restore")
-def restore(
+def _(
     dump: Annotated[
         pathlib.Path,
         typer.Argument(help="Dump file path.", exists=True, dir_okay=False),
@@ -24,7 +26,7 @@ def restore(
     """Restore saves from a dump file."""
 
     with (
-        components.Status(
+        rich.status.Status(
             "Restoring buckets...", spinner="dots2", spinner_style="none"
         ),
         tempfile.TemporaryDirectory() as temp_dir,
@@ -47,8 +49,8 @@ def restore(
             save = db.RyujinxSave(**save_args)
             client.add(save)
             client.flush([save])
-            console.print(f"Restored '{save_path.stem}' under ID '{save.id}'.")
+            rich.print(f"Restored '{save_path.stem}' under ID '{save.id}'.")
             if not save_path.exists():
                 continue
             shutil.move(save_path, paths.SAVE_INSTANCE_DIR.format(id=save.id))
-    console.print(f"Added '{len(saves)}' bucket(s).")
+    rich.print(f"Added '{len(saves)}' bucket(s).")

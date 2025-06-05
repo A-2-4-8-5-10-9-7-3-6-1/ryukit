@@ -8,8 +8,15 @@ from typing import Any, cast
 
 from pytest import mark
 
-from ryukit import utils
 from ryukit.libs import db
+from ryukit.utils import misc
+
+__all__ = [
+    "test_megabytes",
+    "test_size",
+    "test_model_to_dict",
+    "test_json_dumps",
+]
 
 
 @mark.parametrize(
@@ -17,7 +24,7 @@ from ryukit.libs import db
 )
 def test_megabytes(byte_total: int, expected: float):
     assert (
-        utils.megabytes(byte_total) == expected
+        misc.megabytes(byte_total) == expected
     ), "Incorrect byte-megabyte conversion."
 
 
@@ -53,7 +60,7 @@ def test_size(obj: object, sizing: str, expected: int) -> None:
                     instructions.append((item, f"{path}/{i}"))
             return test_size(dir, "dir", expected)
     assert (
-        utils.size(obj, sizing=cast(Any, sizing)) == expected
+        misc.size(obj, sizing=cast(Any, sizing)) == expected
     ), "Incorrect size calculation."
 
 
@@ -80,13 +87,8 @@ def test_size(obj: object, sizing: str, expected: int) -> None:
 )
 def test_model_to_dict(save_args: dict[str, Any]):
     assert (
-        utils.model_to_dict(db.RyujinxSave(**save_args)) == save_args
+        misc.model_to_dict(db.RyujinxSave(**save_args)) == save_args
     ), "Incorrect model-dict mapping."
-
-
-@mark.parametrize("data", [5, {"KEY": "VALUE"}, []])
-def test_use(data: object):
-    assert utils.use(lambda: data) == data, "Unexpected output."
 
 
 @mark.parametrize(
@@ -102,6 +104,6 @@ def test_use(data: object):
 )
 def test_json_dumps(data: object, expected: str | None):
     try:
-        assert utils.json_dumps(data) == expected, "Unexpected output."
+        assert misc.json_dumps(data) == expected, "Unexpected output."
     except ValueError:
         assert expected is None, "Error raised for valid input."

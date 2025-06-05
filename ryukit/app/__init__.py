@@ -1,11 +1,8 @@
 """App implementation."""
 
-import pathlib
 import runpy
 
-from .. import utils
-from ..libs import paths
-from .__context__ import USER_CONFIGS, app
+from .__context__ import app as start
 
 __all__ = ["start"]
 any(
@@ -28,15 +25,3 @@ any(
         ),
     )
 )
-
-
-def start():
-    try:
-        app()
-    finally:
-        pathlib.Path(paths.CONFIG_FILE).parent.mkdir(
-            parents=True, exist_ok=True
-        )
-        pathlib.Path(paths.CONFIG_FILE).write_text(
-            utils.json_dumps(USER_CONFIGS, indent=2)
-        )

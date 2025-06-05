@@ -6,8 +6,7 @@ import pathlib
 import shutil
 import tempfile
 import zipfile
-from collections.abc import Callable
-from typing import Any, Iterable, TypedDict, cast
+from typing import Annotated, Any
 
 import requests
 import rich
@@ -16,130 +15,81 @@ import rich.spinner
 import rich.table
 import typer
 
-from .. import utils
-from ..app.__context__ import INTERNAL_CONFIGS, USER_CONFIGS, command, console
-from ..libs import components
+from ..app.__context__ import SYSTEM_CONFIGS, command
+from ..utils import misc
 
-__all__ = ["install_ryujinx"]
+__all__ = []
 
 
 @command("install_ryujinx")
-def install_ryujinx():
+def _(
+    url: Annotated[
+        str,
+        typer.Argument(
+            help="Ryujinx-download URL.", envvar="RYUKIT_INSTALL_URL"
+        ),
+    ],
+):
     """
     Install Ryujinx.
-
-    Before using this command, set 'ryujinxInstallURL' in ryukitconfig.json.
 
     WARNING: This will overwrite pre-existing app files. Proceed with caution.
     """
 
-    if not USER_CONFIGS["ryujinxInstallURL"]:
-        console.print(
-            "[error]Command cannot be used without setting 'ryujinxInstallURL'.",
-            "└── Use '--help' for more information.",
-            sep="\n",
+    def on_live(*args: Any):
+        table = rich.table.Table(
+            show_header=False, pad_edge=False, padding=(0, 0)
         )
-        raise typer.Exit(1)
-    TaskTable = TypedDict(
-        "", {"refresh": Callable[[], None], "render": None | rich.table.Table}
-    )
-    with tempfile.TemporaryDirectory() as temp_dir_str:
-        temp_dir = pathlib.Path(temp_dir_str)
+        table.add_row(*args)
+        live.update(table)
+
+    chunk_size = 1024
+    with tempfile.TemporaryDirectory() as dir:
         with io.BytesIO() as buffer:
             try:
-                live: None | rich.live.Live = None
-                task_table: TaskTable = {
-                    "render": None,
-                    "refresh": lambda: (
-                        task_table.update(
-                            {
-                                "render": components.Table(
-                                    show_header=False,
-                                    box=None,
-                                    pad_edge=False,
-                                    padding=(0, 0),
-                                )
-                            }
-                        ),
-                        cast(rich.live.Live, live).update(
-                            cast(rich.table.Table, task_table["render"])
-                        ),
-                    )
-                    and None,
-                }
-                chunk_size = pow(2, 10)
-                with components.Live(task_table["render"]) as live:
-                    task_table["refresh"]()
-                    task_table["render"] = cast(
-                        rich.table.Table, task_table["render"]
-                    )
-                    task_table["render"].add_row(
-                        rich.spinner.Spinner("dots2"), " Connecting..."
-                    )
-                    with requests.get(
-                        USER_CONFIGS["ryujinxInstallURL"], stream=True
-                    ) as response:
+                with rich.live.Live() as live:
+                    on_live(rich.spinner.Spinner("dots"), " Connecting...")
+                    with requests.get(url, stream=True) as response:
                         if response.status_code != 200:
-                            raise requests.ConnectionError
+                            raise click.ClickException(
+                                "Couldn't complete the installation due to connectivity problems."
+                            )
                         total = int(response.headers["content-length"])
                         progress = 0
                         content = response.iter_content(chunk_size)
                         parts = 40
-                        total_mb = utils.megabytes(total)
+                        total_mb = misc.megabytes(total)
                         while (percent := progress / total * 100) < 100:
                             beads = math.floor(parts * percent / 100)
-                            task_table["refresh"]()
-                            task_table["render"].add_row(
-                                f"Downloading files... [{"".join("=" if beads - i != 1 else ">" for i in range(beads))}{" " * (parts - beads)}] {utils.megabytes(int(percent * total / 100)):.1f}MB/{total_mb:.1f}MB"
+                            on_live(
+                                f"Downloading files... [{"".join("=" if beads - i != 1 else ">" for i in range(beads))}{" " * (parts - beads)}] {misc.megabytes(int(percent * total / 100)):.1f}MB/{total_mb:.1f}MB"
                             )
                             buffer.write(next(content))
                             progress += chunk_size
-                        task_table["refresh"]()
-                        task_table["render"].add_row("Downloaded files.")
+                        on_live("Downloaded files.")
                 if (
                     hashlib.sha256(buffer.getvalue()).hexdigest()
-                    != INTERNAL_CONFIGS["ryujinx_install"]["sha256"]
+                    != SYSTEM_CONFIGS["ryujinx_install"]["sha256"]
                 ):
                     raise Exception
-            except requests.ConnectionError:
-                console.print(
-                    "[error]Couldn't complete the installation due to network issues.",
-                    sep="\n",
-                )
-                raise typer.Exit(1)
             except Exception:
                 console.print(
                     "[error]Unrecognized download content.",
                     "└── Where'd you get your link?",
                     sep="\n",
                 )
-                raise typer.Exit(1)
-            console.print("Verified content.")
+            rich.print("Verified content.")
             with zipfile.ZipFile(buffer) as zip:
-                zip.extractall(temp_dir_str)
-            console.print("Extracted files.")
-        metadata: dict[str, Any] = json.loads(
-            (temp_dir / "metadata.json").read_bytes()
-        )
+                zip.extractall(dir)
+            rich.print("Extracted files.")
         any(
-            map(
-                lambda _: False,
-                (
-                    shutil.copytree(
-                        temp_dir / key,
-                        pathlib.Path(path.format(**metadata)),
-                        dirs_exist_ok=True,
-                    )
-                    for key, path in cast(
-                        Iterable[tuple[str, Any]],
-                        INTERNAL_CONFIGS["ryujinx_install"]["paths"].items(),
-                    )
-                ),
-            )
+            shutil.copytree(pathlib.Path(dir) / key, path, dirs_exist_ok=True)
+            and False
+            for key, path in SYSTEM_CONFIGS["ryujinx_install"]["paths"].items()
         )
-        console.print("Organized files.")
-        console.print(
+        rich.print(
+            "Organized files.",
             "Noted installation.",
-            f"Ryujinx installed to {INTERNAL_CONFIGS['ryujinx_install']['paths']['dist'].format(**metadata)}.",
+            f"Ryujinx installed to {SYSTEM_CONFIGS['ryujinx_install']['paths']['dist']}.",
             sep="\n",
         )
