@@ -1,6 +1,5 @@
 import hashlib
 import io
-import json
 import math
 import pathlib
 import shutil
@@ -73,10 +72,9 @@ def _(
                 ):
                     raise Exception
             except Exception:
-                console.print(
-                    "[error]Unrecognized download content.",
-                    "└── Where'd you get your link?",
-                    sep="\n",
+                raise click.exceptions.ClickException(
+                    "Unrecognized download content.\n"
+                    "└── Where'd you get your link?"
                 )
             rich.print("Verified content.")
             with zipfile.ZipFile(buffer) as zip:

@@ -12,9 +12,9 @@ from ..libs import paths, typer_extensions
 from ..utils import misc, patterns
 from .__context__ import command
 
-__all__ = ["Tracker", "FREQUENCIES", "CALLBACKS"]
-FREQUENCIES = {"process_checking": 0.3, "tracker_logging": 0.1}
+__all__ = ["Tracker", "FREQUENCY", "CALLBACKS"]
 CALLBACKS: dict[str, Callable[..., None]] = {}
+FREQUENCY = 0.3
 
 
 class Tracker(TypedDict):
@@ -29,15 +29,18 @@ TRACKER_CONTAINER: list[Tracker] = []
 
 def load_tracker():
     TRACKER_CONTAINER.clear()
-    (
-        TRACKER_CONTAINER.append(
-            json.loads(pathlib.Path(paths.TRACKER_FILE).read_bytes())
+    try:
+        (
+            TRACKER_CONTAINER.append(
+                json.loads(pathlib.Path(paths.TRACKER_FILE).read_bytes())
+            )
+            if pathlib.Path(paths.TRACKER_FILE).exists()
+            else None
         )
-        if pathlib.Path(paths.TRACKER_FILE).exists()
-        else None
-    )
+    except json.JSONDecodeError:  # Could attempt read before file is ready.
+        pass
     return (
-        TRACKER_CONTAINER
+        TRACKER_CONTAINER != []
         and TRACKER_CONTAINER[0]["pid"] is not None
         and psutil.pid_exists(TRACKER_CONTAINER[0]["pid"])
         and psutil.Process(TRACKER_CONTAINER[0]["pid"]).status()
@@ -56,7 +59,7 @@ def _():
     )
     with rich.status.Status("Deactivating tracker...", spinner="dots2"):
         while load_tracker():
-            time.sleep(FREQUENCIES["process_checking"])
+            time.sleep(FREQUENCY)
 
 
 @patterns.dict_decorator(CALLBACKS, key="status")
@@ -88,7 +91,7 @@ def _():
                     )
                 )
             )
-            time.sleep(FREQUENCIES["tracker_logging"])
+            time.sleep(FREQUENCY)
 
 
 @command("track")
@@ -127,7 +130,7 @@ def _(
     )
     with rich.status.Status("Waking tracker...", spinner="dots2"):
         while TRACKER_CONTAINER[0]["runtime"] is None:
-            time.sleep(FREQUENCIES["process_checking"])
+            time.sleep(FREQUENCY)
             load_tracker()
     rich.print(
         "Tracker activated.",

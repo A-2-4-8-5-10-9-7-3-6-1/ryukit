@@ -26,4 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/build
-      - run: .\dist\ryukit.exe --help
+      - run: echo "$(Get-Location)\dist" >> ${env:GITHUB_PATH}
+      - run: poetry run pytest
+        env:
+          RYUKIT_INSTALL_URL: ${{ secrets.RYUKIT_INSTALL_URL }}

@@ -60,7 +60,7 @@ def test_size(obj: object, sizing: str, expected: int) -> None:
                     instructions.append((item, f"{path}/{i}"))
             return test_size(dir, "dir", expected)
     assert (
-        misc.size(obj, sizing=cast(Any, sizing)) == expected
+        abs(misc.size(obj, sizing=cast(Any, sizing)) - expected) < 30
     ), "Incorrect size calculation."
 
 

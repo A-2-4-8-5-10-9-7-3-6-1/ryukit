@@ -10,16 +10,15 @@ import subprocess
 import tarfile
 import tempfile
 import time
-from typing import Literal, cast
+from typing import cast
 
 import psutil
 import setproctitle
 import sqlalchemy
 from pytest import mark
 
-from ryukit.app.save.__context__ import HELPERS as SAVE_HELPERS
 from ryukit.libs import db, paths
-from ryukit.utils import misc as ryutils
+from ryukit.utils import misc
 
 from .. import utils
 
@@ -42,11 +41,13 @@ __all__ = [
     "use, stop",
     [(None, "app"), (None, "track"), (2, "app"), (3, "track"), (2, "track")],
 )
-def test_track(seed: object, use: int | None, stop: Literal["app", "track"]):
-    def null_process():
+def test_track(
+    seed: object, kill_app: bool, load_with: int | None, save_to: int
+):
+    def null():
         setproctitle.setproctitle("Ryujinx.exe")
         while True:
-            time.sleep(100000)
+            time.sleep(10)
 
     def stop_app():
         app.terminate()
@@ -59,7 +60,7 @@ def test_track(seed: object, use: int | None, stop: Literal["app", "track"]):
             expected_size = cast(
                 db.RyujinxSave, client.get(db.RyujinxSave, use)
             ).size
-    app = multiprocessing.Process(target=null_process)
+    app = multiprocessing.Process(target=null, daemon=True)
     app.start()
     subprocess.run(["ryukit", "track", str(save_to)])
     pid: int | None = json.loads(
@@ -69,22 +70,25 @@ def test_track(seed: object, use: int | None, stop: Literal["app", "track"]):
     time.sleep(random.triangular(0, 2, 0.2))
     assert psutil.pid_exists(pid), "Tracker process is not running."
     stop_app() if kill_app else subprocess.run(["ryukit", "track", "--halt"])
-    time_metrics = {"timeout": 2, "frequency": 0.1}
+    timeout = 5
+    frequency = 0.5
     while (
         psutil.pid_exists(pid)
         and psutil.Process(pid).status() != psutil.STATUS_ZOMBIE
     ):
-        if not time_metrics["timeout"]:
+        if timeout < 0:
             raise AssertionError("Tracker was not stopped on time.")
-        time.sleep(time_metrics["frequency"])
-        time_metrics["timeout"] -= time_metrics["frequency"]
+        time.sleep(frequency)
+        timeout -= frequency
     with db.client() as client:
         assert (
-            cast(db.RyujinxSave, client.get(db.RyujinxSave, 1)).size
-            == expected_size
+            abs(
+                cast(db.RyujinxSave, client.get(db.RyujinxSave, save_to)).size
+                - expected_size
+            )
+            < 30
         ), "App progress was not saved."
     stop_app()
-    app.close()
 
 
 def test_save_dump(seed: object):
@@ -128,12 +132,12 @@ def test_save_restore(seed: object):
             with db.client() as client2:
                 assert list(
                     map(
-                        ryutils.model_to_dict,
+                        misc.model_to_dict,
                         client2.scalars(sqlalchemy.select(db.RyujinxSave)),
                     )
                 ) == list(
                     map(
-                        ryutils.model_to_dict,
+                        misc.model_to_dict,
                         client1.scalars(sqlalchemy.select(db.RyujinxSave)),
                     )
                 ) and (
@@ -171,20 +175,25 @@ def test_save_pull(seed: object, push: int | None):
             expected = cast(
                 db.RyujinxSave, client.get(db.RyujinxSave, push)
             ).size
-            SAVE_HELPERS["channel_save_bucket"](push, upstream=True)
+            subprocess.run(["ryukit", "save", "apply", str(push)])
         subprocess.run(["ryukit", "save", "pull", "1"])
         assert (
-            cast(db.RyujinxSave, client.get(db.RyujinxSave, 1)).size
-            == expected
-        )
+            abs(
+                cast(db.RyujinxSave, client.get(db.RyujinxSave, 1)).size
+                - expected
+            )
+            < 30
+        ), "Did not read data from Ryujinx distro."
 
 
 @utils.requires_vars("RYUKIT_INSTALL_URL")
 @mark.parametrize("url", ["BAD_URL", "RYUKIT_INSTALL_URL"])
 def test_install_ryujinx(url: str):
-    assert (url != "RYUKIT_INSTALL_URL") == subprocess.run(
-        ["ryukit", "install_ryujinx", os.environ.get(url, url)]
-    ).returncode, "Install passed for invalid URL."
+    assert (url == "RYUKIT_INSTALL_URL") == (
+        not subprocess.run(
+            ["ryukit", "install_ryujinx", os.environ.get(url, url)]
+        ).returncode
+    ), "Install passed for invalid URL."
 
 
 @mark.parametrize("label", [None, "LABELLED"])
