@@ -1,50 +1,29 @@
 import importlib
 import importlib.resources
+import io
 import pathlib
 import shutil
+import sys
+from typing import cast
 
 from pytest import fixture
 
-from ryukit.app.__context__ import SYSTEM_CONFIGS
 from ryukit.libs import paths
 
 __all__ = ["seed"]
+cast(io.TextIOWrapper, sys.stdout).reconfigure(errors="ignore")
 
 
 @fixture
 def seed():
     any(
-        (
-            shutil.rmtree(path, ignore_errors=True),
-            (
-                path.mkdir(parents=True, exist_ok=True)
-                if isinstance(path, pathlib.Path)
-                else None
-            ),
-        )
-        and False
+        shutil.rmtree(path, ignore_errors=True) and False
         for path in (
             pathlib.Path(paths.DATABASE_FILE).parent,
             pathlib.Path(paths.TRACKER_FILE).parent,
             paths.RYUJINX_DIST_DIR,
             paths.RYUJINX_DATA_DIR,
         )
-    )
-    SYSTEM_CONFIGS["ryujinx_install"]["paths"].update(
-        {
-            "dist": paths.RYUJINX_DIST_DIR,
-            "registered": f"{paths.RYUJINX_DATA_DIR}/bis/system/Contents/registered",
-            "keys": f"{paths.RYUJINX_DATA_DIR}/system",
-        }
-    )
-    SYSTEM_CONFIGS["save_buckets"].update(
-        {
-            "flow": {
-                paths.SAVE_INSTANCE_META: f"{paths.RYUJINX_DATA_DIR}/bis/user/saveMeta",
-                paths.SAVE_INSTANCE_USER_DATA: f"{paths.RYUJINX_DATA_DIR}/bis/user/save",
-                paths.SAVE_INSTANCE_SYSTEM_DATA: f"{paths.RYUJINX_DATA_DIR}/bis/system/save",
-            }
-        }
     )
     any(
         (

@@ -2,6 +2,11 @@ import shutil
 from typing import Annotated
 
 import rich
+import rich.live
+import rich.status
+import rich.tree
+import sqlalchemy
+import sqlalchemy.orm
 import typer
 
 from ...app.save.__context__ import command
@@ -26,10 +31,23 @@ def _(
     WARNING: There's no going back...
     """
 
-    for context in map(bucket, buckets):
-        with context as (client, save):
-            client.delete(save)
-            shutil.rmtree(
-                paths.SAVE_INSTANCE_DIR.format(id=save.id), ignore_errors=True
-            )
-            rich.print(f"Deleted bucket '{save.id}'.")
+    tree = rich.tree.Tree(
+        rich.status.Status("Deleting buckets...", spinner="dots")
+    )
+    with rich.live.Live(tree, refresh_per_second=10):
+        for context in cast(
+            list[
+                contextlib.AbstractContextManager[
+                    tuple[sqlalchemy.orm.Session, db.RyujinxSave]
+                ]
+            ],
+            buckets,
+        ):
+            with context as (client, save):
+                client.delete(save)
+                shutil.rmtree(
+                    paths.SAVE_INSTANCE_DIR.format(id=save.id),
+                    ignore_errors=True,
+                )
+                tree.add(f"Deleted bucket '{save.id}'.")
+        tree.label = "Buckets deleted."

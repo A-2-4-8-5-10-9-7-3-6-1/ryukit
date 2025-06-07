@@ -26,9 +26,7 @@ def _(
     with (
         io.BytesIO() as buffer,
         tarfile.TarFile(fileobj=buffer, mode="w") as tar,
-        rich.status.Status(
-            "Collecting data...", spinner="dots2", spinner_style="none"
-        ),
+        rich.status.Status("Collecting data...", spinner="dots"),
     ):
         with db.client() as client:
             save_dicts: list[dict[str, Any]] = []

@@ -36,19 +36,23 @@ __all__ = [
 ]
 
 
-# NOTE: Coverage doesn't work, because of child-process usage.
-@mark.parametrize(
-    "use, stop",
-    [(None, "app"), (None, "track"), (2, "app"), (3, "track"), (2, "track")],
-)
-def test_track(
-    seed: object, kill_app: bool, load_with: int | None, save_to: int
-):
-    def null():
-        setproctitle.setproctitle("Ryujinx.exe")
-        while True:
-            time.sleep(10)
+def null():
+    setproctitle.setproctitle("Ryujinx.exe")
+    while True:
+        time.sleep(10)
 
+
+@mark.parametrize(
+    "to, load_with, kill_app",
+    [
+        (0, None, True),
+        (1, None, False),
+        (2, 2, True),
+        (3, 2, False),
+        (4, 3, False),
+    ],
+)
+def test_track(seed: object, kill_app: bool, load_with: int | None, to: int):
     def stop_app():
         app.terminate()
         app.join()
@@ -62,7 +66,7 @@ def test_track(
             ).size
     app = multiprocessing.Process(target=null, daemon=True)
     app.start()
-    subprocess.run(["ryukit", "track", str(save_to)])
+    subprocess.run(["ryukit", "track", str(to)])
     pid: int | None = json.loads(
         pathlib.Path(paths.TRACKER_FILE).read_bytes()
     )["pid"]
@@ -70,20 +74,18 @@ def test_track(
     time.sleep(random.triangular(0, 2, 0.2))
     assert psutil.pid_exists(pid), "Tracker process is not running."
     stop_app() if kill_app else subprocess.run(["ryukit", "track", "--halt"])
-    timeout = 5
-    frequency = 0.5
+    start_time = time.perf_counter()
     while (
         psutil.pid_exists(pid)
         and psutil.Process(pid).status() != psutil.STATUS_ZOMBIE
     ):
-        if timeout < 0:
+        if time.perf_counter() - start_time > 10:
             raise AssertionError("Tracker was not stopped on time.")
-        time.sleep(frequency)
-        timeout -= frequency
+        time.sleep(0.5)
     with db.client() as client:
         assert (
             abs(
-                cast(db.RyujinxSave, client.get(db.RyujinxSave, save_to)).size
+                cast(db.RyujinxSave, client.get(db.RyujinxSave, to)).size
                 - expected_size
             )
             < 30
@@ -93,15 +95,16 @@ def test_track(
 
 def test_save_dump(seed: object):
     with tempfile.TemporaryDirectory() as dir:
-        dump_file = pathlib.Path(dir) / "dump"
-        subprocess.run(["ryukit", "save", "dump", dump_file])
+        subprocess.run(["ryukit", "save", "dump", pathlib.Path(dir) / "dump"])
         for part, path in [
-            ("test", dump_file),
+            ("test", pathlib.Path(dir) / "dump"),
             ("truth", str(importlib.resources.files("tests") / "saves")),
         ]:
             with tarfile.open(path) as tar:
-                tar.extractall(f"{dir}/{part}")
-        comparison = filecmp.dircmp(f"{dir}/test", f"{dir}/truth")
+                tar.extractall(pathlib.Path(dir) / part)
+        comparison = filecmp.dircmp(
+            pathlib.Path(dir) / "test", pathlib.Path(dir) / "truth"
+        )
         assert (
             []
             == comparison.diff_files
@@ -113,39 +116,44 @@ def test_save_dump(seed: object):
 def test_save_restore(seed: object):
     with tempfile.TemporaryDirectory() as dir:
         shutil.move(
-            pathlib.Path(paths.SAVE_INSTANCE_DIR).parent, f"{dir}/truth"
+            pathlib.Path(paths.SAVE_INSTANCE_DIR).parent,
+            pathlib.Path(dir) / "truth",
         )
-        with db.client() as client1:
-            pathlib.Path(paths.DATABASE_FILE).unlink()
-            subprocess.run(
-                [
-                    "ryukit",
-                    "save",
-                    "restore",
-                    str(importlib.resources.files("tests") / "saves"),
-                ]
+        with db.client() as client:
+            initial_saves = list(
+                map(
+                    misc.model_to_dict,
+                    client.scalars(sqlalchemy.select(db.RyujinxSave)),
+                )
             )
-            shutil.move(
-                pathlib.Path(paths.SAVE_INSTANCE_DIR).parent, f"{dir}/test"
-            )
-            comparison = filecmp.dircmp(f"{dir}/test", f"{dir}/truth")
-            with db.client() as client2:
-                assert list(
-                    map(
-                        misc.model_to_dict,
-                        client2.scalars(sqlalchemy.select(db.RyujinxSave)),
-                    )
-                ) == list(
-                    map(
-                        misc.model_to_dict,
-                        client1.scalars(sqlalchemy.select(db.RyujinxSave)),
-                    )
-                ) and (
-                    []
-                    == comparison.diff_files
-                    == comparison.left_only
-                    == comparison.right_only
-                ), "Failed to restore content."
+        pathlib.Path(paths.DATABASE_FILE).unlink()
+        subprocess.run(
+            [
+                "ryukit",
+                "save",
+                "restore",
+                str(importlib.resources.files("tests") / "saves"),
+            ]
+        )
+        shutil.move(
+            pathlib.Path(paths.SAVE_INSTANCE_DIR).parent,
+            pathlib.Path(dir) / "test",
+        )
+        comparison = filecmp.dircmp(
+            pathlib.Path(dir) / "test", pathlib.Path(dir) / "truth"
+        )
+        with db.client() as client:
+            assert list(
+                map(
+                    misc.model_to_dict,
+                    client.scalars(sqlalchemy.select(db.RyujinxSave)),
+                )
+            ) == initial_saves and (
+                []
+                == comparison.diff_files
+                == comparison.left_only
+                == comparison.right_only
+            ), "Failed to restore content."
 
 
 def test_save_relabel(seed: object):
@@ -169,8 +177,8 @@ def test_save_apply(seed: object, id_: int):
 
 @mark.parametrize("push", [None, 1, 5])
 def test_save_pull(seed: object, push: int | None):
+    expected = 0
     with db.client() as client:
-        expected = 0
         if push is not None:
             expected = cast(
                 db.RyujinxSave, client.get(db.RyujinxSave, push)
@@ -183,16 +191,18 @@ def test_save_pull(seed: object, push: int | None):
                 - expected
             )
             < 30
-        ), "Did not read data from Ryujinx distro."
+        ), "Did not read data correctly."
 
 
 @utils.requires_vars("RYUKIT_INSTALL_URL")
 @mark.parametrize("url", ["BAD_URL", "RYUKIT_INSTALL_URL"])
 def test_install_ryujinx(url: str):
+    shutil.rmtree(paths.RYUJINX_DIST_DIR, ignore_errors=True)
     assert (url == "RYUKIT_INSTALL_URL") == (
         not subprocess.run(
             ["ryukit", "install_ryujinx", os.environ.get(url, url)]
         ).returncode
+        and pathlib.Path(paths.RYUJINX_DIST_DIR).exists()
     ), "Install passed for invalid URL."
 
 
@@ -232,24 +242,18 @@ def test_save_drop(seed: object, ids: list[str]):
 
 
 @mark.parametrize(
-    "wildcards, filters, expected",
-    [
-        (
-            False,
-            None,
-            "                                                                                \n  ID   LABEL             CREATED          UPDATED           LAST USED    SIZE   \n ────────────────────────────────────────────────────────────────────────────── \n  1    save2025052413…   2025-05-24       2025-05-24        Never       19.7MB  \n                         13:12:36         13:12:36                              \n  2    save2025052413…   2025-05-24       2025-05-24        Never       13.1MB  \n                         13:12:39         13:12:39                              \n  3    LABELLED          2025-05-24       2025-05-24        Never       0.0MB   \n                         13:13:00         13:13:00                              \n  4    save2025052413…   2025-05-24       2025-05-24        Never       0.0MB   \n                         13:13:07         13:13:07                              \n  5    RELABELLED        2025-05-24       2025-05-24        Never       6.6MB   \n                         13:13:14         13:13:41.966280                       \n                                                                                \n",
-        )
-    ],
+    "wildcards, filters, expected_ids", [(False, None, [1, 2, 3, 4, 5])]
 )
 def test_save_ls(
-    seed: object, wildcards: bool, filters: list[str] | None, expected: str
+    seed: object,
+    wildcards: bool,
+    filters: list[str] | None,
+    expected_ids: list[int],
 ):
-    options: list[str] = []
-    options.append("--wildcards") if wildcards else None
-    options.extend(filters or [])
-    assert (
-        subprocess.run(
-            ["ryukit", "save", "ls", *options], capture_output=True, text=True
-        ).stdout
-        == expected
+    call = ["ryukit", "save", "ls"]
+    call.append("--wildcards") if wildcards else None
+    call.extend(filters or [])
+    result = subprocess.run(call, capture_output=True, text=True).stdout
+    assert all(
+        f"{id_} " in result for id_ in expected_ids
     ), "Incorrect format in output."

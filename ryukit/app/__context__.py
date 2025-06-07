@@ -29,11 +29,11 @@ def SYSTEM_CONFIGS():
         },
     )
     SaveBuckets = TypedDict("", {"flow": dict[str, str]})
-    InternalConfigs = TypedDict(
+    SystemConfigs = TypedDict(
         "", {"ryujinx_install": RyujinxInstall, "save_buckets": SaveBuckets}
     )
     return cast(
-        InternalConfigs,
+        SystemConfigs,
         {
             "ryujinx_install": {
                 "sha256": "3e841a946595abc56c02409e165c62cb8e049963b54853dc551b2918e1f25d17",

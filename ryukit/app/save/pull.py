@@ -1,6 +1,7 @@
 from typing import Annotated
 
 import rich
+import rich.tree
 import typer
 
 from ...app.save.__context__ import HELPERS, command
@@ -24,8 +25,6 @@ def _(
         save.size = misc.size(
             paths.SAVE_INSTANCE_DIR.format(id=save.id), sizing="dir"
         )
-        rich.print(
-            "Updated bucket.",
-            f"└── Bucket is now of size {misc.megabytes(save.size):.1f}MB.",
-            sep="\n",
-        )
+        tree = rich.tree.Tree("Updated bucket.")
+        tree.add(f"Bucket size is {misc.megabytes(save.size):.1f}MB.")
+        rich.print(tree)

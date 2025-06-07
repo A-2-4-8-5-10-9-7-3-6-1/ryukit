@@ -26,4 +26,4 @@ def _(
     with db.client() as client:
         client.add(save)
         client.flush()
-        rich.print(f"Bucket {save.id} created with label '{with_label}'.")
+        rich.print(f"Bucket was created with ID {save.id}.")
