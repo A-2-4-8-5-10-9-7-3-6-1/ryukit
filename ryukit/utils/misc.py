@@ -9,7 +9,7 @@ from typing import Any, Literal
 import sqlalchemy
 import sqlalchemy.orm
 
-from . import patterns
+from . import qol
 
 __all__ = ["megabytes", "model_to_dict", "size", "json_dumps"]
 
@@ -54,7 +54,7 @@ def size(obj: Any, /, *, sizing: Literal["dir"]):
             )
 
 
-@patterns.use
+@qol.use
 def json_dumps():
     def serialize(obj: object):
         if isinstance(obj, datetime.datetime):

@@ -6,9 +6,9 @@ import sqlalchemy
 import sqlalchemy.orm
 import typer
 
-from ryukit.libs import db
-
-from ...app.save.__context__ import PARSERS, command
+from ...libs import db
+from ..__context__ import PARSERS, channel_save_bucket
+from .__context__ import command
 
 __all__ = []
 
@@ -32,7 +32,7 @@ def _(
     WARNING: This will overwrite files for Ryujinx. Unless certain, save your data.
     """
 
-    channel_save_bucket(bucket_, upstream=True)
-    with bucket(bucket_) as (_, save):
+    with bucket as (_, save):
+        channel_save_bucket(save.id, upstream=True)
         save.last_used = datetime.datetime.now(datetime.timezone.utc)
     rich.print("Save applied.")

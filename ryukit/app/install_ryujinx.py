@@ -16,8 +16,8 @@ import rich.table
 import rich.tree
 import typer
 
-from ..app.__context__ import SYSTEM_CONFIGS, command
 from ..utils import misc
+from .__context__ import SYSTEM_CONFIGS, command
 
 __all__ = []
 
@@ -45,7 +45,7 @@ def _(
         return table
 
     tree = rich.tree.Tree(rich.status.Status("Installing Ryujinx..."))
-    bad_content_error = click.exceptions.ClickException(
+    bad_content_error = click.ClickException(
         "Unrecognized content. Where'd you get your link?"
     )
     with (

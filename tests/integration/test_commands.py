@@ -58,8 +58,8 @@ def test_track(seed: object, kill_app: bool, load_with: int | None, to: int):
         app.join()
 
     expected_size = 0
-    if use is not None:
-        channel_save_bucket(use, upstream=True)
+    if load_with is not None:
+        subprocess.run(["ryukit", "save", "apply", str(load_with)])
         with db.client() as client:
             expected_size = cast(
                 db.RyujinxSave, client.get(db.RyujinxSave, use)
@@ -73,7 +73,7 @@ def test_track(seed: object, kill_app: bool, load_with: int | None, to: int):
     assert pid is not None, "Couldn't read tracker's PID."
     time.sleep(random.triangular(0, 2, 0.2))
     assert psutil.pid_exists(pid), "Tracker process is not running."
-    stop_app() if kill_app else subprocess.run(["ryukit", "track", "--halt"])
+    stop_app() if kill_app else subprocess.run(["ryukit", "track", "--stop"])
     start_time = time.perf_counter()
     while (
         psutil.pid_exists(pid)
@@ -242,18 +242,19 @@ def test_save_drop(seed: object, ids: list[str]):
 
 
 @mark.parametrize(
-    "wildcards, filters, expected_ids", [(False, None, [1, 2, 3, 4, 5])]
+    "wildcards, filters, expected_text",
+    [(False, None, ["1", "2", "3", "4", "5"])],
 )
 def test_save_ls(
     seed: object,
     wildcards: bool,
     filters: list[str] | None,
-    expected_ids: list[int],
+    expected_text: list[int],
 ):
     call = ["ryukit", "save", "ls"]
     call.append("--wildcards") if wildcards else None
     call.extend(filters or [])
     result = subprocess.run(call, capture_output=True, text=True).stdout
     assert all(
-        f"{id_} " in result for id_ in expected_ids
+        f"{text} " in result for text in expected_text
     ), "Incorrect format in output."

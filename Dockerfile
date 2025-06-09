@@ -1,5 +1,4 @@
-FROM ubuntu:25.10@sha256:dd397d3b5e4896054db111cb5145c0c08a6e7a669537e750e79e0385f2d69207 AS development
-SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
+FROM ubuntu:25.10@sha256:36bbb8adc0662496d3e314bc8a25cb41c0c2e42ed25daaa07f8369d36d16f082 AS development
 RUN apt-get update; \
     apt-get -y install --no-install-recommends \
     curl=8.12.1-3ubuntu1 \

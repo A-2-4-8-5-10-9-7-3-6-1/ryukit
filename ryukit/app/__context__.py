@@ -1,25 +1,99 @@
 import contextlib
+import functools
 import importlib
 import importlib.metadata
 import pathlib
+import shutil
+from collections.abc import Callable, Sequence
 from typing import Annotated, Any, Literal, TypedDict, cast
 
 import click
 import rich
-import rich.theme
 import typer
 
-from ..libs import db, paths, typer_extensions
-from ..utils import patterns
+from ..libs import db, paths
+from ..utils import qol
 
-__all__ = ["SYSTEM_CONFIGS", "command", "app", "PARSERS"]
+__all__ = [
+    "SYSTEM_CONFIGS",
+    "command",
+    "app",
+    "PARSERS",
+    "on_request",
+    "channel_save_bucket",
+]
 app = typer.Typer(rich_markup_mode="rich")
 command = app.command
 PARSERS: dict[str, Callable[..., Any]] = {}
-CALLBACKS: dict[str, Callable[..., Any]] = {}
+started = False
 
 
-@patterns.use
+@qol.use
+def _():
+    initial = typer.Typer.__call__
+
+    @functools.wraps(initial)
+    def inner(*args: ..., **kwargs: ...):
+        global started
+        started = True
+        return initial(*args, **kwargs)
+
+    typer.Typer.__call__ = inner
+
+
+def channel_save_bucket(id_: int, /, upstream: bool):
+    """
+    Copy save content between a save bucket and Ryujinx.
+
+    :param id_: The save bucket's ID.
+    :param upstream: Copy from save bucket into Ryujinx?
+    """
+
+    def rotate[T](values: Sequence[T]):
+        return (iter if upstream else reversed)(values)
+
+    for source, dest in map(
+        rotate,
+        map(
+            tuple,
+            map(
+                lambda p: map(pathlib.Path, p),
+                (
+                    (x.format(id=id_), y)
+                    for x, y in SYSTEM_CONFIGS["save_buckets"]["flow"].items()
+                ),
+            ),
+        ),
+    ):
+        if dest.exists():
+            shutil.rmtree(dest)
+        if not source.exists():
+            continue
+        shutil.copytree(source, dest)
+
+
+def on_request(func: Callable[[], None], /):
+    """Trigger a function on request."""
+
+    def inner(do: bool = True):
+        func() if do else None
+
+    return inner
+
+
+def then_terminate[**P](func: Callable[P, None], /):
+    """Force termination, via an exception, after execution of subsequent function."""
+
+    @functools.wraps(func)
+    def inner(*args: P.args, **kwargs: P.kwargs):
+        func(*args, **kwargs)
+        if started:
+            raise click.exceptions.Exit()
+
+    return inner
+
+
+@qol.use
 def SYSTEM_CONFIGS():
     RyujinxInstall = TypedDict(
         "",
@@ -54,7 +128,7 @@ def SYSTEM_CONFIGS():
     )
 
 
-@patterns.dict_decorator(PARSERS, key="bucket")
+@qol.in_dict(PARSERS, key="bucket")
 @contextlib.contextmanager
 def bucket(id_: int, /):
     """
@@ -71,17 +145,21 @@ def bucket(id_: int, /):
         yield client, save
 
 
-@patterns.dict_decorator(CALLBACKS, key="version")
-@patterns.on_request
-@typer_extensions.then_terminate
-def _():
-    rich.print(f"RyuKit version {importlib.metadata.version("ryukit")}")
-
-
 @app.callback()
 def _(
     version: Annotated[
-        bool, typer.Option("--version", help="Show version and exit.")
+        bool,
+        typer.Option(
+            "--version",
+            help="Show version and exit.",
+            callback=on_request(
+                then_terminate(
+                    lambda: rich.print(
+                        f"RyuKit version {importlib.metadata.version("ryukit")}"
+                    )
+                )
+            ),
+        ),
     ] = False,
 ):
     "A CLI tool for Ryujinx."

@@ -15,9 +15,9 @@ import rich.tree
 import sqlalchemy
 import typer
 
-from ..libs import db, paths, typer_extensions
-from ..utils import misc, patterns
-from .__context__ import SYSTEM_CONFIGS, command
+from ..libs import db, paths
+from ..utils import misc, qol
+from .__context__ import SYSTEM_CONFIGS, command, on_request, then_terminate
 
 __all__ = []
 CALLBACKS: dict[str, Callable[..., None]] = {}
@@ -55,9 +55,9 @@ def load_tracker():
     )
 
 
-@patterns.dict_decorator(CALLBACKS, key="start")
-@patterns.on_request
-@typer_extensions.then_terminate
+@qol.in_dict(CALLBACKS, key="start")
+@on_request
+@then_terminate
 def _():
     load_tracker()
     TRACKER_CONTAINER[0]["bucket"] = cast(int, TRACKER_CONTAINER[0]["bucket"])
@@ -123,9 +123,9 @@ def _():
         )
 
 
-@patterns.dict_decorator(CALLBACKS, key="halt")
-@patterns.on_request
-@typer_extensions.then_terminate
+@qol.in_dict(CALLBACKS, key="stop")
+@on_request
+@then_terminate
 def _():
     if not load_tracker():
         raise click.UsageError("Tracker is not active.")
@@ -137,9 +137,9 @@ def _():
             time.sleep(FREQUENCY)
 
 
-@patterns.dict_decorator(CALLBACKS, key="status")
-@patterns.on_request
-@typer_extensions.then_terminate
+@qol.in_dict(CALLBACKS, key="status")
+@on_request
+@then_terminate
 def _():
     container = cast(list[dict[str, Any]], TRACKER_CONTAINER)
     with rich.live.Live() as live:
@@ -190,18 +190,18 @@ def _(
         bool,
         typer.Option(
             "--status",
-            help="Show tracking status and exit.",
+            help="Show tracking status.",
             show_default=False,
             callback=CALLBACKS["status"],
         ),
     ] = False,
-    halt: Annotated[
+    stop: Annotated[
         bool,
         typer.Option(
-            "--halt",
-            help="Reset the tracker.",
+            "--stop",
+            help="Stop the background tracker.",
             show_default=False,
-            callback=CALLBACKS["halt"],
+            callback=CALLBACKS["stop"],
         ),
     ] = False,
 ):
@@ -216,7 +216,7 @@ def _(
     if use_bucket < 0:
         raise click.BadParameter("Must be non-negative integer.")
     if load_tracker():
-        raise click.BadParameter("Tracker is already running.")
+        raise click.ClickException("Tracker is already running.")
     pathlib.Path(paths.TRACKER_FILE).write_text(
         misc.json_dumps(
             {"bucket": use_bucket, "runtime": None, "diff": None, "pid": None}

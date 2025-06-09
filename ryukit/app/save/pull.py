@@ -4,9 +4,10 @@ import rich
 import rich.tree
 import typer
 
-from ...app.save.__context__ import HELPERS, command
 from ...libs import paths
 from ...utils import misc
+from ..__context__ import channel_save_bucket
+from .__context__ import command
 
 __all__ = []
 
@@ -21,7 +22,7 @@ def _(
     """Pull data from Ryujinx into a save bucket."""
 
     with into as (_, save):
-        HELPERS["channel_save_bucket"](save.id, upstream=False)
+        channel_save_bucket(save.id, upstream=False)
         save.size = misc.size(
             paths.SAVE_INSTANCE_DIR.format(id=save.id), sizing="dir"
         )

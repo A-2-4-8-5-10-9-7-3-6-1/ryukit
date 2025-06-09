@@ -1,17 +1,13 @@
 import importlib
 import importlib.resources
-import io
 import pathlib
 import shutil
-import sys
-from typing import cast
 
 from pytest import fixture
 
 from ryukit.libs import paths
 
 __all__ = ["seed"]
-cast(io.TextIOWrapper, sys.stdout).reconfigure(errors="ignore")
 
 
 @fixture

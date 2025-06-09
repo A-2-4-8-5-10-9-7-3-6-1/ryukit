@@ -1,12 +1,12 @@
-"""Basic implementation-pattern utilities."""
+"""Quality-of-life utilities."""
 
 from collections.abc import Callable
 from typing import Any
 
-__all__ = ["dict_decorator", "use", "on_request"]
+__all__ = ["in_dict", "use"]
 
 
-def dict_decorator[K, V: Callable[..., Any]](dict_: dict[K, V], /, *, key: K):
+def in_dict[K, V: Callable[..., Any]](dict_: dict[K, V], /, key: K):
     """
     Manage function-valued dictionary entries with a decorator.
 
@@ -25,12 +25,3 @@ def use[R](func: Callable[..., R], /):
     """Immediately use a function."""
 
     return func()
-
-
-def on_request(func: Callable[[], None], /):
-    """Trigger a function on request."""
-
-    def inner(do: bool = True):
-        func() if do else None
-
-    return inner
