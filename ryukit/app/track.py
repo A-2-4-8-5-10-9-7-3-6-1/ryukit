@@ -2,6 +2,7 @@ import json
 import os
 import pathlib
 import subprocess
+import sys
 import time
 from collections.abc import Callable
 from typing import Annotated, Any, Iterator, TypedDict, cast
@@ -223,7 +224,19 @@ def _(
             }
         )
     )
-    subprocess.Popen(["ryukit", "track", "--start"], start_new_session=True)
+    detached_process = 0x00000008
+    create_new_process_group = 0x00000200
+    subprocess.Popen(
+        ["ryukit", "track", "--start"],
+        **cast(
+            dict[str, Any],
+            (
+                {"creationflags": detached_process | create_new_process_group}
+                if sys.platform == "win32"
+                else {}
+            ),
+        ),
+    )
     with rich.status.Status("Waking tracker..."):
         while not (load_tracker() and TRACKER_CONTAINER[0]["running"]):
             time.sleep(FREQUENCY)
