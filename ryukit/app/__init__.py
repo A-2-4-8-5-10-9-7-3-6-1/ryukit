@@ -2,9 +2,11 @@
 
 import runpy
 
-from .__context__ import app as start
+from .__context__ import app
 
 __all__ = ["start"]
+start = app
+"""App's entrypoint."""
 any(
     map(
         lambda _: False,

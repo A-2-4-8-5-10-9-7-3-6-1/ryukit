@@ -12,6 +12,7 @@ from . import paths
 
 __all__ = ["RyujinxSave", "client", "CLIENT_CONFIGS"]
 CLIENT_CONFIGS: dict[str, Any] = {"url": f"sqlite:///{paths.DATABASE_FILE}"}
+"""Use to configure the `sqlalchemy.create_engine` call in `client`."""
 
 
 class Base(sqlalchemy.orm.DeclarativeBase): ...

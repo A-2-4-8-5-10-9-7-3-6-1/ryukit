@@ -8,6 +8,8 @@ __all__ = ["command"]
 
 @qol.use
 def command():
+    """Command decorator of app's save subtyper."""
+
     save = typer.Typer(name="save")
     app.add_typer(save)
     func = save.command

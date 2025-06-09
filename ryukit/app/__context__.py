@@ -23,8 +23,11 @@ __all__ = [
     "channel_save_bucket",
 ]
 app = typer.Typer(rich_markup_mode="rich")
+"""Typer application."""
 command = app.command
+"""Command decorator of the typer application."""
 PARSERS: dict[str, Callable[..., Any]] = {}
+"""Common parsers for commands."""
 started = False
 
 

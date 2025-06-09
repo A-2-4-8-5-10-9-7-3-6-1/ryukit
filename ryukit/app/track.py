@@ -1,7 +1,6 @@
 import json
 import os
 import pathlib
-import signal
 import subprocess
 import time
 from collections.abc import Callable
@@ -29,6 +28,7 @@ class Tracker(TypedDict):
     runtime: float | None
     diff: int | None
     bucket: int | None
+    running: bool
 
 
 TRACKER_CONTAINER: list[Tracker] = []
@@ -48,8 +48,7 @@ def load_tracker():
         pass
     return (
         TRACKER_CONTAINER != []
-        and TRACKER_CONTAINER[0]["pid"] is not None
-        and psutil.pid_exists(TRACKER_CONTAINER[0]["pid"])
+        and psutil.pid_exists(TRACKER_CONTAINER[0]["pid"] or -1)
         and psutil.Process(TRACKER_CONTAINER[0]["pid"]).status()
         != psutil.STATUS_ZOMBIE
     )
@@ -59,68 +58,64 @@ def load_tracker():
 @on_request
 @then_terminate
 def _():
+    start_time = time.perf_counter()
     load_tracker()
     TRACKER_CONTAINER[0]["bucket"] = cast(int, TRACKER_CONTAINER[0]["bucket"])
-    TRACKER_CONTAINER[0]["pid"] = os.getpid()
-    TRACKER_CONTAINER[0]["runtime"] = 0
-    TRACKER_CONTAINER[0]["diff"] = 0
-    initial_size = TRACKER_CONTAINER[0]["diff"]
-    ryujinx_sessions: Iterator[psutil.Process] = iter([])
-    start_time: float | None = None
-    try:
-        while start_time is None or any(ryujinx_sessions):
-            for _ in ryujinx_sessions or []:
-                raise RuntimeError("Multiple Ryujinx sessions running.")
-            time.sleep(FREQUENCY)
-            ryujinx_sessions = filter(
-                lambda process: process.name() == "Ryujinx.exe"
-                and process.status() != psutil.STATUS_ZOMBIE,
-                psutil.process_iter(["name", "status"]),
-            )
-            TRACKER_CONTAINER[0]["runtime"] += (
-                time.perf_counter() - start_time if start_time else 0
-            )
-            start_time = time.perf_counter()
-            try:
-                TRACKER_CONTAINER[0]["diff"] = (
-                    sum(
-                        misc.size(path, sizing="dir")
-                        for path in SYSTEM_CONFIGS["save_buckets"][
-                            "flow"
-                        ].values()
-                    )
-                    - initial_size
+    with db.client() as client:
+        initial_size = (
+            client.scalar(
+                sqlalchemy.select(db.RyujinxSave.size).where(
+                    db.RyujinxSave.id == TRACKER_CONTAINER[0]["bucket"]
                 )
-            except (
-                FileNotFoundError
-            ):  # Files may be deleted during calculation
-                pass
-            pathlib.Path(paths.TRACKER_FILE).write_text(
-                misc.json_dumps(TRACKER_CONTAINER[0])
             )
-    finally:
-        with db.client() as client:
-            if not client.get(db.RyujinxSave, TRACKER_CONTAINER[0]["bucket"]):
-                subprocess.run(
-                    ["ryukit", "save", "create"], capture_output=True
-                )
-                cast(
-                    db.RyujinxSave,
-                    client.scalar(
-                        sqlalchemy.select(db.RyujinxSave)
-                        .order_by(db.RyujinxSave.id.desc())
-                        .limit(1)
-                    ),
-                ).id = TRACKER_CONTAINER[0]["bucket"]
-            client.flush()
-        subprocess.run(
-            ["ryukit", "save", "pull", str(TRACKER_CONTAINER[0]["bucket"])],
-            capture_output=True,
+            or 0
         )
-        TRACKER_CONTAINER[0]["pid"] = None
+    ryujinx_sessions: Iterator[psutil.Process] | None = None
+    writes: dict[str, Any] = {"running": True, "pid": os.getpid()}
+    while (
+        ryujinx_sessions is None
+        or any(ryujinx_sessions)
+        and TRACKER_CONTAINER[0]["running"]
+    ):
+        for _ in ryujinx_sessions or []:
+            raise RuntimeError("Multiple Ryujinx sessions running.")
+        time.sleep(FREQUENCY)
+        ryujinx_sessions = filter(
+            lambda process: process.name() == "Ryujinx.exe"
+            and process.status() != psutil.STATUS_ZOMBIE,
+            psutil.process_iter(["name", "status"]),
+        )
+        writes["runtime"] = time.perf_counter() - start_time
+        try:
+            writes["diff"] = (
+                sum(
+                    misc.size(path, sizing="dir")
+                    for path in SYSTEM_CONFIGS["save_buckets"]["flow"].values()
+                )
+                - initial_size
+            )
+        except FileNotFoundError:  # Files may be deleted during calculation
+            pass
+        load_tracker()
         pathlib.Path(paths.TRACKER_FILE).write_text(
-            misc.json_dumps(TRACKER_CONTAINER[0])
+            misc.json_dumps(TRACKER_CONTAINER[0] | writes)
         )
+        writes.clear()
+    with db.client() as client:
+        if not client.get(db.RyujinxSave, TRACKER_CONTAINER[0]["bucket"]):
+            subprocess.run(["ryukit", "save", "create"], capture_output=True)
+            cast(
+                db.RyujinxSave,
+                client.scalar(
+                    sqlalchemy.select(db.RyujinxSave)
+                    .order_by(db.RyujinxSave.id.desc())
+                    .limit(1)
+                ),
+            ).id = TRACKER_CONTAINER[0]["bucket"]
+    subprocess.run(
+        ["ryukit", "save", "pull", str(TRACKER_CONTAINER[0]["bucket"])],
+        capture_output=True,
+    )
 
 
 @qol.in_dict(CALLBACKS, key="stop")
@@ -129,11 +124,11 @@ def _():
 def _():
     if not load_tracker():
         raise click.UsageError("Tracker is not active.")
-    psutil.Process(cast(int, TRACKER_CONTAINER[0]["pid"])).send_signal(
-        signal.SIGINT
-    )
-    with rich.status.Status("Deactivating tracker..."):
+    with rich.status.Status("Stopping tracker..."):
         while load_tracker():
+            pathlib.Path(paths.TRACKER_FILE).write_text(
+                misc.json_dumps(TRACKER_CONTAINER[0] | {"running": False})
+            )
             time.sleep(FREQUENCY)
 
 
@@ -219,12 +214,18 @@ def _(
         raise click.ClickException("Tracker is already running.")
     pathlib.Path(paths.TRACKER_FILE).write_text(
         misc.json_dumps(
-            {"bucket": use_bucket, "runtime": None, "diff": None, "pid": None}
+            {
+                "bucket": use_bucket,
+                "runtime": None,
+                "diff": None,
+                "pid": None,
+                "running": False,
+            }
         )
     )
-    pid = subprocess.Popen(["ryukit", "track", "--start"]).pid
+    subprocess.Popen(["ryukit", "track", "--start"], start_new_session=True)
     with rich.status.Status("Waking tracker..."):
-        while not load_tracker() or TRACKER_CONTAINER[0]["pid"] != pid:
+        while not (load_tracker() and TRACKER_CONTAINER[0]["running"]):
             time.sleep(FREQUENCY)
     tree = rich.tree.Tree("Tracker activated")
     tree.add("Use the '--status' option to monitor the tracker.")
