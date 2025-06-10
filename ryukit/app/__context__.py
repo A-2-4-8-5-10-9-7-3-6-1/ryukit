@@ -133,16 +133,9 @@ def SYSTEM_CONFIGS():
 
 @qol.in_dict(PARSERS, key="bucket")
 @contextlib.contextmanager
-def bucket(id_: int, /):
-    """
-    Get a save bucket from an ID.
-
-    :param id_: The bucket's ID.
-    :raises typer.Exit: If the bucket doesn't exist.
-    """
-
+def _(id_: int, /):
     with db.client() as client:
-        save = client.get(db.RyujinxSave, {"id": id_})
+        save = client.get(db.RyujinxSave, id_)
         if not save:
             raise click.BadParameter("Unrecognized bucket ID.")
         yield client, save

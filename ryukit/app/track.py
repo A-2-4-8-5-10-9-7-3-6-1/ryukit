@@ -7,6 +7,7 @@ import time
 from collections.abc import Callable
 from typing import Annotated, Any, Iterator, TypedDict, cast
 
+import click
 import psutil
 import rich
 import rich.live

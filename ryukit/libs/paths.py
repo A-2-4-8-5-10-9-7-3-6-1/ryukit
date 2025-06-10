@@ -12,6 +12,7 @@ __all__ = [
     "SAVE_INSTANCE_USER_DATA",
     "RYUJINX_DIST_DIR",
     "RYUJINX_DATA_DIR",
+    "TRACKER_FILE",
 ]
 DATABASE_FILE = str(
     platformdirs.user_data_path("RyuKit", appauthor=False, roaming=True) / "db"

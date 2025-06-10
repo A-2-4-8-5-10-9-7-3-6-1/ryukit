@@ -8,7 +8,7 @@ runs:
     - uses: actions/setup-node@v3
       with:
         node-version: 24
-    - run: echo "C:\Users\runneradmin\.local\bin" >> $env:GITHUB_PATH
+    - run: echo "C:\Users\runneradmin\.local\bin" >> ${env:GITHUB_PATH}
       shell: pwsh
       if: runner.os == 'Windows'
     - run: |

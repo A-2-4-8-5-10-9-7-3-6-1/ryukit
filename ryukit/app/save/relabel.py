@@ -1,3 +1,4 @@
+import contextlib
 from typing import Annotated
 
 import rich
@@ -6,6 +7,7 @@ import sqlalchemy.orm
 import typer
 
 from ...libs import db
+from ..__context__ import PARSERS
 from .__context__ import command
 
 __all__ = []
@@ -21,17 +23,18 @@ def _(
             metavar="BUCKET",
             help="ID of bucket to update.",
             show_default=False,
+            parser=PARSERS["bucket"],
         ),
     ],
     as_: Annotated[
         str,
-        typer.Option(
-            "--as", help="New label for the bucket.", show_default=False
+        typer.Argument(
+            metavar="AS", help="New label for the bucket.", show_default=False
         ),
     ],
 ):
     """Relabel an existing bucket."""
 
-    with bucket(bucket_) as (_, save):
+    with bucket as (_, save):
         save.label = as_
     rich.print("Label updated.")

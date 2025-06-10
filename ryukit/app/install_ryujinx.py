@@ -7,6 +7,7 @@ import tempfile
 import zipfile
 from typing import Annotated, Any
 
+import click
 import requests
 import rich
 import rich.live

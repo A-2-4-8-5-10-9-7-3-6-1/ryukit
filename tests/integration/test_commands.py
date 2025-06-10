@@ -1,6 +1,7 @@
 import filecmp
 import importlib
 import importlib.resources
+import json
 import multiprocessing
 import os
 import pathlib
@@ -62,7 +63,7 @@ def test_track(seed: object, kill_app: bool, load_with: int | None, to: int):
         subprocess.run(["ryukit", "save", "apply", str(load_with)])
         with db.client() as client:
             expected_size = cast(
-                db.RyujinxSave, client.get(db.RyujinxSave, use)
+                db.RyujinxSave, client.get(db.RyujinxSave, load_with)
             ).size
     app = multiprocessing.Process(target=null, daemon=True)
     app.start()

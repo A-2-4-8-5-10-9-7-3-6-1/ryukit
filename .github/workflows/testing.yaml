@@ -7,24 +7,22 @@ on:
     branches:
       - develop
 jobs:
-  test_code:
+  lint:
     environment: Testing
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
       - run: |
-          poetry run pytest
           poetry run isort --check-only .
           poetry run black --check .
           npx prettier --check .
-        env:
-          RYUKIT_INSTALL_URL: ${{ secrets.RYUKIT_INSTALL_URL }}
-  test_executable:
+  pytest:
     runs-on: windows-latest
     environment: Testing
     steps:
       - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
       - uses: ./.github/actions/build
       - run: echo "$(Get-Location)\dist" >> ${env:GITHUB_PATH}
       - run: echo "::add-mask::${{ secrets.RYUKIT_INSTALL_URL }}"

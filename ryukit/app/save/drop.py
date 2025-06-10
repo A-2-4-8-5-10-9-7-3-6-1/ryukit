@@ -1,5 +1,6 @@
+import contextlib
 import shutil
-from typing import Annotated
+from typing import Annotated, Any, cast
 
 import rich
 import rich.live
@@ -10,6 +11,7 @@ import sqlalchemy.orm
 import typer
 
 from ...libs import db, paths
+from ..__context__ import PARSERS
 from .__context__ import command
 
 __all__ = []
@@ -18,10 +20,11 @@ __all__ = []
 @command("drop")
 def _(
     buckets: Annotated[
-        list[int],
+        list[Any],
         typer.Argument(
             help="The IDs of your to-be-deleted save buckets.",
             show_default=False,
+            parser=PARSERS["bucket"],
         ),
     ],
 ):

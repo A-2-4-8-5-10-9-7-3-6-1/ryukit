@@ -45,9 +45,7 @@ class RyujinxSave(Base):
 
 
 @sqlalchemy.event.listens_for(RyujinxSave, "before_update")
-def on_ryujinx_save_update(
-    mapper: object, connection: object, target: RyujinxSave
-):
+def _(mapper: object, connection: object, target: RyujinxSave):
     target.updated = datetime.datetime.now(datetime.timezone.utc)
 
 
