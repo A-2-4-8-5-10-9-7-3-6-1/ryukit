@@ -7,23 +7,36 @@ on:
     branches:
       - develop
 jobs:
-  lint_and_docker:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/setup
       - run: |
-          poetry run isort --check-only .
-          poetry run black --check .
-          npx prettier --check .
-          docker build .
+          docker compose up -d development
+          docker compose exec development bash -c "
+            npm install &&
+            poetry python install 3.13 &&
+            poetry install && 
+            poetry run isort --check-only . &&
+            poetry run black --check . && 
+            npx prettier --check ."
   pytest:
     runs-on: windows-latest
     environment: Testing
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/setup
-      - uses: ./.github/actions/build
+      - uses: snok/install-poetry@v1
+        with:
+          version: 2.1.1
+      - run: echo "C:\Users\runneradmin\.local\bin" >> ${env:GITHUB_PATH}
+      - run: |
+          poetry python install 3.13
+          poetry install
+          poetry run pyinstaller pyinstaller.spec
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ryukit
+          path: dist\ryukit.exe
       - run: echo "$(Get-Location)\dist" >> ${env:GITHUB_PATH}
       - run: echo "::add-mask::${{ secrets.RYUKIT_INSTALL_URL }}"
       - run: poetry run pytest
