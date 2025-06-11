@@ -2,34 +2,32 @@
 name = "ryukit"
 version = "0.3.0"
 description = "A CLI tool for managing Ryujinx."
-authors = [
-  { name = "A-2-4-8-5-10-9-7-3-6-1", email = "112730580+A-2-4-8-5-10-9-7-3-6-1@users.noreply.github.com" },
-]
-license = { text = "MIT" }
-requires-python = ">=3.13,<3.14"
+readme = "README.md"
+requires-python = ">=3.13"
 dependencies = [
-  "rich (>=13.9.4,<14.0.0)",
-  "typer (>=0.15.1,<0.16.0)",
-  "pyinstaller (>=6.13.0,<7.0.0)",
-  "requests (>=2.32.3,<3.0.0)",
-  "sqlalchemy (>=2.0.41,<3.0.0)",
-  "psutil (>=7.0.0,<8.0.0)",
+  "psutil>=7.0.0",
+  "requests>=2.32.4",
+  "rich>=14.0.0",
+  "sqlalchemy>=2.0.41",
+  "typer>=0.16.0",
 ]
 
-[tool.poetry.scripts]
+[dependency-groups]
+dev = [
+  "black>=25.1.0",
+  "isort>=6.0.1",
+  "pyinstaller>=6.14.1",
+  "pyright>=1.1.402",
+  "pytest>=8.4.0",
+  "pytest-cov>=6.1.1",
+  "setproctitle>=1.3.6",
+]
+
+[project.scripts]
 ryukit = "ryukit:start"
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.4.0"
-isort = "^6.0.1"
-black = "^25.1.0"
-pyright = "^1.1.399"
-pytest-cov = "^6.1.1"
-setproctitle = "^1.3.6"
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+[tool.uv]
+package = true
 
 [tool.black]
 line-length = 79
@@ -44,4 +42,4 @@ include = ["ryukit", "tests"]
 typeCheckingMode = "strict"
 
 [tool.coverage.run]
-source = ["ryukit"]
+source = ["src/ryukit"]

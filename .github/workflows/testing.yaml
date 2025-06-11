@@ -15,30 +15,28 @@ jobs:
           docker compose up -d development
           docker compose exec development bash -c "
             npm install &&
-            poetry python install 3.13 &&
-            poetry install && 
-            poetry run isort --check-only . &&
-            poetry run black --check . && 
-            npx prettier --check ."
+            npx prettier --check . &&
+            uv run bash -c '
+              isort --check-only . &&
+              black --check .'"
+          docker run -i hadolint/hadolint < Dockerfile
   pytest:
     runs-on: windows-latest
     environment: Testing
     steps:
       - uses: actions/checkout@v3
-      - uses: snok/install-poetry@v1
-        with:
-          version: 2.1.1
-      - run: echo "C:\Users\runneradmin\.local\bin" >> ${env:GITHUB_PATH}
       - run: |
-          poetry python install 3.13
-          poetry install
-          poetry run pyinstaller pyinstaller.spec
+          powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/0.7.12/install.ps1 | iex"
+          echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
+      - run: |
+          uv run pyinstaller pyinstaller.spec
+          mv dist/ryukit.exe "${HOME}/.local/bin"
+          echo "::add-mask::${{ secrets.RYUKIT_INSTALL_URL }}"
+        shell: bash
       - uses: actions/upload-artifact@v4
         with:
           name: ryukit
-          path: dist\ryukit.exe
-      - run: echo "$(Get-Location)\dist" >> ${env:GITHUB_PATH}
-      - run: echo "::add-mask::${{ secrets.RYUKIT_INSTALL_URL }}"
-      - run: poetry run pytest
+          path: dist/ryukit.exe
+      - run: uv run pytest
         env:
           RYUKIT_INSTALL_URL: ${{ secrets.RYUKIT_INSTALL_URL }}

@@ -6,4 +6,5 @@ build
 dist
 .coverage*
 .venv
+*.egg-info
 !.github/**
