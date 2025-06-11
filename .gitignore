@@ -3,7 +3,6 @@ __pycache__
 node_modules
 build
 .env
-.vscode/settings.json
 dist
 .coverage*
 .venv
