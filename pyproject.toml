@@ -4,6 +4,7 @@ version = "0.3.0"
 description = "A CLI tool for managing Ryujinx."
 readme = "README.md"
 requires-python = ">=3.13"
+license = { text = "MIT" }
 dependencies = [
   "psutil>=7.0.0",
   "requests>=2.32.4",
@@ -38,8 +39,8 @@ remove_redundant_aliases = true
 profile = "black"
 
 [tool.pyright]
-include = ["ryukit", "tests"]
+include = ["src", "tests"]
 typeCheckingMode = "strict"
 
 [tool.coverage.run]
-source = ["src/ryukit"]
+source = ["src"]

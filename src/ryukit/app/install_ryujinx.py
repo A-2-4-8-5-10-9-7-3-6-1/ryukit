@@ -66,7 +66,7 @@ def _(
                 try:
                     total = int(response.headers["content-length"])
                     progress = 0
-                    content = response.iter_content(1024)
+                    content = response.iter_content(8192)
                     parts = 40
                     step_tree = tree.add(
                         row(
@@ -78,8 +78,7 @@ def _(
                         beads = math.floor(parts * percent / 100)
                         step_tree.label = row(
                             "Downloading files",
-                            rich.spinner.Spinner("simpleDots"),
-                            f" [{"".join("=" if beads - i != 1 else ">" for i in range(beads))}{" " * (parts - beads)}] {misc.megabytes(int(percent * total / 100)):.1f}MB/{misc.megabytes(total):.1f}MB",
+                            f" [green]{''.join('-' if beads - i != 1 else '-[dim]' for i in range(parts))}[reset] {misc.megabytes(int(percent * total / 100)):.1f}MB / {misc.megabytes(total):.1f}MB",
                         )
                         progress += buffer.write(next(content))
                 except Exception:
@@ -90,13 +89,13 @@ def _(
                 != SYSTEM_CONFIGS["ryujinx_install"]["sha256"]
             ):
                 raise bad_content_error
-            tree.add("Verified content.")
+            tree.add("Verified contents.")
             step_tree = tree.add(
                 row("Extracting download", rich.spinner.Spinner("simpleDots"))
             )
             with zipfile.ZipFile(buffer) as zip:
                 zip.extractall(dir)
-        step_tree.label = "Download extracted."
+        step_tree.label = "Extracted download."
         any(
             shutil.copytree(pathlib.Path(dir) / key, path, dirs_exist_ok=True)
             and False
