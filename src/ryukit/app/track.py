@@ -226,13 +226,12 @@ def _(
         )
     )
     detached_process = 0x00000008
-    create_new_process_group = 0x00000200
     subprocess.Popen(
         ["ryukit", "track", "--start"],
         **cast(
             dict[str, Any],
             (
-                {"creationflags": detached_process | create_new_process_group}
+                {"creationflags": detached_process}
                 if sys.platform == "win32"
                 else {}
             ),
