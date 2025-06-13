@@ -5,7 +5,6 @@
     "ms-python.black-formatter",
     "tamasfe.even-better-toml",
     "esbenp.prettier-vscode",
-    "exiasr.hadolint",
     "ms-azuretools.vscode-containers"
   ]
 }

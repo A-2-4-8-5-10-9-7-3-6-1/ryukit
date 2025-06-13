@@ -2,11 +2,11 @@ from PyInstaller.building.api import EXE, PYZ
 from PyInstaller.building.build_main import Analysis
 
 analysis = Analysis(
-    ["ryukit/__main__.py"],
+    ["src/ryukit/__main__.py"],
     pathex=[],
     binaries=[],
-    datas=[("ryukit", "ryukit")],
-    hiddenimports=["psutil"],
+    datas=[("src/ryukit", "ryukit")],
+    hiddenimports=["psutil", "requests", "rich.tree"],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

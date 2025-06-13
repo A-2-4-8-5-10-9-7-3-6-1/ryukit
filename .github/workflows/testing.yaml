@@ -7,23 +7,36 @@ on:
     branches:
       - develop
 jobs:
-  test_code:
-    environment: Testing
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/setup
       - run: |
-          poetry run pytest
-          poetry run isort --check-only .
-          poetry run black --check .
-          npx prettier --check .
-        env:
-          RYUKIT_INSTALL_URL: ${{ secrets.RYUKIT_INSTALL_URL }}
-  test_executable:
+          docker compose up -d development
+          docker compose exec development bash -c "
+            npm install &&
+            npx prettier --check . &&
+            uv run bash -c '
+              isort --check-only . &&
+              black --check .'"
+          docker run -i hadolint/hadolint < Dockerfile
+  pytest:
     runs-on: windows-latest
     environment: Testing
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/build
-      - run: .\dist\ryukit.exe --help
+      - run: |
+          powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/0.7.12/install.ps1 | iex"
+          echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
+      - run: |
+          uv run pyinstaller pyinstaller.spec
+          echo "::add-mask::${{ secrets.RYUKIT_INSTALL_URL }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ryukit
+          path: dist/ryukit.exe
+      - run: |
+          mv dist/ryukit.exe "${HOME}/.local/bin"
+          uv run pytest
+        env:
+          RYUKIT_INSTALL_URL: ${{ secrets.RYUKIT_INSTALL_URL }}

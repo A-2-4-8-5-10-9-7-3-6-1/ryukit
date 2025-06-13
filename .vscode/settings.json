@@ -1,0 +1,15 @@
+{
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-containers"
+  },
+  "files.associations": {
+    "pyinstaller.spec": "python"
+  },
+  "isort.importStrategy": "fromEnvironment",
+  "python.testing.pytestEnabled": true,
+  "black-formatter.path": ["python", "-m", "black"],
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
+}
